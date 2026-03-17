@@ -42,6 +42,79 @@ A horizontal navigation bar rendered at the top of the viewport.
 
 A pre-wired layout that pairs the Sidebar and NavBar together inside Mantine's `AppShell`, handling responsive behavior, z-index stacking, and coordinated open/close state automatically.
 
+## Feature List
+
+### Navigation Structure & Behavior
+
+- **Multi-level nesting** — Support 2–3+ levels deep for complex app hierarchies
+- **Accordion mode** — Option to allow only one group open at a time, or independent expand/collapse
+- **Drag-and-drop reordering** — Let users rearrange nav items to suit their workflow
+- **Pinned / favorite items** — Users can pin frequently used pages for quick access
+- **Route-aware active state** — Highlight active items with wildcard and pattern matching support
+- **Keyboard navigation** — Arrow keys, Home/End, type-ahead search within the nav
+- **Programmatic API** — Open, close, and navigate via refs or context (`useSidebar`, `useNavBar`)
+
+### Sidebar-Specific
+
+- **Collapsible rail mode** — Shrink to icon-only rail with tooltips on hover
+- **Resizable width** — Drag handle to resize the sidebar to a custom width
+- **Mini variant** — Slim sidebar that shows truncated labels (between full and rail)
+- **Sections & dividers** — Group nav items under labeled section headers with visual separators
+- **Scrollable with sticky zones** — Scrollable nav area with pinned header and footer regions
+- **Transition animations** — Configurable slide, fade, and width-morph transitions
+
+### NavBar-Specific
+
+- **Mega menu dropdowns** — Multi-column flyout menus for feature-rich top navigation
+- **Command palette slot** — Integration point for search / Cmd+K command palette
+- **Breadcrumb bar** — Auto-generated breadcrumbs derived from the route hierarchy
+- **Tab-style variant** — Horizontal tab navigation style as an alternative to links
+- **Environment indicator** — Color-coded strip or badge showing "Staging", "Production", etc.
+
+### SaaS & Multi-Tenant
+
+- **Workspace / org switcher** — Dropdown in the sidebar header to switch between workspaces or organizations
+- **User avatar + role badge** — Display user identity and role in the sidebar footer or navbar
+- **Plan / tier badge** — Show the current plan (e.g., "Pro", "Enterprise") with an optional upgrade CTA
+- **Notification bell** — Bell icon with unread count badge
+- **Onboarding progress** — Progress indicator (e.g., "3 of 5 steps complete") for new user setup flows
+- **Feature-flag-aware items** — Show or hide nav items based on feature flags or entitlements
+- **Invite teammates CTA** — Dedicated slot for team invitation prompts
+
+### Analytics & Dashboard
+
+- **Dashboard quick-switcher** — Jump between saved dashboards from a dropdown or search
+- **Date range / filter indicator** — Show the active date range or filter context in the navbar
+- **Live data status dot** — Connected / stale / error indicator for real-time data sources
+- **Collapsible filter panel** — Sidebar variant purpose-built for dashboard filter controls
+- **Recently viewed** — Auto-populated list of recently visited pages
+- **Starred / bookmarked pages** — Section for user-bookmarked pages with quick access
+
+### Responsive & Layout
+
+- **Breakpoint-driven toggle** — Automatically switch between persistent sidebar and drawer based on viewport
+- **Overlay mode** — Full-screen overlay sidebar on mobile
+- **Persistent vs. temporary** — Choose between always-visible and dismissible drawer behavior
+- **Coordinated responsive state** — Navbar and sidebar share responsive open/close state
+- **Print-friendly** — Automatically hide navigation when printing
+
+### Theming & Customization
+
+- **Light / dark mode** — Full support with per-component overrides
+- **Custom color schemes** — Different color accents per nav section
+- **Icon library agnostic** — Works with Tabler, Lucide, FontAwesome, or custom SVGs
+- **CSS variable surface** — Fine-grained style control via CSS custom properties
+- **Preset themes** — Ship with minimal, corporate, and playful theme presets
+- **RTL support** — Right-to-left layout for internationalized applications
+
+### Developer Experience
+
+- **Dual API** — Declarative config (JSON/object) and JSX composition modes
+- **TypeScript-first** — Strict generics for nav item data, full autocompletion
+- **Storybook stories** — Every component and variant documented with interactive stories
+- **Headless hooks** — `useSidebar` and `useNavBar` hooks for fully custom rendering
+- **SSR / RSC compatible** — Works with server-side rendering and React Server Components
+
 ## Tech Stack
 
 | Layer | Choice |
