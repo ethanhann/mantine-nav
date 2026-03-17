@@ -5,7 +5,7 @@
 | Phase | Description | Status | Specs Complete |
 |-------|-------------|--------|----------------|
 | 1 | Foundation | complete | 6/6 |
-| 2 | Sidebar Core | pending | 0/6 |
+| 2 | Sidebar Core | complete | 6/6 |
 | 3 | Sidebar Features | pending | 0/5 |
 | 4 | NavBar | pending | 0/5 |
 | 5 | Responsive & Layout | pending | 0/5 |
@@ -13,7 +13,7 @@
 | 7 | Analytics & Dashboard | pending | 0/6 |
 | 8 | Theming & DX | pending | 0/7 |
 
-**Total: 6/47 specs complete**
+**Total: 12/47 specs complete**
 
 ---
 
@@ -32,12 +32,12 @@
 
 | Spec | Title | Status | Date | Notes |
 |------|-------|--------|------|-------|
-| 002 | Accordion Mode | pending | — | — |
-| 006 | Keyboard Navigation | pending | — | — |
-| 008 | Collapsible Rail Mode | pending | — | — |
-| 011 | Sections & Dividers | pending | — | — |
-| 012 | Scrollable Sticky Zones | pending | — | — |
-| 037 | Light / Dark Mode | pending | — | — |
+| 002 | Accordion Mode | complete | 2026-03-17 | Added to NavGroup: `accordion`, `accordionScope`, `onAccordionChange` props |
+| 006 | Keyboard Navigation | complete | 2026-03-17 | `src/hooks/useNavKeyboard.ts`, roving tabIndex, type-ahead |
+| 008 | Collapsible Rail Mode | complete | 2026-03-17 | `src/components/Sidebar/`, collapse toggle, controlled/uncontrolled |
+| 011 | Sections & Dividers | complete | 2026-03-17 | `src/components/NavSection/`, collapsible, dividers |
+| 012 | Scrollable Sticky Zones | complete | 2026-03-17 | Built into Sidebar: header/footer slots, ScrollArea, isScrolled shadow |
+| 037 | Light / Dark Mode | complete | 2026-03-17 | `src/hooks/useNavColorScheme.ts`, CSS light-dark() in variables |
 
 ## Phase 3: Sidebar Features
 

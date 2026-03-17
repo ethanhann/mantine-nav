@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { Collapse } from '@mantine/core';
 import type {
   ActiveMatcher,
@@ -8,10 +8,10 @@ import type {
   NavCallbacks,
   NavGroupItem,
   NavItemType,
-  NavLinkItem,
 } from '../../types';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
+import { useNavKeyboard } from '../../hooks/useNavKeyboard';
 import classes from './NavGroup.module.css';
 
 export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
@@ -24,6 +24,15 @@ export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
   currentPath?: string;
   animation?: Partial<NavAnimationConfig>;
   transitionDuration?: number;
+  // Spec 002: Accordion
+  accordion?: boolean;
+  accordionScope?: 'global' | 'sibling';
+  onAccordionChange?: (openedKey: string | null) => void;
+  // Spec 006: Keyboard
+  enableKeyboardNav?: boolean;
+  typeAhead?: boolean;
+  typeAheadTimeout?: number;
+  loopNavigation?: boolean;
 }
 
 interface InternalNavItemProps<TData = unknown> {
@@ -85,6 +94,7 @@ function NavItemRenderer<TData>({
           aria-disabled={item.disabled || undefined}
           aria-label={item['aria-label']}
           style={{ paddingInlineStart: `${paddingLeft + 12}px` }}
+          tabIndex={-1}
           onClick={(e) => {
             if (item.disabled) {
               e.preventDefault();
@@ -107,7 +117,7 @@ function NavItemRenderer<TData>({
   const groupActive = isActive(groupItem);
 
   if (depth >= maxDepth) {
-    return null; // maxDepth exceeded
+    return null;
   }
 
   return (
@@ -122,6 +132,7 @@ function NavItemRenderer<TData>({
         aria-disabled={groupItem.disabled || undefined}
         aria-label={groupItem['aria-label']}
         style={{ paddingInlineStart: `${paddingLeft + 12}px` }}
+        tabIndex={-1}
         onClick={() => {
           if (groupItem.disabled) return;
           onToggleGroup(groupItem.id);
@@ -163,6 +174,130 @@ function NavItemRenderer<TData>({
   );
 }
 
+// Collect sibling group IDs at each level
+function getSiblingGroupIds<TData>(
+  items: NavItemType<TData>[],
+  targetId: string,
+): string[] {
+  for (const item of items) {
+    if (item.type === 'group') {
+      if (item.id === targetId) {
+        // Return all sibling group IDs at this level
+        return items
+          .filter((i): i is NavGroupItem<TData> => i.type === 'group')
+          .map((i) => i.id);
+      }
+      const found = getSiblingGroupIds(item.children, targetId);
+      if (found.length > 0) return found;
+    }
+  }
+  return [];
+}
+
+function getAllGroupIds<TData>(items: NavItemType<TData>[]): string[] {
+  const ids: string[] = [];
+  for (const item of items) {
+    if (item.type === 'group') {
+      ids.push(item.id);
+      ids.push(...getAllGroupIds(item.children));
+    }
+  }
+  return ids;
+}
+
+// Collect initial defaultOpened, respecting accordion constraints
+function collectDefaultExpanded<TData>(
+  items: NavItemType<TData>[],
+  accordion: boolean,
+  accordionScope: 'global' | 'sibling',
+): Set<string> {
+  const defaults = new Set<string>();
+
+  function collect(items: NavItemType<TData>[], seenSibling: boolean) {
+    for (const item of items) {
+      if (item.type === 'group') {
+        if (item.defaultOpened && !(accordion && seenSibling)) {
+          defaults.add(item.id);
+          if (accordion && accordionScope === 'global') {
+            // global: only one total
+            return;
+          }
+        }
+        const childSeenSibling = accordion && accordionScope === 'sibling' && item.defaultOpened;
+        collect(item.children, false);
+        if (childSeenSibling) {
+          // After first sibling defaultOpened, mark seen for remaining siblings at this level
+        }
+      }
+    }
+  }
+
+  if (accordion && accordionScope === 'sibling') {
+    // Process each sibling group independently
+    collectSiblingLevel(items, defaults);
+  } else if (accordion && accordionScope === 'global') {
+    // Only first defaultOpened across entire tree
+    findFirstDefault(items, defaults);
+  } else {
+    collectAll(items, defaults);
+  }
+
+  return defaults;
+}
+
+function collectAll<TData>(items: NavItemType<TData>[], out: Set<string>) {
+  for (const item of items) {
+    if (item.type === 'group') {
+      if (item.defaultOpened) out.add(item.id);
+      collectAll(item.children, out);
+    }
+  }
+}
+
+function collectSiblingLevel<TData>(items: NavItemType<TData>[], out: Set<string>) {
+  let foundAtThisLevel = false;
+  for (const item of items) {
+    if (item.type === 'group') {
+      if (item.defaultOpened && !foundAtThisLevel) {
+        out.add(item.id);
+        foundAtThisLevel = true;
+      }
+      collectSiblingLevel(item.children, out);
+    }
+  }
+}
+
+function findFirstDefault<TData>(items: NavItemType<TData>[], out: Set<string>): boolean {
+  for (const item of items) {
+    if (item.type === 'group') {
+      if (item.defaultOpened) {
+        out.add(item.id);
+        return true;
+      }
+      if (findFirstDefault(item.children, out)) return true;
+    }
+  }
+  return false;
+}
+
+// Flatten visible items for keyboard navigation
+function flattenVisibleItems<TData>(
+  items: NavItemType<TData>[],
+  expanded: Set<string>,
+  maxDepth: number,
+  depth: number = 0,
+): NavItemType<TData>[] {
+  const result: NavItemType<TData>[] = [];
+  for (const item of items) {
+    if (item.type === 'divider' || item.type === 'section') continue;
+    result.push(item);
+    if (item.type === 'group' && expanded.has(item.id) && depth < maxDepth) {
+      result.push(...flattenVisibleItems(item.children, expanded, maxDepth, depth + 1));
+    }
+  }
+  return result;
+}
+
 export function NavGroup<TData = unknown>({
   items,
   maxDepth = 3,
@@ -176,35 +311,51 @@ export function NavGroup<TData = unknown>({
   onItemClick,
   onGroupToggle,
   onActiveChange: _onActiveChange,
+  // Accordion
+  accordion = false,
+  accordionScope = 'sibling',
+  onAccordionChange,
+  // Keyboard
+  enableKeyboardNav = true,
+  typeAhead = true,
+  typeAheadTimeout = 500,
+  loopNavigation = true,
 }: NavGroupProps<TData>) {
-  // Manage expanded state
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
-    const defaults = new Set<string>();
-    function collectDefaults(items: NavItemType<TData>[]) {
-      for (const item of items) {
-        if (item.type === 'group' && item.defaultOpened) {
-          defaults.add(item.id);
-        }
-        if (item.type === 'group') {
-          collectDefaults(item.children);
-        }
-      }
-    }
-    collectDefaults(items);
-    return defaults;
-  });
+  const containerRef = useRef<HTMLUListElement>(null);
 
-  const handleToggleGroup = useCallback((key: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
+  // Manage expanded state with accordion support
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+    () => collectDefaultExpanded(items, accordion, accordionScope),
+  );
+
+  const handleToggleGroup = useCallback(
+    (key: string) => {
+      setExpandedGroups((prev) => {
+        const next = new Set(prev);
+        if (next.has(key)) {
+          next.delete(key);
+          if (accordion) onAccordionChange?.(null);
+        } else {
+          if (accordion) {
+            if (accordionScope === 'global') {
+              // Close all other groups
+              next.clear();
+            } else {
+              // Close sibling groups only
+              const siblings = getSiblingGroupIds(items, key);
+              for (const s of siblings) {
+                if (s !== key) next.delete(s);
+              }
+            }
+            onAccordionChange?.(key);
+          }
+          next.add(key);
+        }
+        return next;
+      });
+    },
+    [accordion, accordionScope, items, onAccordionChange],
+  );
 
   // Active state
   const { isActive: isActiveByRoute } = useActiveNavItem(items, {
@@ -228,8 +379,33 @@ export function NavGroup<TData = unknown>({
   const { duration } = useNavAnimation(animation);
   const resolvedDuration = transitionDurationProp ?? duration;
 
+  // Keyboard navigation
+  const visibleItems = flattenVisibleItems(items, expandedGroups, maxDepth);
+
+  const { handleKeyDown } = useNavKeyboard({
+    items: visibleItems,
+    expandedKeys: expandedGroups,
+    onToggle: handleToggleGroup,
+    onSelect: (item) => {
+      if (item.type === 'link') {
+        onItemClick?.(item as any, new MouseEvent('click') as any);
+      }
+    },
+    containerRef: containerRef as React.RefObject<HTMLElement>,
+    typeAhead,
+    typeAheadTimeout,
+    loop: loopNavigation,
+    enabled: enableKeyboardNav,
+  });
+
   return (
-    <ul className={classes.root} role="tree" aria-label="Navigation">
+    <ul
+      className={classes.root}
+      role="tree"
+      aria-label="Navigation"
+      ref={containerRef}
+      onKeyDown={enableKeyboardNav ? handleKeyDown as any : undefined}
+    >
       {items.map((item) => (
         <NavItemRenderer
           key={item.id}

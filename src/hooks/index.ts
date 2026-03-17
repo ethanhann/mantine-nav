@@ -8,3 +8,7 @@ export { useNavAnimation } from './useNavAnimation';
 export type { UseNavAnimationReturn } from './useNavAnimation';
 export { useNavVars } from './useNavVars';
 export type { UseNavVarsReturn } from './useNavVars';
+export { useNavKeyboard } from './useNavKeyboard';
+export type { UseNavKeyboardOptions, UseNavKeyboardReturn } from './useNavKeyboard';
+export { useNavColorScheme } from './useNavColorScheme';
+export type { UseNavColorSchemeReturn } from './useNavColorScheme';

@@ -16,7 +16,7 @@ export type {
   SidebarVariant,
   NavAnimationConfig,
   NavGroupProps as NavGroupPropsType,
-  SidebarProps,
+  SidebarProps as SidebarPropsType,
   NavBarProps,
   NavLayoutProps,
   Workspace,
@@ -30,6 +30,10 @@ export { NavGroup } from './components/NavGroup';
 export type { NavGroupProps } from './components/NavGroup';
 export { NavProvider, NavContext } from './components/NavProvider';
 export type { NavProviderProps, NavAPI } from './components/NavProvider';
+export { Sidebar } from './components/Sidebar';
+export type { SidebarProps, SidebarRef } from './components/Sidebar';
+export { NavSection } from './components/NavSection';
+export type { NavSectionProps } from './components/NavSection';
 
 // Hooks
 export {
@@ -39,6 +43,8 @@ export {
   useCurrentPath,
   useNavAnimation,
   useNavVars,
+  useNavKeyboard,
+  useNavColorScheme,
 } from './hooks';
 export type {
   UseNavItemsReturn,
@@ -46,4 +52,7 @@ export type {
   UseActiveNavItemReturn,
   UseNavAnimationReturn,
   UseNavVarsReturn,
+  UseNavKeyboardOptions,
+  UseNavKeyboardReturn,
+  UseNavColorSchemeReturn,
 } from './hooks';
