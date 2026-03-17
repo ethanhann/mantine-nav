@@ -17,15 +17,15 @@ export type {
   NavAnimationConfig,
   NavGroupProps as NavGroupPropsType,
   SidebarProps as SidebarPropsType,
-  NavBarProps,
-  NavLayoutProps,
+  NavBarProps as NavBarPropsType,
+  NavLayoutProps as NavLayoutPropsType,
   Workspace,
   UserInfo,
   NavConfig,
   NavColorConfig,
 } from './types';
 
-// Components
+// Core Components
 export { NavGroup } from './components/NavGroup';
 export type { NavGroupProps } from './components/NavGroup';
 export { NavProvider, NavContext } from './components/NavProvider';
@@ -36,6 +36,60 @@ export { NavSection } from './components/NavSection';
 export type { NavSectionProps } from './components/NavSection';
 export { NavIconProvider, useNavIcon } from './components/NavIconProvider';
 export type { NavIconProviderProps, UseNavIconReturn, IconResolver } from './components/NavIconProvider';
+
+// NavBar Components
+export { NavBar, NavBreadcrumbs, EnvironmentIndicator, CommandPaletteSlot } from './components/NavBar';
+export type { NavBarProps, NavBreadcrumbsProps, EnvironmentIndicatorProps, CommandPaletteSlotProps } from './components/NavBar';
+
+// Layout
+export { Nav, NavLayout } from './components/Nav';
+export type { NavProps, NavLayoutProps } from './components/Nav';
+
+// Theme
+export { NavThemeProvider, useNavTheme } from './components/NavThemeProvider';
+export type { NavThemeProviderProps, NavPreset } from './components/NavThemeProvider';
+
+// SaaS Components
+export {
+  WorkspaceSwitcher,
+  UserMenu,
+  PlanBadge,
+  NotificationBell,
+  OnboardingProgress,
+  NavFeatureFlagProvider,
+  FeatureGate,
+  useFeatureFlag,
+  InviteTeamCTA,
+} from './components/SaaS';
+export type {
+  WorkspaceSwitcherProps,
+  UserMenuProps,
+  PlanBadgeProps,
+  NotificationBellProps,
+  Notification,
+  OnboardingProgressProps,
+  OnboardingStep,
+  NavFeatureFlagProviderProps,
+  FeatureGateProps,
+  InviteTeamCTAProps,
+} from './components/SaaS';
+
+// Dashboard Components
+export {
+  DashboardSwitcher,
+  FilterIndicator,
+  LiveDataStatus,
+  FilterPanel,
+} from './components/Dashboard';
+export type {
+  DashboardSwitcherProps,
+  Dashboard,
+  FilterIndicatorProps,
+  ActiveFilter,
+  LiveDataStatusProps,
+  ConnectionStatus,
+  FilterPanelProps,
+} from './components/Dashboard';
 
 // Hooks
 export {
@@ -51,6 +105,12 @@ export {
   usePinnedItems,
   useSidebarResize,
   useSidebarVariant,
+  useResponsiveNav,
+  useRecentlyViewed,
+  useStarredPages,
+  useHeadlessSidebar,
+  useIsSSR,
+  useHydrated,
 } from './hooks';
 export type {
   UseNavItemsReturn,
@@ -69,4 +129,14 @@ export type {
   UseSidebarResizeReturn,
   UseSidebarVariantOptions,
   UseSidebarVariantReturn,
+  UseResponsiveNavOptions,
+  UseResponsiveNavReturn,
+  UseRecentlyViewedOptions,
+  UseRecentlyViewedReturn,
+  RecentItem,
+  UseStarredPagesOptions,
+  UseStarredPagesReturn,
+  StarredPage,
+  UseHeadlessSidebarOptions,
+  UseHeadlessSidebarReturn,
 } from './hooks';
