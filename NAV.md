@@ -46,7 +46,7 @@ A pre-wired layout that pairs the Sidebar and NavBar together inside Mantine's `
 
 | Layer | Choice |
 |---|---|
-| Framework | React 18+ |
+| Framework | React 19.2+ |
 | Component foundation | Mantine v8 |
 | Styling | Mantine CSS modules / `styles` API |
 | Build / bundling | Vite (library mode) or tsup |
