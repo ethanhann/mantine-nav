@@ -6,14 +6,14 @@
 |-------|-------------|--------|----------------|
 | 1 | Foundation | complete | 6/6 |
 | 2 | Sidebar Core | complete | 6/6 |
-| 3 | Sidebar Features | pending | 0/5 |
+| 3 | Sidebar Features | complete | 5/5 |
 | 4 | NavBar | pending | 0/5 |
 | 5 | Responsive & Layout | pending | 0/5 |
 | 6 | SaaS & Multi-Tenant | pending | 0/7 |
 | 7 | Analytics & Dashboard | pending | 0/6 |
 | 8 | Theming & DX | pending | 0/7 |
 
-**Total: 12/47 specs complete**
+**Total: 17/47 specs complete**
 
 ---
 
@@ -43,11 +43,11 @@
 
 | Spec | Title | Status | Date | Notes |
 |------|-------|--------|------|-------|
-| 003 | Drag-and-Drop Reordering | pending | — | — |
-| 004 | Pinned / Favorite Items | pending | — | — |
-| 009 | Resizable Width | pending | — | — |
-| 010 | Mini Variant | pending | — | — |
-| 039 | Icon Library Agnostic | pending | — | — |
+| 003 | Drag-and-Drop Reordering | complete | 2026-03-17 | `src/hooks/useReorderableNav.ts` |
+| 004 | Pinned / Favorite Items | complete | 2026-03-17 | `src/hooks/usePinnedItems.ts` |
+| 009 | Resizable Width | complete | 2026-03-17 | `src/hooks/useSidebarResize.ts` |
+| 010 | Mini Variant | complete | 2026-03-17 | `src/hooks/useSidebarVariant.ts` |
+| 039 | Icon Library Agnostic | complete | 2026-03-17 | `src/components/NavIconProvider/` |
 
 ## Phase 4: NavBar
 

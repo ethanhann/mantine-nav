@@ -34,6 +34,8 @@ export { Sidebar } from './components/Sidebar';
 export type { SidebarProps, SidebarRef } from './components/Sidebar';
 export { NavSection } from './components/NavSection';
 export type { NavSectionProps } from './components/NavSection';
+export { NavIconProvider, useNavIcon } from './components/NavIconProvider';
+export type { NavIconProviderProps, UseNavIconReturn, IconResolver } from './components/NavIconProvider';
 
 // Hooks
 export {
@@ -45,6 +47,10 @@ export {
   useNavVars,
   useNavKeyboard,
   useNavColorScheme,
+  useReorderableNav,
+  usePinnedItems,
+  useSidebarResize,
+  useSidebarVariant,
 } from './hooks';
 export type {
   UseNavItemsReturn,
@@ -55,4 +61,12 @@ export type {
   UseNavKeyboardOptions,
   UseNavKeyboardReturn,
   UseNavColorSchemeReturn,
+  UseReorderableNavOptions,
+  UseReorderableNavReturn,
+  UsePinnedItemsOptions,
+  UsePinnedItemsReturn,
+  UseSidebarResizeOptions,
+  UseSidebarResizeReturn,
+  UseSidebarVariantOptions,
+  UseSidebarVariantReturn,
 } from './hooks';
