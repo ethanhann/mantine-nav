@@ -1,0 +1,36 @@
+# Source
+src/
+
+# Specs & docs
+specs/
+NAV.md
+
+# Config
+tsconfig.json
+vite.config.ts
+vitest.config.ts
+postcss.config.cjs
+.npmrc
+
+# Storybook
+.storybook/
+storybook-static/
+
+# CI/CD
+.github/
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Tests & coverage
+coverage/
+**/*.test.ts
+**/*.test.tsx
+**/*.story.tsx
+**/*.stories.tsx
+
+# Claude
+.claude/
