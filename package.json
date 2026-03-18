@@ -32,6 +32,7 @@
   "peerDependencies": {
     "@mantine/core": "^8.0.0",
     "@mantine/hooks": "^8.0.0",
+    "@tabler/icons-react": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -41,6 +42,7 @@
     "@storybook/addon-a11y": "^10.2.19",
     "@storybook/react": "^10.2.19",
     "@storybook/react-vite": "^10.2.19",
+    "@tabler/icons-react": "^3.40.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

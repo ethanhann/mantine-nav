@@ -1,88 +1,135 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { Text, Title, Code, Anchor, Breadcrumbs } from '@mantine/core';
 import {
-  NavProvider, NavLayout, Sidebar, NavBar, NavGroup, NavSection,
-  NavBreadcrumbs, CommandPaletteSlot,
+  IconBook,
+  IconRocket,
+  IconPuzzle,
+  IconBrush,
+  IconApi,
+  IconTerminal,
+} from '@tabler/icons-react';
+import {
+  NavShell,
+  NavSidebar,
+  NavHeader,
+  NavGroup,
 } from '../../src';
-import { deepNestedItems, Icons } from '../_data';
 import type { NavItemType } from '../../src';
 
-const meta: Meta = {
-  title: 'Recipes/Documentation Site',
-  tags: ['autodocs'],
-};
-
-export default meta;
-
 const docsItems: NavItemType[] = [
-  { id: 'section-learn', type: 'section', label: 'Learn' },
-  ...deepNestedItems,
+  {
+    id: 'getting-started',
+    type: 'group',
+    label: 'Getting Started',
+    icon: <IconRocket size={18} />,
+    defaultOpened: true,
+    children: [
+      { id: 'introduction', type: 'link', label: 'Introduction', href: '/docs/intro' },
+      { id: 'installation', type: 'link', label: 'Installation', href: '/docs/installation' },
+      { id: 'quick-start', type: 'link', label: 'Quick Start', href: '/docs/quick-start' },
+    ],
+  },
+  {
+    id: 'components',
+    type: 'group',
+    label: 'Components',
+    icon: <IconPuzzle size={18} />,
+    children: [
+      { id: 'nav-shell', type: 'link', label: 'NavShell', href: '/docs/components/nav-shell' },
+      { id: 'nav-sidebar', type: 'link', label: 'NavSidebar', href: '/docs/components/nav-sidebar' },
+      { id: 'nav-header', type: 'link', label: 'NavHeader', href: '/docs/components/nav-header' },
+      { id: 'nav-group', type: 'link', label: 'NavGroup', href: '/docs/components/nav-group' },
+    ],
+  },
+  {
+    id: 'theming',
+    type: 'group',
+    label: 'Theming',
+    icon: <IconBrush size={18} />,
+    children: [
+      { id: 'colors', type: 'link', label: 'Colors', href: '/docs/theming/colors' },
+      { id: 'dark-mode', type: 'link', label: 'Dark Mode', href: '/docs/theming/dark-mode' },
+    ],
+  },
   {
     id: 'api',
     type: 'group',
     label: 'API Reference',
-    icon: <Icons.Docs />,
+    icon: <IconApi size={18} />,
     children: [
-      { id: 'components', type: 'link', label: 'Components', href: '/api/components' },
-      { id: 'hooks', type: 'link', label: 'Hooks', href: '/api/hooks' },
-      { id: 'types', type: 'link', label: 'Types', href: '/api/types' },
+      { id: 'hooks', type: 'link', label: 'Hooks', href: '/docs/api/hooks' },
+      { id: 'types', type: 'link', label: 'Types', href: '/docs/api/types' },
     ],
   },
-  { id: 'div-1', type: 'divider' },
-  { id: 'section-community', type: 'section', label: 'Community' },
-  { id: 'examples', type: 'link', label: 'Examples', href: '/examples', icon: <Icons.Star /> },
-  { id: 'changelog', type: 'link', label: 'Changelog', href: '/changelog', icon: <Icons.Docs /> },
 ];
 
-export const Default: StoryObj = {
+const meta: Meta = {
+  title: 'Recipes/Documentation',
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+  },
+};
+
+export default meta;
+type Story = StoryObj;
+
+export const Default: Story = {
   render: () => (
-    <NavProvider>
-      <div style={{ height: 600 }}>
-        <NavLayout
-          navbar={
-            <NavBar
-              logo={<span style={{ fontWeight: 700, fontSize: 18 }}>Docs</span>}
-              sticky
-              rightSection={
-                <CommandPaletteSlot shortcut="⌘K" variant="input" placeholder="Search docs..." />
-              }
-            >
-              <NavBreadcrumbs
-                items={[
-                  { label: 'Docs', href: '/' },
-                  { label: 'Getting Started', href: '/docs' },
-                  { label: 'Installation' },
-                ]}
-              />
-            </NavBar>
+    <NavShell
+      header={
+        <NavHeader
+          logo={
+            <Text fw={700} size="lg">
+              <IconBook size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} />
+              @ethanhann/nav
+            </Text>
           }
-          sidebar={
-            <Sidebar
-              expandedWidth={280}
-              header={<div style={{ padding: 12, fontWeight: 700 }}>@ethanhann/nav</div>}
-            >
-              <NavGroup
-                items={docsItems}
-                currentPath="/docs/install"
-                maxDepth={3}
-              />
-            </Sidebar>
+          rightSection={
+            <Anchor href="https://github.com/ethanhann/nav" target="_blank" size="sm">
+              GitHub
+            </Anchor>
           }
-        >
-          <div style={{ padding: 24, maxWidth: 720 }}>
-            <h1>Installation</h1>
-            <p>Install the package from GitHub Packages:</p>
-            <pre style={{ padding: 16, background: '#f1f5f9', borderRadius: 8, overflow: 'auto' }}>
-              npm install @ethanhann/nav
-            </pre>
-            <h2>Peer Dependencies</h2>
-            <p>Make sure you have React 19+ and Mantine v8 installed:</p>
-            <pre style={{ padding: 16, background: '#f1f5f9', borderRadius: 8, overflow: 'auto' }}>
-              npm install react react-dom @mantine/core @mantine/hooks
-            </pre>
-          </div>
-        </NavLayout>
-      </div>
-    </NavProvider>
+        />
+      }
+      sidebar={
+        <NavSidebar showCollapseToggle={false}>
+          <NavGroup items={docsItems} currentPath="/docs/installation" />
+        </NavSidebar>
+      }
+    >
+      <Breadcrumbs mb="md">
+        <Anchor href="/docs">Docs</Anchor>
+        <Anchor href="/docs/getting-started">Getting Started</Anchor>
+        <Text>Installation</Text>
+      </Breadcrumbs>
+
+      <Title order={1} mb="md">Installation</Title>
+      <Text mb="md">
+        Install <Code>@ethanhann/nav</Code> and its peer dependencies:
+      </Text>
+      <Code block mb="md">
+        {`npm install @ethanhann/nav @mantine/core @mantine/hooks @tabler/icons-react`}
+      </Code>
+      <Text mb="md">
+        Then wrap your app with <Code>MantineProvider</Code> and use <Code>NavShell</Code> for the layout:
+      </Text>
+      <Code block>
+{`import { MantineProvider } from '@mantine/core';
+import { NavShell, NavSidebar, NavGroup } from '@ethanhann/nav';
+import '@mantine/core/styles.css';
+
+function App() {
+  return (
+    <MantineProvider>
+      <NavShell sidebar={<NavSidebar><NavGroup items={items} /></NavSidebar>}>
+        <main>Your content</main>
+      </NavShell>
+    </MantineProvider>
+  );
+}`}
+      </Code>
+    </NavShell>
   ),
 };

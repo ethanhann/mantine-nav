@@ -1,4 +1,3 @@
-export { useNav } from './useNav';
 export { useNavItems } from './useNavItems';
 export type { UseNavItemsReturn } from './useNavItems';
 export { useActiveNavItem } from './useActiveNavItem';

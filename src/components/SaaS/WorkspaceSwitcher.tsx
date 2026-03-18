@@ -1,6 +1,16 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import {
+  Avatar,
+  Group,
+  Menu,
+  ScrollArea,
+  Text,
+  TextInput,
+  UnstyledButton,
+} from '@mantine/core';
+import { IconCheck, IconPlus, IconSearch, IconSelector } from '@tabler/icons-react';
 import type { Workspace } from '../../types';
 
 export interface WorkspaceSwitcherProps {
@@ -22,62 +32,80 @@ export function WorkspaceSwitcher({
   maxVisible = 5,
   renderWorkspace,
 }: WorkspaceSwitcherProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
 
   const filtered = searchable && search
     ? workspaces.filter((w) => w.name.toLowerCase().includes(search.toLowerCase()))
     : workspaces;
 
-  const visible = filtered.slice(0, maxVisible);
-
   return (
-    <div role="listbox" aria-label="Workspace switcher">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-      >
-        {renderWorkspace ? renderWorkspace(activeWorkspace, true) : (
+    <Menu width={280} position="bottom-start" withinPortal>
+      <Menu.Target>
+        <UnstyledButton p="xs" w="100%">
+          {renderWorkspace ? renderWorkspace(activeWorkspace, true) : (
+            <Group gap="sm" wrap="nowrap">
+              <Avatar
+                src={typeof activeWorkspace.logo === 'string' ? activeWorkspace.logo : undefined}
+                size="sm"
+                radius="sm"
+                color="blue"
+              >
+                {activeWorkspace.name.charAt(0).toUpperCase()}
+              </Avatar>
+              <Text size="sm" fw={600} truncate style={{ flex: 1 }}>
+                {activeWorkspace.name}
+              </Text>
+              <IconSelector size={14} style={{ opacity: 0.5 }} />
+            </Group>
+          )}
+        </UnstyledButton>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        {searchable && (
+          <TextInput
+            placeholder="Search workspaces..."
+            leftSection={<IconSearch size={14} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            mb="xs"
+            mx="xs"
+            mt="xs"
+          />
+        )}
+        <ScrollArea.Autosize mah={maxVisible * 44}>
+          {filtered.map((ws) => (
+            <Menu.Item
+              key={ws.id}
+              leftSection={
+                <Avatar
+                  src={typeof ws.logo === 'string' ? ws.logo : undefined}
+                  size="sm"
+                  radius="sm"
+                  color="blue"
+                >
+                  {ws.name.charAt(0).toUpperCase()}
+                </Avatar>
+              }
+              rightSection={ws.id === activeWorkspace.id ? <IconCheck size={14} /> : null}
+              onClick={() => onSwitch(ws)}
+            >
+              <Text size="sm">{ws.name}</Text>
+            </Menu.Item>
+          ))}
+        </ScrollArea.Autosize>
+        {onCreate && (
           <>
-            {activeWorkspace.logo}
-            <span>{activeWorkspace.name}</span>
+            <Menu.Divider />
+            <Menu.Item
+              leftSection={<IconPlus size={14} />}
+              onClick={onCreate}
+            >
+              Create workspace
+            </Menu.Item>
           </>
         )}
-      </button>
-      {isOpen && (
-        <div role="presentation">
-          {searchable && (
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search workspaces..."
-              aria-label="Search workspaces"
-            />
-          )}
-          {visible.map((ws) => (
-            <button
-              key={ws.id}
-              type="button"
-              role="option"
-              aria-selected={ws.id === activeWorkspace.id}
-              onClick={() => {
-                onSwitch(ws);
-                setIsOpen(false);
-              }}
-            >
-              {renderWorkspace ? renderWorkspace(ws, ws.id === activeWorkspace.id) : ws.name}
-            </button>
-          ))}
-          {onCreate && (
-            <button type="button" onClick={onCreate}>
-              Create workspace
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+      </Menu.Dropdown>
+    </Menu>
   );
 }

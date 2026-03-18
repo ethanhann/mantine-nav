@@ -1,0 +1,160 @@
+'use client';
+
+import {
+  createContext,
+  useContext,
+  type ReactNode,
+} from 'react';
+import {
+  AppShell,
+  Burger,
+  Group,
+  type MantineBreakpoint,
+  type MantineSpacing,
+} from '@mantine/core';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+
+export interface NavShellContextValue {
+  mobileOpened: boolean;
+  toggleMobile: () => void;
+  openMobile: () => void;
+  closeMobile: () => void;
+  desktopCollapsed: boolean;
+  toggleDesktop: () => void;
+  collapseDesktop: () => void;
+  expandDesktop: () => void;
+  isMobile: boolean;
+}
+
+const NavShellContext = createContext<NavShellContextValue | null>(null);
+
+export function useNavShell(): NavShellContextValue {
+  const ctx = useContext(NavShellContext);
+  if (!ctx) {
+    throw new Error('useNavShell() must be used within a <NavShell>');
+  }
+  return ctx;
+}
+
+export interface NavShellProps {
+  header?: ReactNode;
+  sidebar?: ReactNode;
+  aside?: ReactNode;
+  footer?: ReactNode;
+  children: ReactNode;
+  headerHeight?: number;
+  sidebarWidth?: number;
+  sidebarCollapsedWidth?: number;
+  sidebarBreakpoint?: MantineBreakpoint;
+  sidebarCollapsible?: boolean;
+  defaultDesktopCollapsed?: boolean;
+  layout?: 'default' | 'alt';
+  withBorder?: boolean;
+  padding?: MantineSpacing;
+  transitionDuration?: number;
+}
+
+export function NavShell({
+  header,
+  sidebar,
+  aside,
+  footer,
+  children,
+  headerHeight = 60,
+  sidebarWidth = 260,
+  sidebarCollapsedWidth = 80,
+  sidebarBreakpoint = 'sm',
+  sidebarCollapsible = true,
+  defaultDesktopCollapsed = false,
+  layout = 'default',
+  withBorder = true,
+  padding = 'md',
+  transitionDuration = 200,
+}: NavShellProps) {
+  const [mobileOpened, { toggle: toggleMobile, open: openMobile, close: closeMobile }] =
+    useDisclosure(false);
+  const [desktopExpanded, { toggle: toggleDesktopExpanded, open: expandDesktopInner, close: collapseDesktopInner }] =
+    useDisclosure(!defaultDesktopCollapsed);
+
+  const desktopCollapsed = sidebarCollapsible ? !desktopExpanded : false;
+  const isMobile = useMediaQuery(`(max-width: ${sidebarBreakpoint === 'sm' ? '48em' : sidebarBreakpoint === 'md' ? '62em' : sidebarBreakpoint === 'lg' ? '75em' : '48em'})`) ?? false;
+
+  const toggleDesktop = toggleDesktopExpanded;
+  const collapseDesktop = collapseDesktopInner;
+  const expandDesktop = expandDesktopInner;
+
+  const ctx: NavShellContextValue = {
+    mobileOpened,
+    toggleMobile,
+    openMobile,
+    closeMobile,
+    desktopCollapsed,
+    toggleDesktop,
+    collapseDesktop,
+    expandDesktop,
+    isMobile,
+  };
+
+  return (
+    <NavShellContext.Provider value={ctx}>
+      <AppShell
+        header={header ? { height: headerHeight } : undefined}
+        navbar={
+          sidebar
+            ? {
+                width: { base: sidebarWidth, ...(sidebarCollapsible && desktopCollapsed ? {} : {}) },
+                breakpoint: sidebarBreakpoint,
+                collapsed: {
+                  mobile: !mobileOpened,
+                  desktop: desktopCollapsed,
+                },
+              }
+            : undefined
+        }
+        aside={aside ? { width: 300, breakpoint: 'md', collapsed: { mobile: true } } : undefined}
+        footer={footer ? { height: 60 } : undefined}
+        layout={layout}
+        padding={padding}
+        withBorder={withBorder}
+        transitionDuration={transitionDuration}
+      >
+        {header && (
+          <AppShell.Header>
+            <Group h="100%" px="md" wrap="nowrap">
+              {sidebar && (
+                <Burger
+                  opened={mobileOpened}
+                  onClick={toggleMobile}
+                  hiddenFrom={sidebarBreakpoint}
+                  size="sm"
+                  aria-label="Toggle navigation"
+                />
+              )}
+              {header}
+            </Group>
+          </AppShell.Header>
+        )}
+
+        {sidebar && (
+          <AppShell.Navbar p="sm">
+            {sidebar}
+          </AppShell.Navbar>
+        )}
+
+        {aside && (
+          <AppShell.Aside p="md">
+            {aside}
+          </AppShell.Aside>
+        )}
+
+        <AppShell.Main>{children}</AppShell.Main>
+
+        {footer && (
+          <AppShell.Footer p="md">
+            {footer}
+          </AppShell.Footer>
+        )}
+      </AppShell>
+    </NavShellContext.Provider>
+  );
+}

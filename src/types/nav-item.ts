@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-// ─── Active matching ──────────────────────────────────────────────
+// --- Active matching ---
 export type ActiveMatchStrategy = 'exact' | 'prefix' | 'regex';
 
 export type ActiveMatcher =
@@ -10,16 +10,16 @@ export type ActiveMatcher =
   | RegExp
   | ((currentPath: string, itemHref: string) => boolean);
 
-// ─── CSS variable typing ──────────────────────────────────────────
+// --- CSS variable typing ---
 export type NavCSSVariable = `--nav-${string}`;
 
-// ─── Base item properties shared across all types ─────────────────
+// --- Base item properties shared across all types ---
 interface NavItemBase {
   id: string;
   disabled?: boolean;
 }
 
-// ─── Discriminated union item types ───────────────────────────────
+// --- Discriminated union item types ---
 
 export interface NavLinkItem<TData = unknown> extends NavItemBase {
   type: 'link';
@@ -30,7 +30,6 @@ export interface NavLinkItem<TData = unknown> extends NavItemBase {
   data?: TData;
   activeMatch?: ActiveMatcher;
   activeExact?: boolean;
-  /** Required when `icon` is provided but `label` is visually hidden (e.g. rail mode) */
   'aria-label'?: string;
 }
 
@@ -64,8 +63,7 @@ export type NavItemType<TData = unknown> =
   | NavSectionHeader
   | NavDividerItem;
 
-// ─── Legacy NavItem alias (unified form from Spec 001) ───────────
-// This generic interface is used when consumers don't need discriminated unions
+// Legacy NavItem alias (unified form)
 export interface NavItem<TData = unknown> {
   id: string;
   label: string;
@@ -81,17 +79,17 @@ export interface NavItem<TData = unknown> {
   'aria-label'?: string;
 }
 
-// ─── Callbacks ────────────────────────────────────────────────────
+// --- Callbacks ---
 export interface NavCallbacks<TData = unknown> {
   onItemClick?: (item: NavLinkItem<TData>, event: React.MouseEvent) => void;
   onGroupToggle?: (item: NavGroupItem<TData>, opened: boolean) => void;
   onActiveChange?: (item: NavLinkItem<TData> | null) => void;
 }
 
-// ─── Sidebar variants ─────────────────────────────────────────────
+// --- Sidebar variants ---
 export type SidebarVariant = 'full' | 'rail' | 'mini';
 
-// ─── Animation config (Spec 013) ─────────────────────────────────
+// --- Animation config ---
 export interface NavAnimationConfig {
   enabled: boolean;
   duration: number;
@@ -99,50 +97,7 @@ export interface NavAnimationConfig {
   reducedMotion: 'disable' | 'reduce' | 'system';
 }
 
-// ─── NavGroup component props ─────────────────────────────────────
-export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
-  items: NavItemType<TData>[];
-  maxDepth?: number;
-  indentPerLevel?: number;
-  renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
-  activeItem?: string | null;
-  activeMatcher?: ActiveMatcher;
-  animation?: Partial<NavAnimationConfig>;
-  transitionDuration?: number;
-}
-
-// ─── Sidebar props ────────────────────────────────────────────────
-export interface SidebarProps<TData = unknown> extends NavGroupProps<TData> {
-  variant?: SidebarVariant;
-  collapsed?: boolean;
-  width?: number;
-  collapsedWidth?: number;
-  animation?: Partial<NavAnimationConfig>;
-  collapseAnimation?: string;
-  widthTransitionDuration?: number;
-  groupTransitionDuration?: number;
-  header?: ReactNode;
-  footer?: ReactNode;
-  vars?: Record<NavCSSVariable, string>;
-}
-
-// ─── NavBar props ─────────────────────────────────────────────────
-export interface NavBarProps {
-  logo?: ReactNode;
-  rightSection?: ReactNode;
-  height?: number;
-  sticky?: boolean;
-  vars?: Record<NavCSSVariable, string>;
-}
-
-// ─── NavLayout props ──────────────────────────────────────────────
-export interface NavLayoutProps {
-  sidebar?: ReactNode;
-  navbar?: ReactNode;
-  children: ReactNode;
-}
-
-// ─── Workspace / User types (SaaS specs) ──────────────────────────
+// --- Workspace / User types (SaaS) ---
 export interface Workspace {
   id: string;
   name: string;
@@ -155,23 +110,4 @@ export interface UserInfo {
   email?: string;
   avatarUrl?: string;
   role?: string;
-}
-
-// ─── Nav config (for Dual API, Spec 043) ──────────────────────────
-export interface NavConfig<TData = unknown> {
-  items: NavItemType<TData>[];
-  sidebar?: Omit<SidebarProps<TData>, 'items'>;
-  navbar?: NavBarProps;
-  animation?: Partial<NavAnimationConfig>;
-}
-
-// ─── Color config (Spec 038/040) ──────────────────────────────────
-export interface NavColorConfig {
-  primary?: string;
-  background?: string;
-  text?: string;
-  activeBackground?: string;
-  activeText?: string;
-  hoverBackground?: string;
-  border?: string;
 }
