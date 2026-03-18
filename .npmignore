@@ -15,6 +15,7 @@ postcss.config.cjs
 # Storybook
 .storybook/
 storybook-static/
+stories/
 
 # CI/CD
 .github/
