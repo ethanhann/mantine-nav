@@ -84,7 +84,9 @@ export function useNavKeyboard<TData = unknown>({
       });
       if (currentIdx === -1) currentIdx = 0;
 
-      const currentItem = items[currentIdx];
+      const currentEl = focusables[currentIdx];
+      const currentItemId = currentEl?.getAttribute('data-item-id');
+      const currentItem = currentItemId ? items.find((i) => i.id === currentItemId) : items[currentIdx];
 
       switch (event.key) {
         case 'ArrowDown': {
@@ -166,7 +168,9 @@ export function useNavKeyboard<TData = unknown>({
             // Search from current position
             for (let offset = 1; offset <= count; offset++) {
               const idx = (currentIdx + offset) % count;
-              const item = items[idx];
+              const el = focusables[idx];
+              const itemId = el?.getAttribute('data-item-id');
+              const item = itemId ? items.find((i) => i.id === itemId) : items[idx];
               if (
                 item &&
                 (item.type === 'link' || item.type === 'group') &&

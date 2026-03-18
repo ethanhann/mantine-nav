@@ -88,6 +88,7 @@ function NavItemRenderer<TData>({
           className={classes.link}
           href={item.href}
           role="treeitem"
+          data-item-id={item.id}
           data-active={active || undefined}
           data-disabled={item.disabled || undefined}
           aria-current={active ? 'page' : undefined}
@@ -126,6 +127,7 @@ function NavItemRenderer<TData>({
         className={classes.link}
         type="button"
         role="treeitem"
+        data-item-id={groupItem.id}
         aria-expanded={isExpanded}
         data-active={groupActive || undefined}
         data-disabled={groupItem.disabled || undefined}
@@ -213,25 +215,6 @@ function collectDefaultExpanded<TData>(
 ): Set<string> {
   const defaults = new Set<string>();
 
-  function collect(items: NavItemType<TData>[], seenSibling: boolean) {
-    for (const item of items) {
-      if (item.type === 'group') {
-        if (item.defaultOpened && !(accordion && seenSibling)) {
-          defaults.add(item.id);
-          if (accordion && accordionScope === 'global') {
-            // global: only one total
-            return;
-          }
-        }
-        const childSeenSibling = accordion && accordionScope === 'sibling' && item.defaultOpened;
-        collect(item.children, false);
-        if (childSeenSibling) {
-          // After first sibling defaultOpened, mark seen for remaining siblings at this level
-        }
-      }
-    }
-  }
-
   if (accordion && accordionScope === 'sibling') {
     // Process each sibling group independently
     collectSiblingLevel(items, defaults);
@@ -310,7 +293,7 @@ export function NavGroup<TData = unknown>({
   transitionDuration: transitionDurationProp,
   onItemClick,
   onGroupToggle,
-  onActiveChange: _onActiveChange,
+  onActiveChange: _onActiveChange, // reserved for future auto-active tracking
   // Accordion
   accordion = false,
   accordionScope = 'sibling',
@@ -387,8 +370,9 @@ export function NavGroup<TData = unknown>({
     expandedKeys: expandedGroups,
     onToggle: handleToggleGroup,
     onSelect: (item) => {
-      if (item.type === 'link') {
-        onItemClick?.(item as any, new MouseEvent('click') as any);
+      if (item.type === 'link' && onItemClick) {
+        const syntheticEvent = new MouseEvent('click', { bubbles: true }) as unknown as React.MouseEvent;
+        onItemClick(item, syntheticEvent);
       }
     },
     containerRef: containerRef as React.RefObject<HTMLElement>,
@@ -404,7 +388,7 @@ export function NavGroup<TData = unknown>({
       role="tree"
       aria-label="Navigation"
       ref={containerRef}
-      onKeyDown={enableKeyboardNav ? handleKeyDown as any : undefined}
+      onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLUListElement> : undefined}
     >
       {items.map((item) => (
         <NavItemRenderer

@@ -10,7 +10,6 @@ export interface OnboardingStep {
 export interface OnboardingProgressProps {
   steps: OnboardingStep[];
   variant?: 'bar' | 'ring' | 'checklist';
-  collapsible?: boolean;
   onComplete?: () => void;
   dismissible?: boolean;
   onDismiss?: () => void;
@@ -50,8 +49,8 @@ export function OnboardingProgress({
         <span>{completed} of {total} complete</span>
         {dismissible && <button type="button" onClick={onDismiss} aria-label="Dismiss" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.8em' }}>✕</button>}
       </div>
-      <div style={{ height: 4, backgroundColor: '#e5e7eb', borderRadius: 2, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${progress}%`, backgroundColor: '#6366f1', borderRadius: 2, transition: 'width 0.3s ease' }} />
+      <div style={{ height: 4, backgroundColor: 'var(--nav-surface-border)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${progress}%`, backgroundColor: 'var(--nav-accent-primary)', borderRadius: 2, transition: 'width 0.3s ease' }} />
       </div>
     </div>
   );

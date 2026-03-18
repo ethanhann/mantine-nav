@@ -12,7 +12,6 @@ export interface NavSectionProps {
   rightSection?: ReactNode;
   divider?: boolean | 'top' | 'bottom' | 'both';
   children: ReactNode;
-  hiddenInRail?: boolean;
 }
 
 export function NavSection({

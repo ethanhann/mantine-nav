@@ -1,5 +1,5 @@
 {
-  "name": "@nav/core",
+  "name": "@ethanhann/nav",
   "version": "0.1.0",
   "description": "A React navigation component library built on Mantine v8",
   "type": "module",
@@ -14,16 +14,20 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "files": ["dist"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "vite build",
     "test": "vitest",
     "test:run": "vitest run",
-    "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "storybook:build": "storybook build"
+    "storybook:build": "storybook build",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "@mantine/core": "^8.0.0",
@@ -34,6 +38,10 @@
   "devDependencies": {
     "@mantine/core": "^8.0.0",
     "@mantine/hooks": "^8.0.0",
+    "@storybook/addon-a11y": "^10.2.19",
+    "@storybook/react": "^10.2.19",
+    "@storybook/react-vite": "^10.2.19",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -45,6 +53,7 @@
     "postcss-preset-mantine": "^1.17.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "storybook": "^10.2.19",
     "typescript": "^5.8.0",
     "vite": "^6.2.0",
     "vite-plugin-dts": "^4.5.0",
@@ -52,7 +61,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://local_proxy@127.0.0.1:37631/git/ethanhann/nav"
+    "url": "https://github.com/ethanhann/nav.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "license": "MIT"
 }

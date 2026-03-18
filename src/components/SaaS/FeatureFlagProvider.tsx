@@ -29,7 +29,7 @@ export function NavFeatureFlagProvider({
 
   const value = useMemo(
     () => ({
-      isEnabled: (flag: string) => flags[flag] ?? true,
+      isEnabled: (flag: string) => flags[flag] ?? false,
       hasEntitlement: (entitlement: string) => entitlementSet.has(entitlement),
     }),
     [flags, entitlementSet],

@@ -14,7 +14,7 @@ export interface PlanBadgeProps {
 
 export function PlanBadge({
   plan,
-  color = '#6366f1',
+  color = 'var(--nav-accent-primary)',
   variant = 'badge',
   showUpgrade = false,
   onUpgrade,

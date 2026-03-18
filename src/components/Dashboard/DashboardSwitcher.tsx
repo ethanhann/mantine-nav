@@ -14,7 +14,6 @@ export interface DashboardSwitcherProps {
   onSwitch: (dashboard: Dashboard) => void;
   variant?: 'dropdown' | 'sidebar-list';
   searchable?: boolean;
-  groupBy?: string;
 }
 
 export function DashboardSwitcher({

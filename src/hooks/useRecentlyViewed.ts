@@ -25,7 +25,11 @@ export interface UseRecentlyViewedReturn {
 function loadRecent(key: string): RecentItem[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
+    const data = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(data)) return [];
+    return data.filter((item: unknown): item is RecentItem =>
+      typeof item === 'object' && item !== null && 'id' in item && 'href' in item && 'timestamp' in item
+    );
   } catch {
     return [];
   }

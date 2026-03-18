@@ -49,7 +49,7 @@ export function NotificationBell({
               position: 'absolute',
               top: -2,
               insetInlineEnd: -2,
-              backgroundColor: '#ef4444',
+              backgroundColor: 'var(--nav-accent-error)',
               color: 'white',
               borderRadius: '50%',
               minWidth: 18,

@@ -40,7 +40,7 @@ export function FilterIndicator({
         </span>
       )}
       {visibleFilters.map((f) => (
-        <span key={f.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 6px', borderRadius: 4, backgroundColor: '#f3f4f6' }}>
+        <span key={f.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 6px', borderRadius: 4, backgroundColor: 'var(--nav-surface-light)' }}>
           {f.label}: {f.value}
           {onFilterRemove && (
             <button type="button" onClick={() => onFilterRemove(f.key)} aria-label={`Remove ${f.label} filter`} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, fontSize: '0.9em' }}>✕</button>
