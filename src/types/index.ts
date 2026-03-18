@@ -23,17 +23,7 @@ export type {
   // Animation
   NavAnimationConfig,
 
-  // Component props
-  NavGroupProps,
-  SidebarProps,
-  NavBarProps,
-  NavLayoutProps,
-
   // SaaS types
   Workspace,
   UserInfo,
-
-  // Config types
-  NavConfig,
-  NavColorConfig,
 } from './nav-item';

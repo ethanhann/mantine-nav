@@ -1,29 +1,33 @@
 import React from 'react';
+import {
+  IconHome,
+  IconPackage,
+  IconClipboardList,
+  IconUsers,
+  IconChartBar,
+  IconSettings,
+  IconFileText,
+  IconMail,
+  IconStar,
+  IconShield,
+  IconBell,
+  IconUser,
+  IconSearch,
+  IconLogout,
+  IconPalette,
+  IconCode,
+  IconDatabase,
+  IconServer,
+} from '@tabler/icons-react';
 import type { NavItemType, Workspace, UserInfo } from '../src';
 
-/** Placeholder icons for stories */
-export const Icons = {
-  Home: () => <span aria-hidden>🏠</span>,
-  Products: () => <span aria-hidden>📦</span>,
-  Orders: () => <span aria-hidden>📋</span>,
-  Customers: () => <span aria-hidden>👥</span>,
-  Analytics: () => <span aria-hidden>📊</span>,
-  Settings: () => <span aria-hidden>⚙️</span>,
-  Docs: () => <span aria-hidden>📄</span>,
-  Mail: () => <span aria-hidden>✉️</span>,
-  Star: () => <span aria-hidden>⭐</span>,
-  Shield: () => <span aria-hidden>🛡️</span>,
-  Bell: () => <span aria-hidden>🔔</span>,
-  User: () => <span aria-hidden>👤</span>,
-};
-
 export const sampleItems: NavItemType[] = [
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <Icons.Home /> },
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
   {
     id: 'products',
     type: 'group',
     label: 'Products',
-    icon: <Icons.Products />,
+    icon: <IconPackage size={18} />,
     defaultOpened: true,
     children: [
       { id: 'catalog', type: 'link', label: 'Catalog', href: '/products' },
@@ -35,7 +39,7 @@ export const sampleItems: NavItemType[] = [
     id: 'orders',
     type: 'group',
     label: 'Orders',
-    icon: <Icons.Orders />,
+    icon: <IconClipboardList size={18} />,
     children: [
       { id: 'all-orders', type: 'link', label: 'All Orders', href: '/orders' },
       { id: 'drafts', type: 'link', label: 'Drafts', href: '/orders/drafts' },
@@ -43,9 +47,9 @@ export const sampleItems: NavItemType[] = [
     ],
   },
   { id: 'div-1', type: 'divider' },
-  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <Icons.Customers /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <Icons.Analytics /> },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <Icons.Settings /> },
+  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} /> },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
 ];
 
 export const deepNestedItems: NavItemType[] = [
@@ -53,7 +57,7 @@ export const deepNestedItems: NavItemType[] = [
     id: 'docs',
     type: 'group',
     label: 'Documentation',
-    icon: <Icons.Docs />,
+    icon: <IconFileText size={18} />,
     defaultOpened: true,
     children: [
       {
@@ -81,15 +85,15 @@ export const deepNestedItems: NavItemType[] = [
 
 export const sectionedItems: NavItemType[] = [
   { id: 'section-main', type: 'section', label: 'Main' },
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <Icons.Home /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <Icons.Analytics /> },
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} /> },
   { id: 'section-commerce', type: 'section', label: 'Commerce' },
-  { id: 'products', type: 'link', label: 'Products', href: '/products', icon: <Icons.Products /> },
-  { id: 'orders', type: 'link', label: 'Orders', href: '/orders', icon: <Icons.Orders /> },
-  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <Icons.Customers /> },
+  { id: 'products', type: 'link', label: 'Products', href: '/products', icon: <IconPackage size={18} /> },
+  { id: 'orders', type: 'link', label: 'Orders', href: '/orders', icon: <IconClipboardList size={18} /> },
+  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} /> },
   { id: 'div-1', type: 'divider' },
   { id: 'section-system', type: 'section', label: 'System' },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <Icons.Settings /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
 ];
 
 export const sampleWorkspaces: Workspace[] = [
@@ -101,7 +105,19 @@ export const sampleWorkspaces: Workspace[] = [
 
 export const sampleUser: UserInfo = {
   id: 'user-1',
-  name: 'Jane Doe',
+  name: 'Jane Cooper',
   email: 'jane@acme.com',
   role: 'Admin',
 };
+
+export const sampleUserMenuItems = [
+  { label: 'Profile', icon: <IconUser size={14} /> },
+  { label: 'Settings', icon: <IconSettings size={14} /> },
+  { label: 'Sign out', icon: <IconLogout size={14} />, color: 'red' as const, dividerBefore: true },
+];
+
+export const sampleNotifications = [
+  { id: '1', title: 'New deployment', description: 'Production deploy succeeded', read: false },
+  { id: '2', title: 'Team invite', description: 'Bob invited you to Project X', read: false },
+  { id: '3', title: 'Update available', description: 'Version 2.1 is ready', read: true },
+];

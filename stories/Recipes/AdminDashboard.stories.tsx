@@ -1,99 +1,112 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { Text, Title, Card, SimpleGrid, Group, Badge } from '@mantine/core';
 import {
-  NavProvider, NavLayout, Sidebar, NavBar, NavGroup, NavSection,
-  UserMenu, NotificationBell, CommandPaletteSlot,
+  IconHome,
+  IconUsers,
+  IconSettings,
+  IconChartBar,
+  IconFileText,
+  IconShield,
+  IconDatabase,
+  IconServer,
+} from '@tabler/icons-react';
+import {
+  NavShell,
+  NavSidebar,
+  NavHeader,
+  NavGroup,
+  WorkspaceSwitcher,
+  UserMenu,
+  NotificationIndicator,
+  PlanBadge,
 } from '../../src';
-import { sampleUser, Icons } from '../_data';
 import type { NavItemType } from '../../src';
-
-const meta: Meta = {
-  title: 'Recipes/Admin Dashboard',
-  tags: ['autodocs'],
-};
-
-export default meta;
+import { sampleUser, sampleUserMenuItems, sampleWorkspaces, sampleNotifications } from '../_data';
 
 const adminItems: NavItemType[] = [
-  { id: 'section-main', type: 'section', label: 'Main' },
-  { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/dashboard', icon: <Icons.Home /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <Icons.Analytics /> },
+  { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/admin', icon: <IconHome size={18} /> },
   { id: 'section-manage', type: 'section', label: 'Manage' },
-  {
-    id: 'users',
-    type: 'group',
-    label: 'Users',
-    icon: <Icons.Customers />,
-    defaultOpened: true,
-    children: [
-      { id: 'all-users', type: 'link', label: 'All Users', href: '/users' },
-      { id: 'roles', type: 'link', label: 'Roles', href: '/users/roles' },
-      { id: 'permissions', type: 'link', label: 'Permissions', href: '/users/permissions' },
-    ],
-  },
+  { id: 'users', type: 'link', label: 'Users', href: '/admin/users', icon: <IconUsers size={18} />, badge: <Badge size="xs" variant="light">248</Badge> },
   {
     id: 'content',
     type: 'group',
     label: 'Content',
-    icon: <Icons.Docs />,
+    icon: <IconFileText size={18} />,
+    defaultOpened: true,
     children: [
-      { id: 'pages', type: 'link', label: 'Pages', href: '/content/pages' },
-      { id: 'media', type: 'link', label: 'Media', href: '/content/media' },
+      { id: 'pages', type: 'link', label: 'Pages', href: '/admin/content/pages' },
+      { id: 'media', type: 'link', label: 'Media', href: '/admin/content/media' },
     ],
   },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/admin/analytics', icon: <IconChartBar size={18} /> },
   { id: 'div-1', type: 'divider' },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <Icons.Settings /> },
+  { id: 'section-system', type: 'section', label: 'System' },
+  { id: 'security', type: 'link', label: 'Security', href: '/admin/security', icon: <IconShield size={18} /> },
+  { id: 'database', type: 'link', label: 'Database', href: '/admin/database', icon: <IconDatabase size={18} /> },
+  { id: 'infrastructure', type: 'link', label: 'Infrastructure', href: '/admin/infra', icon: <IconServer size={18} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/admin/settings', icon: <IconSettings size={18} /> },
 ];
 
-export const Default: StoryObj = {
+const meta: Meta = {
+  title: 'Recipes/AdminDashboard',
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+  },
+};
+
+export default meta;
+type Story = StoryObj;
+
+export const Default: Story = {
   render: () => (
-    <NavProvider>
-      <div style={{ height: 600 }}>
-        <NavLayout
-          navbar={
-            <NavBar
-              logo={<span style={{ fontWeight: 700, fontSize: 18 }}>Admin Panel</span>}
-              sticky
-              rightSection={
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <CommandPaletteSlot shortcut="⌘K" />
-                  <NotificationBell count={3} />
-                </div>
-              }
+    <NavShell
+      header={
+        <NavHeader
+          logo={<Text fw={700} size="lg">Admin Panel</Text>}
+          environment={{ label: 'Production', color: 'green' }}
+          rightSection={
+            <Group gap="xs">
+              <PlanBadge plan="Enterprise" color="teal" />
+              <NotificationIndicator count={3} notifications={sampleNotifications} />
+            </Group>
+          }
+        />
+      }
+      sidebar={
+        <NavSidebar
+          header={
+            <WorkspaceSwitcher
+              workspaces={sampleWorkspaces}
+              activeWorkspace={sampleWorkspaces[0]!}
+              onSwitch={() => {}}
+              searchable
             />
           }
-          sidebar={
-            <Sidebar
-              header={<div style={{ padding: 12, fontWeight: 700 }}>Navigation</div>}
-              footer={
-                <UserMenu
-                  user={sampleUser}
-                  showEmail
-                  menuItems={[
-                    { label: 'Profile', href: '/profile' },
-                    { label: 'Sign out', onClick: () => {} },
-                  ]}
-                />
-              }
-            >
-              <NavGroup items={adminItems} currentPath="/dashboard" />
-            </Sidebar>
+          footer={
+            <UserMenu user={sampleUser} menuItems={sampleUserMenuItems} showEmail />
           }
         >
-          <div style={{ padding: 24 }}>
-            <h2>Dashboard</h2>
-            <p>Welcome back, {sampleUser.name}!</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 16 }}>
-              {['Total Users', 'Revenue', 'Active Sessions'].map((label) => (
-                <div key={label} style={{ padding: 16, background: '#f9fafb', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-                  <div style={{ fontSize: 14, color: '#6b7280' }}>{label}</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, marginTop: 4 }}>{Math.floor(Math.random() * 10000)}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </NavLayout>
-      </div>
-    </NavProvider>
+          <NavGroup items={adminItems} currentPath="/admin" />
+        </NavSidebar>
+      }
+    >
+      <Title order={2} mb="md">Dashboard</Title>
+      <SimpleGrid cols={3} mb="xl">
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Text fw={500}>Total Users</Text>
+          <Text size="xl" fw={700}>1,248</Text>
+        </Card>
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Text fw={500}>Active Sessions</Text>
+          <Text size="xl" fw={700}>342</Text>
+        </Card>
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Text fw={500}>API Requests</Text>
+          <Text size="xl" fw={700}>12.4k</Text>
+        </Card>
+      </SimpleGrid>
+    </NavShell>
   ),
 };

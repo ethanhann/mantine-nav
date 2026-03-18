@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Collapse } from '@mantine/core';
+import { Collapse, Divider, NavLink, Text, Tooltip, Menu } from '@mantine/core';
+import type { MantineColor } from '@mantine/core';
 import type {
   ActiveMatcher,
   NavAnimationConfig,
@@ -12,23 +13,23 @@ import type {
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
 import { useNavKeyboard } from '../../hooks/useNavKeyboard';
-import classes from './NavGroup.module.css';
 
 export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
   items: NavItemType<TData>[];
   maxDepth?: number;
-  indentPerLevel?: number;
   renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
   activeItem?: string | null;
   activeMatcher?: ActiveMatcher;
   currentPath?: string;
   animation?: Partial<NavAnimationConfig>;
   transitionDuration?: number;
-  // Spec 002: Accordion
+  variant?: 'subtle' | 'light' | 'filled';
+  color?: MantineColor;
+  // Accordion
   accordion?: boolean;
   accordionScope?: 'global' | 'sibling';
   onAccordionChange?: (openedKey: string | null) => void;
-  // Spec 006: Keyboard
+  // Keyboard
   enableKeyboardNav?: boolean;
   typeAhead?: boolean;
   typeAheadTimeout?: number;
@@ -39,7 +40,6 @@ interface InternalNavItemProps<TData = unknown> {
   item: NavItemType<TData>;
   depth: number;
   maxDepth: number;
-  indentPerLevel: number;
   expandedGroups: Set<string>;
   onToggleGroup: (key: string) => void;
   isActive: (item: NavItemType<TData>) => boolean;
@@ -47,13 +47,14 @@ interface InternalNavItemProps<TData = unknown> {
   onGroupToggle?: NavCallbacks<TData>['onGroupToggle'];
   renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
   transitionDuration: number;
+  variant: 'subtle' | 'light' | 'filled';
+  color?: MantineColor;
 }
 
 function NavItemRenderer<TData>({
   item,
   depth,
   maxDepth,
-  indentPerLevel,
   expandedGroups,
   onToggleGroup,
   isActive,
@@ -61,54 +62,57 @@ function NavItemRenderer<TData>({
   onGroupToggle,
   renderItem,
   transitionDuration,
+  variant,
+  color,
 }: InternalNavItemProps<TData>) {
   if (renderItem) {
     return <>{renderItem(item, depth)}</>;
   }
 
-  const paddingLeft = depth * indentPerLevel;
-
   if (item.type === 'divider') {
-    return <div className={classes.divider} role="separator" />;
+    return <Divider my="xs" />;
   }
 
   if (item.type === 'section') {
     return (
-      <div className={classes.sectionHeader} role="presentation">
+      <Text
+        size="xs"
+        fw={700}
+        c="dimmed"
+        tt="uppercase"
+        px="sm"
+        pt="md"
+        pb={4}
+      >
         {item.label}
-      </div>
+      </Text>
     );
   }
 
   if (item.type === 'link') {
     const active = isActive(item);
     return (
-      <li className={classes.item} role="none">
-        <a
-          className={classes.link}
-          href={item.href}
-          role="treeitem"
-          data-item-id={item.id}
-          data-active={active || undefined}
-          data-disabled={item.disabled || undefined}
-          aria-current={active ? 'page' : undefined}
-          aria-disabled={item.disabled || undefined}
-          aria-label={item['aria-label']}
-          style={{ paddingInlineStart: `${paddingLeft + 12}px` }}
-          tabIndex={-1}
-          onClick={(e) => {
-            if (item.disabled) {
-              e.preventDefault();
-              return;
-            }
-            onItemClick?.(item, e);
-          }}
-        >
-          {item.icon && <span className={classes.icon}>{item.icon}</span>}
-          <span className={classes.label}>{item.label}</span>
-          {item.badge && <span className={classes.badge}>{item.badge}</span>}
-        </a>
-      </li>
+      <NavLink
+        label={item.label}
+        leftSection={item.icon}
+        rightSection={item.badge}
+        href={item.href}
+        active={active}
+        variant={variant}
+        color={color}
+        disabled={item.disabled}
+        aria-current={active ? 'page' : undefined}
+        data-item-id={item.id}
+        role="treeitem"
+        tabIndex={-1}
+        onClick={(e) => {
+          if (item.disabled) {
+            e.preventDefault();
+            return;
+          }
+          onItemClick?.(item, e);
+        }}
+      />
     );
   }
 
@@ -122,57 +126,43 @@ function NavItemRenderer<TData>({
   }
 
   return (
-    <li className={classes.item} role="none">
-      <button
-        className={classes.link}
-        type="button"
-        role="treeitem"
-        data-item-id={groupItem.id}
-        aria-expanded={isExpanded}
-        data-active={groupActive || undefined}
-        data-disabled={groupItem.disabled || undefined}
-        aria-disabled={groupItem.disabled || undefined}
-        aria-label={groupItem['aria-label']}
-        style={{ paddingInlineStart: `${paddingLeft + 12}px` }}
-        tabIndex={-1}
-        onClick={() => {
-          if (groupItem.disabled) return;
-          onToggleGroup(groupItem.id);
-          onGroupToggle?.(groupItem, !isExpanded);
-        }}
-      >
-        {groupItem.icon && <span className={classes.icon}>{groupItem.icon}</span>}
-        <span className={classes.label}>{groupItem.label}</span>
-        {groupItem.badge && <span className={classes.badge}>{groupItem.badge}</span>}
-        <span
-          className={classes.chevron}
-          data-expanded={isExpanded || undefined}
-          aria-hidden="true"
-        >
-          ▸
-        </span>
-      </button>
-      <Collapse in={isExpanded} transitionDuration={transitionDuration}>
-        <ul className={classes.children} role="group">
-          {groupItem.children.map((child) => (
-            <NavItemRenderer
-              key={child.id}
-              item={child}
-              depth={depth + 1}
-              maxDepth={maxDepth}
-              indentPerLevel={indentPerLevel}
-              expandedGroups={expandedGroups}
-              onToggleGroup={onToggleGroup}
-              isActive={isActive}
-              onItemClick={onItemClick}
-              onGroupToggle={onGroupToggle}
-              renderItem={renderItem}
-              transitionDuration={transitionDuration}
-            />
-          ))}
-        </ul>
-      </Collapse>
-    </li>
+    <NavLink
+      label={groupItem.label}
+      leftSection={groupItem.icon}
+      rightSection={groupItem.badge}
+      active={groupActive}
+      variant={variant}
+      color={color}
+      disabled={groupItem.disabled}
+      opened={isExpanded}
+      data-item-id={groupItem.id}
+      role="treeitem"
+      aria-expanded={isExpanded}
+      tabIndex={-1}
+      onClick={() => {
+        if (groupItem.disabled) return;
+        onToggleGroup(groupItem.id);
+        onGroupToggle?.(groupItem, !isExpanded);
+      }}
+    >
+      {groupItem.children.map((child) => (
+        <NavItemRenderer
+          key={child.id}
+          item={child}
+          depth={depth + 1}
+          maxDepth={maxDepth}
+          expandedGroups={expandedGroups}
+          onToggleGroup={onToggleGroup}
+          isActive={isActive}
+          onItemClick={onItemClick}
+          onGroupToggle={onGroupToggle}
+          renderItem={renderItem}
+          transitionDuration={transitionDuration}
+          variant={variant}
+          color={color}
+        />
+      ))}
+    </NavLink>
   );
 }
 
@@ -184,7 +174,6 @@ function getSiblingGroupIds<TData>(
   for (const item of items) {
     if (item.type === 'group') {
       if (item.id === targetId) {
-        // Return all sibling group IDs at this level
         return items
           .filter((i): i is NavGroupItem<TData> => i.type === 'group')
           .map((i) => i.id);
@@ -196,17 +185,6 @@ function getSiblingGroupIds<TData>(
   return [];
 }
 
-function getAllGroupIds<TData>(items: NavItemType<TData>[]): string[] {
-  const ids: string[] = [];
-  for (const item of items) {
-    if (item.type === 'group') {
-      ids.push(item.id);
-      ids.push(...getAllGroupIds(item.children));
-    }
-  }
-  return ids;
-}
-
 // Collect initial defaultOpened, respecting accordion constraints
 function collectDefaultExpanded<TData>(
   items: NavItemType<TData>[],
@@ -216,10 +194,8 @@ function collectDefaultExpanded<TData>(
   const defaults = new Set<string>();
 
   if (accordion && accordionScope === 'sibling') {
-    // Process each sibling group independently
     collectSiblingLevel(items, defaults);
   } else if (accordion && accordionScope === 'global') {
-    // Only first defaultOpened across entire tree
     findFirstDefault(items, defaults);
   } else {
     collectAll(items, defaults);
@@ -284,16 +260,17 @@ function flattenVisibleItems<TData>(
 export function NavGroup<TData = unknown>({
   items,
   maxDepth = 3,
-  indentPerLevel = 16,
   renderItem,
   activeItem,
   activeMatcher = 'prefix',
   currentPath,
   animation,
   transitionDuration: transitionDurationProp,
+  variant = 'subtle',
+  color,
   onItemClick,
   onGroupToggle,
-  onActiveChange: _onActiveChange, // reserved for future auto-active tracking
+  onActiveChange: _onActiveChange,
   // Accordion
   accordion = false,
   accordionScope = 'sibling',
@@ -304,7 +281,7 @@ export function NavGroup<TData = unknown>({
   typeAheadTimeout = 500,
   loopNavigation = true,
 }: NavGroupProps<TData>) {
-  const containerRef = useRef<HTMLUListElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Manage expanded state with accordion support
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
@@ -321,10 +298,8 @@ export function NavGroup<TData = unknown>({
         } else {
           if (accordion) {
             if (accordionScope === 'global') {
-              // Close all other groups
               next.clear();
             } else {
-              // Close sibling groups only
               const siblings = getSiblingGroupIds(items, key);
               for (const s of siblings) {
                 if (s !== key) next.delete(s);
@@ -383,12 +358,11 @@ export function NavGroup<TData = unknown>({
   });
 
   return (
-    <ul
-      className={classes.root}
+    <div
       role="tree"
       aria-label="Navigation"
       ref={containerRef}
-      onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLUListElement> : undefined}
+      onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLDivElement> : undefined}
     >
       {items.map((item) => (
         <NavItemRenderer
@@ -396,7 +370,6 @@ export function NavGroup<TData = unknown>({
           item={item}
           depth={0}
           maxDepth={maxDepth}
-          indentPerLevel={indentPerLevel}
           expandedGroups={expandedGroups}
           onToggleGroup={handleToggleGroup}
           isActive={isActive}
@@ -404,8 +377,10 @@ export function NavGroup<TData = unknown>({
           onGroupToggle={onGroupToggle}
           renderItem={renderItem}
           transitionDuration={resolvedDuration}
+          variant={variant}
+          color={color}
         />
       ))}
-    </ul>
+    </div>
   );
 }

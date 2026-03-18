@@ -1,14 +1,31 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
+import {
+  Avatar,
+  Group,
+  Menu,
+  Text,
+  UnstyledButton,
+  type MantineColor,
+} from '@mantine/core';
 import type { UserInfo } from '../../types';
+
+export interface UserMenuItem {
+  label: string;
+  icon?: ReactNode;
+  href?: string;
+  onClick?: () => void;
+  color?: MantineColor;
+  dividerBefore?: boolean;
+}
 
 export interface UserMenuProps {
   user: UserInfo;
-  menuItems?: Array<{ label: string; icon?: ReactNode; href?: string; onClick?: () => void }>;
+  menuItems?: UserMenuItem[];
   showRole?: boolean;
   showEmail?: boolean;
-  avatarSize?: number;
+  avatarSize?: number | string;
 }
 
 export function UserMenu({
@@ -16,55 +33,58 @@ export function UserMenu({
   menuItems = [],
   showRole = true,
   showEmail = false,
-  avatarSize = 32,
+  avatarSize = 'sm',
 }: UserMenuProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
-    <div role="menu" aria-label="User menu">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        style={{ display: 'flex', alignItems: 'center', gap: 8, border: 'none', background: 'none', cursor: 'pointer' }}
-      >
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={user.name}
-            width={avatarSize}
-            height={avatarSize}
-            style={{ borderRadius: '50%' }}
-          />
-        ) : (
-          <span style={{ width: avatarSize, height: avatarSize, borderRadius: '50%', background: 'var(--nav-accent-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: avatarSize * 0.4 }}>
-            {user.name.charAt(0).toUpperCase()}
-          </span>
-        )}
-        <span>
-          <span>{user.name}</span>
-          {showRole && user.role && <span style={{ opacity: 0.6, fontSize: '0.8em' }}> · {user.role}</span>}
-          {showEmail && user.email && <span style={{ display: 'block', opacity: 0.5, fontSize: '0.8em' }}>{user.email}</span>}
-        </span>
-      </button>
-      {isOpen && menuItems.length > 0 && (
-        <div role="presentation">
-          {menuItems.map((item, i) => (
-            <button
-              key={i}
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                item.onClick?.();
-                setIsOpen(false);
-              }}
+    <Menu width={200} position="top-start" withinPortal>
+      <Menu.Target>
+        <UnstyledButton p="xs" w="100%">
+          <Group gap="sm" wrap="nowrap">
+            <Avatar
+              src={user.avatarUrl}
+              size={avatarSize}
+              radius="xl"
+              name={user.name}
+              color="initials"
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Text size="sm" fw={500} truncate>
+                {user.name}
+              </Text>
+              {showRole && user.role && (
+                <Text size="xs" c="dimmed" truncate>
+                  {user.role}
+                </Text>
+              )}
+              {showEmail && user.email && (
+                <Text size="xs" c="dimmed" truncate>
+                  {user.email}
+                </Text>
+              )}
+            </div>
+          </Group>
+        </UnstyledButton>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <Menu.Label>{user.name}</Menu.Label>
+        {user.email && <Menu.Label>{user.email}</Menu.Label>}
+        <Menu.Divider />
+        {menuItems.map((item, i) => (
+          <Fragment key={i}>
+            {item.dividerBefore && <Menu.Divider />}
+            <Menu.Item
+              leftSection={item.icon}
+              color={item.color}
+              onClick={item.onClick}
+              component={item.href ? 'a' : undefined}
+              {...(item.href ? { href: item.href } : {})}
             >
-              {item.icon} {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+              {item.label}
+            </Menu.Item>
+          </Fragment>
+        ))}
+      </Menu.Dropdown>
+    </Menu>
   );
 }

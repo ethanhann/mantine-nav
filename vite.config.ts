@@ -24,13 +24,14 @@ export default defineConfig({
       fileName: 'index',
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime', '@mantine/core', '@mantine/hooks'],
+      external: ['react', 'react-dom', 'react/jsx-runtime', '@mantine/core', '@mantine/hooks', '@tabler/icons-react'],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
           '@mantine/core': 'MantineCore',
           '@mantine/hooks': 'MantineHooks',
+          '@tabler/icons-react': 'TablerIcons',
         },
       },
     },

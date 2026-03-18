@@ -1,112 +1,125 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { Text, Title, Card, Stack, Group, Badge, Anchor } from '@mantine/core';
 import {
-  NavProvider, NavLayout, Sidebar, NavBar, NavGroup,
-  WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell,
-  NavFeatureFlagProvider, FeatureGate, OnboardingProgress,
+  IconHome,
+  IconLayoutDashboard,
+  IconSettings,
+  IconUsers,
+  IconCreditCard,
+  IconWebhook,
+  IconKey,
+  IconBrandSlack,
+} from '@tabler/icons-react';
+import {
+  NavShell,
+  NavSidebar,
+  NavHeader,
+  NavGroup,
+  WorkspaceSwitcher,
+  UserMenu,
+  PlanBadge,
+  NotificationIndicator,
 } from '../../src';
-import { sampleUser, sampleWorkspaces, Icons } from '../_data';
-import type { NavItemType, Workspace } from '../../src';
+import type { NavItemType } from '../../src';
+import { sampleUser, sampleUserMenuItems, sampleNotifications } from '../_data';
+
+const saasWorkspaces = [
+  { id: '1', name: 'Acme Corp' },
+  { id: '2', name: 'Personal' },
+];
+
+const saasItems: NavItemType[] = [
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
+  { id: 'projects', type: 'link', label: 'Projects', href: '/projects', icon: <IconLayoutDashboard size={18} />, badge: <Badge size="xs" variant="light" color="blue">3</Badge> },
+  { id: 'team', type: 'link', label: 'Team', href: '/team', icon: <IconUsers size={18} /> },
+  { id: 'div-1', type: 'divider' },
+  { id: 'section-dev', type: 'section', label: 'Developer' },
+  { id: 'api-keys', type: 'link', label: 'API Keys', href: '/api-keys', icon: <IconKey size={18} /> },
+  { id: 'webhooks', type: 'link', label: 'Webhooks', href: '/webhooks', icon: <IconWebhook size={18} /> },
+  {
+    id: 'integrations',
+    type: 'group',
+    label: 'Integrations',
+    icon: <IconBrandSlack size={18} />,
+    children: [
+      { id: 'slack', type: 'link', label: 'Slack', href: '/integrations/slack' },
+      { id: 'github', type: 'link', label: 'GitHub', href: '/integrations/github' },
+    ],
+  },
+  { id: 'div-2', type: 'divider' },
+  { id: 'billing', type: 'link', label: 'Billing', href: '/billing', icon: <IconCreditCard size={18} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
+];
 
 const meta: Meta = {
-  title: 'Recipes/SaaS Platform',
+  title: 'Recipes/SaasPlatform',
   tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+  },
 };
 
 export default meta;
+type Story = StoryObj;
 
-const saasItems: NavItemType[] = [
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <Icons.Home /> },
-  {
-    id: 'projects',
-    type: 'group',
-    label: 'Projects',
-    icon: <Icons.Products />,
-    defaultOpened: true,
-    children: [
-      { id: 'active', type: 'link', label: 'Active', href: '/projects/active' },
-      { id: 'archived', type: 'link', label: 'Archived', href: '/projects/archived' },
-    ],
-  },
-  { id: 'team', type: 'link', label: 'Team', href: '/team', icon: <Icons.Customers /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <Icons.Analytics /> },
-  { id: 'div-1', type: 'divider' },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <Icons.Settings /> },
-];
-
-const onboardingSteps = [
-  { id: 's1', label: 'Create account', completed: true },
-  { id: 's2', label: 'Set up workspace', completed: true },
-  { id: 's3', label: 'Invite team members', completed: false },
-  { id: 's4', label: 'Create first project', completed: false },
-];
-
-export const Default: StoryObj = {
-  render: function SaaSDemo() {
-    const [activeWs, setActiveWs] = useState<Workspace>(sampleWorkspaces[0]!);
-
-    return (
-      <NavFeatureFlagProvider
-        flags={{ analytics: true, advancedReports: false }}
-        entitlements={['projects', 'team']}
-      >
-        <NavProvider>
-          <div style={{ height: 600 }}>
-            <NavLayout
-              navbar={
-                <NavBar
-                  logo={<span style={{ fontWeight: 700, fontSize: 18 }}>SaaSApp</span>}
-                  sticky
-                  rightSection={
-                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                      <NotificationBell count={2} />
-                    </div>
-                  }
-                />
-              }
-              sidebar={
-                <Sidebar
-                  header={
-                    <WorkspaceSwitcher
-                      workspaces={sampleWorkspaces}
-                      activeWorkspace={activeWs}
-                      onSwitch={setActiveWs}
-                      searchable
-                    />
-                  }
-                  footer={
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 8 }}>
-                      <PlanBadge plan="Pro" showUpgrade onUpgrade={() => {}} />
-                      <UserMenu
-                        user={sampleUser}
-                        menuItems={[
-                          { label: 'Profile', href: '/profile' },
-                          { label: 'Sign out', onClick: () => {} },
-                        ]}
-                      />
-                    </div>
-                  }
-                >
-                  <NavGroup items={saasItems} currentPath="/" />
-                  <div style={{ padding: 12 }}>
-                    <OnboardingProgress steps={onboardingSteps} variant="checklist" dismissible />
-                  </div>
-                </Sidebar>
-              }
-            >
-              <div style={{ padding: 24 }}>
-                <h2>{activeWs.name}</h2>
-                <p>Welcome to your workspace.</p>
-                <FeatureGate flag="advancedReports" whenHidden="lock" lockMessage="Upgrade to Pro">
-                  <div style={{ padding: 16, background: '#f0fdf4', borderRadius: 8 }}>
-                    Advanced Reports (locked for this demo)
-                  </div>
-                </FeatureGate>
-              </div>
-            </NavLayout>
-          </div>
-        </NavProvider>
-      </NavFeatureFlagProvider>
-    );
-  },
+export const Default: Story = {
+  render: () => (
+    <NavShell
+      header={
+        <NavHeader
+          logo={<Text fw={700} size="lg">SaaSify</Text>}
+          rightSection={
+            <Group gap="xs">
+              <PlanBadge plan="Pro" color="violet" showUpgrade onUpgrade={() => {}} />
+              <NotificationIndicator count={2} notifications={sampleNotifications.slice(0, 2)} />
+            </Group>
+          }
+        />
+      }
+      sidebar={
+        <NavSidebar
+          header={
+            <WorkspaceSwitcher
+              workspaces={saasWorkspaces}
+              activeWorkspace={saasWorkspaces[0]!}
+              onSwitch={() => {}}
+              searchable
+              onCreate={() => {}}
+            />
+          }
+          footer={
+            <UserMenu user={sampleUser} menuItems={sampleUserMenuItems} showEmail />
+          }
+        >
+          <NavGroup items={saasItems} currentPath="/projects" />
+        </NavSidebar>
+      }
+    >
+      <Title order={2} mb="md">Projects</Title>
+      <Stack gap="md">
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mb="xs">
+            <Text fw={500}>Landing Page Redesign</Text>
+            <Badge color="green" variant="light">Active</Badge>
+          </Group>
+          <Text size="sm" c="dimmed">Last updated 2 hours ago</Text>
+        </Card>
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mb="xs">
+            <Text fw={500}>API v2 Migration</Text>
+            <Badge color="yellow" variant="light">In Progress</Badge>
+          </Group>
+          <Text size="sm" c="dimmed">Last updated 5 hours ago</Text>
+        </Card>
+        <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Group justify="space-between" mb="xs">
+            <Text fw={500}>Documentation Site</Text>
+            <Badge color="blue" variant="light">Planning</Badge>
+          </Group>
+          <Text size="sm" c="dimmed">Last updated 1 day ago</Text>
+        </Card>
+      </Stack>
+    </NavShell>
+  ),
 };

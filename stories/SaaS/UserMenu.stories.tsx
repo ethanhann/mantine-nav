@@ -1,18 +1,19 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { UserMenu } from '../../src';
-import { sampleUser } from '../_data';
+import { sampleUser, sampleUserMenuItems } from '../_data';
 
 const meta: Meta<typeof UserMenu> = {
   title: 'SaaS/UserMenu',
   component: UserMenu,
   tags: ['autodocs'],
-  argTypes: {
-    showRole: { control: 'boolean' },
-    showEmail: { control: 'boolean' },
-    avatarSize: { control: 'number' },
-  },
-  decorators: [(Story) => <div style={{ width: 260 }}><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div style={{ width: 260, padding: 8 }}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;
@@ -21,39 +22,23 @@ type Story = StoryObj<typeof UserMenu>;
 export const Default: Story = {
   args: {
     user: sampleUser,
-    menuItems: [
-      { label: 'Profile', href: '/profile' },
-      { label: 'Settings', href: '/settings' },
-      { label: 'Sign out', onClick: () => alert('Sign out') },
-    ],
+    menuItems: sampleUserMenuItems,
   },
 };
 
 export const WithEmail: Story = {
   args: {
     user: sampleUser,
+    menuItems: sampleUserMenuItems,
     showEmail: true,
-    menuItems: [
-      { label: 'Profile', href: '/profile' },
-      { label: 'Sign out', onClick: () => alert('Sign out') },
-    ],
   },
 };
 
-export const NoRole: Story = {
-  args: {
-    user: { ...sampleUser, role: undefined },
-    showRole: false,
-  },
-};
-
-export const LargeAvatar: Story = {
+export const WithRole: Story = {
   args: {
     user: sampleUser,
-    avatarSize: 48,
+    menuItems: sampleUserMenuItems,
+    showRole: true,
     showEmail: true,
-    menuItems: [
-      { label: 'Profile', href: '/profile' },
-    ],
   },
 };

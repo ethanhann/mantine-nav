@@ -6,47 +6,34 @@ const meta: Meta<typeof PlanBadge> = {
   title: 'SaaS/PlanBadge',
   component: PlanBadge,
   tags: ['autodocs'],
-  argTypes: {
-    plan: { control: 'text' },
-    color: { control: 'color' },
-    variant: { control: 'select', options: ['badge', 'card', 'inline'] },
-    showUpgrade: { control: 'boolean' },
-  },
-  decorators: [(Story) => <div style={{ width: 260, padding: 12 }}><Story /></div>],
 };
 
 export default meta;
 type Story = StoryObj<typeof PlanBadge>;
 
 export const Default: Story = {
-  args: { plan: 'Pro' },
-};
-
-export const FreeTier: Story = {
-  args: { plan: 'Free', color: '#6b7280' },
+  args: {
+    plan: 'Pro',
+    color: 'violet',
+  },
 };
 
 export const WithUpgrade: Story = {
   args: {
     plan: 'Free',
+    color: 'gray',
     showUpgrade: true,
-    onUpgrade: () => alert('Upgrade!'),
+    onUpgrade: () => console.log('Upgrade clicked'),
   },
 };
 
-export const CardVariant: Story = {
-  args: {
-    plan: 'Enterprise',
-    variant: 'card',
-    color: '#7c3aed',
-  },
-};
-
-export const InlineVariant: Story = {
-  args: {
-    plan: 'Team',
-    variant: 'inline',
-    showUpgrade: true,
-    onUpgrade: () => alert('Upgrade!'),
-  },
+export const Variants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+      <PlanBadge plan="Free" color="gray" variant="light" />
+      <PlanBadge plan="Pro" color="violet" variant="filled" />
+      <PlanBadge plan="Team" color="blue" variant="outline" />
+      <PlanBadge plan="Enterprise" color="teal" variant="dot" />
+    </div>
+  ),
 };
