@@ -14,6 +14,7 @@ import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
 import { useNavKeyboard } from '../../hooks/useNavKeyboard';
 
+/** Props for the navigation item tree component. */
 export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
   items: NavItemType<TData>[];
   maxDepth?: number;
@@ -257,6 +258,21 @@ function flattenVisibleItems<TData>(
   return result;
 }
 
+/**
+ * Renders a tree of navigation items using Mantine NavLink.
+ *
+ * Handles multi-level nesting, active state detection, accordion behavior,
+ * and keyboard navigation. Adapts to sidebar collapsed state automatically.
+ *
+ * @example
+ * ```tsx
+ * <NavGroup
+ *   items={navItems}
+ *   currentPath="/settings/general"
+ *   accordion
+ * />
+ * ```
+ */
 export function NavGroup<TData = unknown>({
   items,
   maxDepth = 3,

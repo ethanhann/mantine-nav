@@ -1,0 +1,21 @@
+{
+  "name": "@ethanhann/nav-codemods",
+  "version": "0.1.0",
+  "description": "Automated codemods for migrating from @ethanhann/nav v1 to v2",
+  "type": "module",
+  "main": "./src/index.ts",
+  "bin": {
+    "nav-codemods": "./src/cli.ts"
+  },
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "jscodeshift": "^17.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.1.0"
+  },
+  "license": "MIT"
+}

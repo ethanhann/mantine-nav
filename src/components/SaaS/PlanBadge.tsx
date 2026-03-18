@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import { Anchor, Badge, Group, type MantineColor } from '@mantine/core';
 
+/** Props for the subscription plan badge. */
 export interface PlanBadgeProps {
   plan: string;
   color?: MantineColor;
@@ -14,6 +15,14 @@ export interface PlanBadgeProps {
   icon?: ReactNode;
 }
 
+/**
+ * Displays the current subscription plan tier with optional upgrade CTA.
+ *
+ * @example
+ * ```tsx
+ * <PlanBadge plan="Pro" showUpgrade onUpgrade={() => navigate('/billing')} />
+ * ```
+ */
 export function PlanBadge({
   plan,
   color = 'blue',

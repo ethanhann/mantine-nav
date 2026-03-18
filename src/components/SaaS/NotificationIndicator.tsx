@@ -23,6 +23,7 @@ export interface NotificationItem {
   href?: string;
 }
 
+/** Props for the notification bell indicator. */
 export interface NotificationIndicatorProps {
   count?: number;
   maxCount?: number;
@@ -34,6 +35,19 @@ export interface NotificationIndicatorProps {
   color?: MantineColor;
 }
 
+/**
+ * Bell icon with unread count badge and optional notification dropdown.
+ *
+ * @example
+ * ```tsx
+ * <NotificationIndicator
+ *   count={5}
+ *   notifications={notifications}
+ *   onRead={(id) => markAsRead(id)}
+ *   onReadAll={() => markAllAsRead()}
+ * />
+ * ```
+ */
 export function NotificationIndicator({
   count = 0,
   maxCount = 99,
