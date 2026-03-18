@@ -19,7 +19,7 @@
   --nav-item-font-size: var(--mantine-font-size-sm);
   --nav-item-color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
   --nav-item-hover-bg: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-  --nav-item-active-bg: light-dark(var(--mantine-color-blue-light), var(--mantine-color-blue-light));
+  --nav-item-active-bg: light-dark(var(--mantine-color-blue-light), var(--mantine-color-blue-filled));
   --nav-item-active-color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4));
 
   /* Indent */
@@ -41,4 +41,14 @@
   /* Scrollbar */
   --nav-scrollbar-width: 6px;
   --nav-scrollbar-color: light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-4));
+
+  /* SaaS / Dashboard accent colors */
+  --nav-accent-primary: #6366f1;
+  --nav-accent-success: #22c55e;
+  --nav-accent-warning: #f59e0b;
+  --nav-accent-error: #ef4444;
+  --nav-accent-muted: #9ca3af;
+  --nav-surface-light: #f3f4f6;
+  --nav-surface-border: #e5e7eb;
+  --nav-surface-border-medium: #d1d5db;
 }

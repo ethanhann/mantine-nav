@@ -27,7 +27,11 @@ export interface UseStarredPagesReturn {
 function loadStarred(key: string): StarredPage[] {
   if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(key) || '[]');
+    const data = JSON.parse(localStorage.getItem(key) || '[]');
+    if (!Array.isArray(data)) return [];
+    return data.filter((item: unknown): item is StarredPage =>
+      typeof item === 'object' && item !== null && 'id' in item && 'href' in item
+    );
   } catch {
     return [];
   }
@@ -87,7 +91,7 @@ export function useStarredPages({
       setItems((prev) => {
         const next = [...prev];
         const [moved] = next.splice(fromIndex, 1);
-        next.splice(toIndex, 0, moved!);
+        if (moved) next.splice(toIndex, 0, moved);
         saveStarred(storageKey, next);
         return next;
       });

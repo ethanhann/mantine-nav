@@ -25,7 +25,6 @@
     "build": "vite build",
     "test": "vitest",
     "test:run": "vitest run",
-    "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "storybook:build": "storybook build",
     "prepublishOnly": "npm run build"

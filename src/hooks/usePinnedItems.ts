@@ -23,7 +23,10 @@ function loadFromStorage(key: string): string[] {
   if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    const data = JSON.parse(stored);
+    if (!Array.isArray(data)) return [];
+    return data.filter((item: unknown): item is string => typeof item === 'string');
   } catch {
     return [];
   }
@@ -114,7 +117,7 @@ export function usePinnedItems<TData = unknown>(
     (fromIndex: number, toIndex: number) => {
       const newIds = [...pinnedIds];
       const [moved] = newIds.splice(fromIndex, 1);
-      newIds.splice(toIndex, 0, moved!);
+      if (moved) newIds.splice(toIndex, 0, moved);
       updatePinned(newIds);
     },
     [pinnedIds, updatePinned],

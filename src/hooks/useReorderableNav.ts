@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { NavItemType } from '../types';
 
 export interface UseReorderableNavOptions<TData = unknown> {
@@ -39,9 +39,11 @@ export function useReorderableNav<TData = unknown>({
   const dropTargetIdRef = useRef<string | null>(null);
 
   // Keep orderedItems in sync with prop changes
-  if (items !== orderedItems && !draggedId) {
-    setOrderedItems(items);
-  }
+  useEffect(() => {
+    if (!draggedId) {
+      setOrderedItems(items);
+    }
+  }, [items, draggedId]);
 
   const handleDragStart = useCallback((id: string) => {
     // Check if item is disabled
@@ -64,7 +66,7 @@ export function useReorderableNav<TData = unknown>({
       if (fromIndex >= 0 && toIndex >= 0) {
         const newItems = [...orderedItems];
         const [moved] = newItems.splice(fromIndex, 1);
-        newItems.splice(toIndex, 0, moved!);
+        if (moved) newItems.splice(toIndex, 0, moved);
         setOrderedItems(newItems);
         onReorder(newItems, fromIndex, toIndex);
       }

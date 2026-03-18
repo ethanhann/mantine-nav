@@ -26,7 +26,7 @@ export function InviteTeamCTA({
       <button
         type="button"
         onClick={onClick}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: '1px dashed #d1d5db', borderRadius: 6, background: 'none', cursor: 'pointer', fontSize: '0.875em' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', border: '1px dashed var(--nav-surface-border-medium)', borderRadius: 6, background: 'none', cursor: 'pointer', fontSize: '0.875em' }}
       >
         <span>{icon}</span>
         <span>{label}</span>
@@ -36,13 +36,13 @@ export function InviteTeamCTA({
 
   if (variant === 'card') {
     return (
-      <div style={{ padding: 12, borderRadius: 8, border: '1px solid #e5e7eb', position: 'relative' }}>
+      <div style={{ padding: 12, borderRadius: 8, border: '1px solid var(--nav-surface-border)', position: 'relative' }}>
         {dismissible && (
           <button type="button" onClick={onDismiss} aria-label="Dismiss" style={{ position: 'absolute', top: 8, insetInlineEnd: 8, border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
         )}
         <div style={{ fontSize: '0.875em', fontWeight: 600, marginBottom: 4 }}>{icon} {label}</div>
         {description && <p style={{ fontSize: '0.75em', opacity: 0.7, margin: '4px 0 8px' }}>{description}</p>}
-        <button type="button" onClick={onClick} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid #6366f1', background: '#6366f1', color: 'white', cursor: 'pointer', fontSize: '0.8em' }}>
+        <button type="button" onClick={onClick} style={{ padding: '4px 12px', borderRadius: 4, border: '1px solid var(--nav-accent-primary)', background: 'var(--nav-accent-primary)', color: 'white', cursor: 'pointer', fontSize: '0.8em' }}>
           Invite
         </button>
       </div>
@@ -51,7 +51,7 @@ export function InviteTeamCTA({
 
   // inline
   return (
-    <button type="button" onClick={onClick} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#6366f1', fontSize: '0.8em', textDecoration: 'underline' }}>
+    <button type="button" onClick={onClick} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--nav-accent-primary)', fontSize: '0.8em', textDecoration: 'underline' }}>
       {icon} {label}
     </button>
   );

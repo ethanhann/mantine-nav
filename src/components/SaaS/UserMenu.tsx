@@ -38,7 +38,7 @@ export function UserMenu({
             style={{ borderRadius: '50%' }}
           />
         ) : (
-          <span style={{ width: avatarSize, height: avatarSize, borderRadius: '50%', background: '#6366f1', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: avatarSize * 0.4 }}>
+          <span style={{ width: avatarSize, height: avatarSize, borderRadius: '50%', background: 'var(--nav-accent-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: avatarSize * 0.4 }}>
             {user.name.charAt(0).toUpperCase()}
           </span>
         )}

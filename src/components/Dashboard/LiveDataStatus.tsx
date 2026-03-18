@@ -10,10 +10,10 @@ export interface LiveDataStatusProps {
 }
 
 const STATUS_COLORS: Record<ConnectionStatus, string> = {
-  connected: '#22c55e',
-  stale: '#f59e0b',
-  error: '#ef4444',
-  disconnected: '#9ca3af',
+  connected: 'var(--nav-accent-success)',
+  stale: 'var(--nav-accent-warning)',
+  error: 'var(--nav-accent-error)',
+  disconnected: 'var(--nav-accent-muted)',
 };
 
 const STATUS_LABELS: Record<ConnectionStatus, string> = {
