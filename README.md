@@ -45,6 +45,91 @@ function App() {
 }
 ```
 
+## Example: Marketing CRM
+
+Here's a complete example showing how to define navigation for a marketing CRM, using all four item types (`link`, `group`, `section`, `divider`), badges, icons, and active path matching:
+
+```tsx
+import { NavProvider, Nav } from '@ethanhann/nav';
+import {
+  IconHome, IconUsers, IconMail, IconTarget,
+  IconChartBar, IconSettings, IconCalendar, IconFileText,
+} from '@tabler/icons-react';
+import { Badge } from '@mantine/core';
+import '@ethanhann/nav/styles.css';
+
+const crmItems: NavItemType[] = [
+  { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/', icon: <IconHome size={18} /> },
+
+  { id: 'section-engage', type: 'section', label: 'Engage' },
+
+  {
+    id: 'contacts',
+    type: 'group',
+    label: 'Contacts',
+    icon: <IconUsers size={18} />,
+    defaultOpened: true,
+    children: [
+      { id: 'all-contacts', type: 'link', label: 'All Contacts', href: '/contacts' },
+      { id: 'segments',     type: 'link', label: 'Segments',     href: '/contacts/segments' },
+      { id: 'lists',        type: 'link', label: 'Lists',        href: '/contacts/lists' },
+    ],
+  },
+
+  {
+    id: 'campaigns',
+    type: 'group',
+    label: 'Campaigns',
+    icon: <IconMail size={18} />,
+    badge: <Badge size="xs" color="green">2 active</Badge>,
+    children: [
+      { id: 'email',  type: 'link', label: 'Email',  href: '/campaigns/email' },
+      { id: 'sms',    type: 'link', label: 'SMS',    href: '/campaigns/sms' },
+      { id: 'social', type: 'link', label: 'Social', href: '/campaigns/social' },
+    ],
+  },
+
+  { id: 'automations', type: 'link', label: 'Automations', href: '/automations', icon: <IconTarget size={18} /> },
+  { id: 'calendar',    type: 'link', label: 'Calendar',    href: '/calendar',    icon: <IconCalendar size={18} /> },
+
+  { id: 'div-1', type: 'divider' },
+
+  { id: 'section-analyze', type: 'section', label: 'Analyze' },
+
+  { id: 'reports',   type: 'link', label: 'Reports',   href: '/reports',   icon: <IconChartBar size={18} /> },
+  { id: 'templates', type: 'link', label: 'Templates', href: '/templates', icon: <IconFileText size={18} /> },
+
+  { id: 'div-2', type: 'divider' },
+
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} />, disabled: true },
+];
+
+function MarketingCRM() {
+  return (
+    <NavProvider onNavigate={(href) => router.push(href)}>
+      <Nav
+        config={{
+          items: crmItems,
+          sidebar: { accordion: true },
+          activeMatcher: 'prefix',
+        }}
+      >
+        <main>{/* page content */}</main>
+      </Nav>
+    </NavProvider>
+  );
+}
+```
+
+This demonstrates:
+- **Section headers** to visually group related items ("Engage", "Analyze")
+- **Collapsible groups** with nested links (Contacts, Campaigns)
+- **Badges** on groups to surface live status ("2 active")
+- **Dividers** to separate logical sections
+- **Prefix matching** so `/contacts` highlights the Contacts group and its children
+- **Accordion mode** so only one group is open at a time
+- **Disabled items** for features not yet available
+
 ## Sidebar
 
 Use `Sidebar` with `NavGroup` for a standalone sidebar:
