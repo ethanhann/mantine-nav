@@ -17,7 +17,7 @@ export type {
 } from './types';
 
 // Layout (wraps Mantine AppShell)
-export { NavShell, useNavShell } from './components/NavShell';
+export { NavShell, useNavShell, useOptionalNavShell } from './components/NavShell';
 export type { NavShellProps, NavShellContextValue } from './components/NavShell';
 export { NavSidebar } from './components/NavSidebar';
 export type { NavSidebarProps } from './components/NavSidebar';

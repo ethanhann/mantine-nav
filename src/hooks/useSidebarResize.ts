@@ -21,11 +21,16 @@ export interface UseSidebarResizeReturn {
     ref: React.RefObject<HTMLDivElement>;
     onMouseDown: (e: React.MouseEvent) => void;
     onDoubleClick: () => void;
+    onKeyDown: (e: React.KeyboardEvent) => void;
     role: string;
     'aria-label': string;
     'aria-orientation': string;
+    'aria-valuenow': number;
+    'aria-valuemin': number;
+    'aria-valuemax': number;
     tabIndex: number;
     style: React.CSSProperties;
+    'data-resize-handle': boolean;
   };
   resetWidth: () => void;
 }
@@ -123,26 +128,60 @@ export function useSidebarResize({
     }
   }, [defaultWidth, onResize, persistKey]);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const step = e.shiftKey ? 20 : 4;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const newWidth = Math.max(minWidth, width - step);
+        setWidth(newWidth);
+        onResize?.(newWidth);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const newWidth = Math.min(maxWidth, width + step);
+        setWidth(newWidth);
+        onResize?.(newWidth);
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        setWidth(minWidth);
+        onResize?.(minWidth);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        setWidth(maxWidth);
+        onResize?.(maxWidth);
+      }
+    },
+    [width, minWidth, maxWidth, onResize],
+  );
+
   const getHandleProps = useCallback(
     () => ({
       ref: handleRef,
       onMouseDown: handleMouseDown,
       onDoubleClick: resetWidth,
+      onKeyDown: handleKeyDown,
       role: 'separator',
       'aria-label': 'Resize sidebar',
       'aria-orientation': 'vertical' as const,
+      'aria-valuenow': width,
+      'aria-valuemin': minWidth,
+      'aria-valuemax': maxWidth,
       tabIndex: 0,
       style: {
         cursor: 'col-resize',
-        width: '4px',
+        width: '6px',
         position: 'absolute' as const,
         top: 0,
         bottom: 0,
         insetInlineEnd: 0,
         zIndex: 10,
-      },
+        backgroundColor: 'transparent',
+        transition: 'background-color 150ms ease',
+        // Visible on hover via CSS-in-JS — consumers can override
+      } satisfies React.CSSProperties,
+      'data-resize-handle': true,
     }),
-    [handleMouseDown, resetWidth],
+    [handleMouseDown, resetWidth, handleKeyDown, width, minWidth, maxWidth],
   );
 
   return { width, isResizing, handleRef, getHandleProps, resetWidth };

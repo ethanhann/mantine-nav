@@ -189,8 +189,8 @@ describe('Full navigation flow integration', () => {
     await user.click(screen.getByLabelText('Collapse sidebar'));
     expect(screen.getByTestId('collapsed')).toHaveTextContent('true');
 
-    // Nav items should still be clickable
-    await user.click(screen.getByText('Home'));
+    // Nav items should still be clickable (shown as icon rail with aria-label)
+    await user.click(screen.getByLabelText('Home'));
     expect(onItemClick).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'home' }),
       expect.anything(),

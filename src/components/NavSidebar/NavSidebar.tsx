@@ -1,9 +1,9 @@
 'use client';
 
 import { type ReactNode } from 'react';
-import { AppShell, ScrollArea, ActionIcon, Tooltip } from '@mantine/core';
+import { AppShell, ScrollArea, ActionIcon, Tooltip, Box } from '@mantine/core';
 import { IconChevronsLeft } from '@tabler/icons-react';
-import { useNavShell } from '../NavShell';
+import { useOptionalNavShell } from '../NavShell';
 
 /** Props for the sidebar content component. */
 export interface NavSidebarProps {
@@ -15,7 +15,13 @@ export interface NavSidebarProps {
 }
 
 function CollapseToggle() {
-  const { desktopCollapsed, toggleDesktop } = useNavShell();
+  const shell = useOptionalNavShell();
+  if (!shell) return null;
+  const { desktopCollapsed, toggleDesktop, isMobile } = shell;
+
+  // Don't show collapse toggle on mobile — it controls desktop state
+  if (isMobile) return null;
+
   return (
     <Tooltip
       label={desktopCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -44,7 +50,9 @@ function CollapseToggle() {
  * Sidebar content with optional header, scrollable body, and footer sections.
  *
  * Renders inside `AppShell.Navbar` and includes an optional collapse toggle
- * that integrates with `NavShell`'s sidebar state.
+ * that integrates with `NavShell`'s sidebar state. When the sidebar is
+ * collapsed on desktop, header and footer content are hidden and only
+ * icon-based navigation is shown.
  *
  * @example
  * ```tsx
@@ -63,19 +71,19 @@ export function NavSidebar({
   showCollapseToggle = true,
   collapseTogglePosition = 'footer',
 }: NavSidebarProps) {
-  let shellAvailable = true;
-  try {
-    useNavShell();
-  } catch {
-    shellAvailable = false;
-  }
+  const shell = useOptionalNavShell();
+  const desktopCollapsed = shell?.desktopCollapsed ?? false;
+  const isMobile = shell?.isMobile ?? false;
+  // On desktop collapsed, visually hide header/footer to make room for icon rail
+  const hideHeaderFooter = !isMobile && desktopCollapsed;
+  const hiddenStyle = hideHeaderFooter ? { display: 'none' } : undefined;
 
   return (
     <>
       {header && (
-        <AppShell.Section>
+        <AppShell.Section style={hiddenStyle}>
           {header}
-          {shellAvailable && collapseTogglePosition === 'header' && showCollapseToggle && (
+          {!hideHeaderFooter && shell && collapseTogglePosition === 'header' && showCollapseToggle && (
             <CollapseToggle />
           )}
         </AppShell.Section>
@@ -85,12 +93,19 @@ export function NavSidebar({
         {children}
       </AppShell.Section>
 
-      {(footer || (shellAvailable && collapseTogglePosition === 'footer' && showCollapseToggle)) && (
-        <AppShell.Section>
+      {(footer || (!hideHeaderFooter && shell && collapseTogglePosition === 'footer' && showCollapseToggle)) && (
+        <AppShell.Section style={hiddenStyle}>
           {footer}
-          {shellAvailable && collapseTogglePosition === 'footer' && showCollapseToggle && (
+          {!hideHeaderFooter && shell && collapseTogglePosition === 'footer' && showCollapseToggle && (
             <CollapseToggle />
           )}
+        </AppShell.Section>
+      )}
+
+      {/* When collapsed on desktop, show toggle at the bottom */}
+      {hideHeaderFooter && shell && showCollapseToggle && (
+        <AppShell.Section>
+          <CollapseToggle />
         </AppShell.Section>
       )}
     </>
