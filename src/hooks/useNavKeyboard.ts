@@ -5,6 +5,8 @@ import type { NavItemType } from '../types';
 
 export interface UseNavKeyboardOptions<TData = unknown> {
   items: NavItemType<TData>[];
+  /** Original tree-structured items for parent lookup. Falls back to items if not provided. */
+  treeItems?: NavItemType<TData>[];
   expandedKeys: Set<string>;
   onToggle: (key: string) => void;
   onSelect: (item: NavItemType<TData>) => void;
@@ -38,6 +40,7 @@ function findParentGroupId<TData>(
 
 export function useNavKeyboard<TData = unknown>({
   items,
+  treeItems,
   expandedKeys,
   onToggle,
   onSelect,
@@ -47,6 +50,7 @@ export function useNavKeyboard<TData = unknown>({
   loop = true,
   enabled = true,
 }: UseNavKeyboardOptions<TData>): UseNavKeyboardReturn {
+  const tree = treeItems ?? items;
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const typeAheadBuffer = useRef('');
   const typeAheadTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -119,10 +123,14 @@ export function useNavKeyboard<TData = unknown>({
           if (currentItem?.type === 'group' && expandedKeys.has(currentItem.id)) {
             onToggle(currentItem.id);
           } else if (currentItem) {
-            // Move to parent group
-            const parentId = findParentGroupId(items, currentItem.id);
+            // Move to parent group — find parent ID in the tree, then locate
+            // it in the DOM focusables (not the flat items array)
+            const parentId = findParentGroupId(tree, currentItem.id);
             if (parentId) {
-              const parentIdx = items.findIndex((i) => i.id === parentId);
+              let parentIdx = -1;
+              focusables.forEach((el, i) => {
+                if (el.getAttribute('data-item-id') === parentId) parentIdx = i;
+              });
               if (parentIdx >= 0) focusItem(parentIdx);
             }
           }
@@ -185,7 +193,7 @@ export function useNavKeyboard<TData = unknown>({
         }
       }
     },
-    [enabled, containerRef, items, expandedKeys, onToggle, onSelect, focusItem, typeAhead, typeAheadTimeout, loop],
+    [enabled, containerRef, items, tree, expandedKeys, onToggle, onSelect, focusItem, typeAhead, typeAheadTimeout, loop],
   );
 
   return { focusedIndex, setFocusedIndex, handleKeyDown };

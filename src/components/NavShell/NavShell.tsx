@@ -2,13 +2,16 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
+  useEffect,
   type ReactNode,
 } from 'react';
 import {
   AppShell,
   Burger,
   Group,
+  Overlay,
   type MantineBreakpoint,
   type MantineSpacing,
 } from '@mantine/core';
@@ -45,6 +48,11 @@ export function useNavShell(): NavShellContextValue {
     throw new Error('useNavShell() must be used within a <NavShell>');
   }
   return ctx;
+}
+
+/** Access NavShell context, returning null if not within a NavShell. */
+export function useOptionalNavShell(): NavShellContextValue | null {
+  return useContext(NavShellContext);
 }
 
 /** Props for the NavShell layout component. */
@@ -111,6 +119,21 @@ export function NavShell({
   const collapseDesktop = collapseDesktopInner;
   const expandDesktop = expandDesktopInner;
 
+  // Close mobile sidebar on Escape key
+  const handleEscape = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileOpened) {
+        closeMobile();
+      }
+    },
+    [mobileOpened, closeMobile],
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleEscape]);
+
   const ctx: NavShellContextValue = {
     mobileOpened,
     toggleMobile,
@@ -130,11 +153,11 @@ export function NavShell({
         navbar={
           sidebar
             ? {
-                width: { base: sidebarWidth, ...(sidebarCollapsible && desktopCollapsed ? {} : {}) },
+                width: desktopCollapsed ? sidebarCollapsedWidth : sidebarWidth,
                 breakpoint: sidebarBreakpoint,
                 collapsed: {
                   mobile: !mobileOpened,
-                  desktop: desktopCollapsed,
+                  desktop: false,
                 },
               }
             : undefined
@@ -173,6 +196,16 @@ export function NavShell({
           <AppShell.Aside p="md">
             {aside}
           </AppShell.Aside>
+        )}
+
+        {/* Backdrop overlay when mobile sidebar is open */}
+        {isMobile && mobileOpened && (
+          <Overlay
+            onClick={closeMobile}
+            opacity={0.5}
+            color="#000"
+            zIndex={100}
+          />
         )}
 
         <AppShell.Main>{children}</AppShell.Main>

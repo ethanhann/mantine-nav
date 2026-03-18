@@ -90,15 +90,15 @@ describe('Sidebar collapse integration', () => {
     expect(screen.getByLabelText('Expand sidebar')).toBeInTheDocument();
   });
 
-  it('nav items remain in DOM after collapse (Mantine handles visibility)', async () => {
+  it('nav items remain in DOM after collapse in icon rail mode', async () => {
     const user = userEvent.setup();
     renderShellWithSidebar();
 
     await user.click(screen.getByLabelText('Collapse sidebar'));
 
-    // Items should still exist in the DOM — Mantine hides via CSS
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    // Items should still exist in the DOM as icon-only with aria-labels
+    expect(screen.getByLabelText('Home')).toBeInTheDocument();
+    expect(screen.getByLabelText('Dashboard')).toBeInTheDocument();
   });
 
   it('mobile toggle works independently from desktop collapse', async () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Collapse, Divider, NavLink, Text, Tooltip, Menu } from '@mantine/core';
+import { Center, Divider, NavLink, Text, Tooltip, Menu } from '@mantine/core';
 import type { MantineColor } from '@mantine/core';
 import type {
   ActiveMatcher,
@@ -9,10 +9,12 @@ import type {
   NavCallbacks,
   NavGroupItem,
   NavItemType,
+  NavLinkItem,
 } from '../../types';
 import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
 import { useNavKeyboard } from '../../hooks/useNavKeyboard';
+import { useOptionalNavShell } from '../NavShell';
 
 /** Props for the navigation item tree component. */
 export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
@@ -50,6 +52,7 @@ interface InternalNavItemProps<TData = unknown> {
   transitionDuration: number;
   variant: 'subtle' | 'light' | 'filled';
   color?: MantineColor;
+  collapsed?: boolean;
 }
 
 function NavItemRenderer<TData>({
@@ -65,16 +68,19 @@ function NavItemRenderer<TData>({
   transitionDuration,
   variant,
   color,
+  collapsed,
 }: InternalNavItemProps<TData>) {
   if (renderItem) {
     return <>{renderItem(item, depth)}</>;
   }
 
   if (item.type === 'divider') {
+    if (collapsed) return <Divider my="xs" />;
     return <Divider my="xs" />;
   }
 
   if (item.type === 'section') {
+    if (collapsed) return null;
     return (
       <Text
         size="xs"
@@ -92,6 +98,37 @@ function NavItemRenderer<TData>({
 
   if (item.type === 'link') {
     const active = isActive(item);
+
+    // In collapsed mode, show icon-only with tooltip
+    if (collapsed && depth === 0) {
+      return (
+        <Tooltip label={item.label} position="right" withArrow>
+          <NavLink
+            label=""
+            leftSection={item.icon}
+            href={item.href}
+            active={active}
+            variant={variant}
+            color={color}
+            disabled={item.disabled}
+            aria-label={item.label}
+            aria-current={active ? 'page' : undefined}
+            data-item-id={item.id}
+            role="treeitem"
+            tabIndex={-1}
+            styles={{ root: { justifyContent: 'center', padding: '8px 0' } }}
+            onClick={(e) => {
+              if (item.disabled) {
+                e.preventDefault();
+                return;
+              }
+              onItemClick?.(item, e);
+            }}
+          />
+        </Tooltip>
+      );
+    }
+
     return (
       <NavLink
         label={item.label}
@@ -124,6 +161,32 @@ function NavItemRenderer<TData>({
 
   if (depth >= maxDepth) {
     return null;
+  }
+
+  // In collapsed mode, show icon-only group with tooltip (no children)
+  if (collapsed && depth === 0) {
+    return (
+      <Tooltip label={groupItem.label} position="right" withArrow>
+        <NavLink
+          label=""
+          leftSection={groupItem.icon}
+          active={groupActive}
+          variant={variant}
+          color={color}
+          disabled={groupItem.disabled}
+          data-item-id={groupItem.id}
+          role="treeitem"
+          aria-label={groupItem.label}
+          tabIndex={-1}
+          styles={{ root: { justifyContent: 'center', padding: '8px 0' } }}
+          onClick={() => {
+            if (groupItem.disabled) return;
+            onToggleGroup(groupItem.id);
+            onGroupToggle?.(groupItem, !isExpanded);
+          }}
+        />
+      </Tooltip>
+    );
   }
 
   return (
@@ -161,6 +224,7 @@ function NavItemRenderer<TData>({
           transitionDuration={transitionDuration}
           variant={variant}
           color={color}
+          collapsed={collapsed}
         />
       ))}
     </NavLink>
@@ -298,6 +362,21 @@ export function NavGroup<TData = unknown>({
   loopNavigation = true,
 }: NavGroupProps<TData>) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shell = useOptionalNavShell();
+
+  // Detect collapsed state for icon rail mode
+  const isCollapsed = shell ? (shell.desktopCollapsed && !shell.isMobile) : false;
+
+  // Auto-close mobile drawer on link click
+  const wrappedOnItemClick: NavCallbacks<TData>['onItemClick'] = useCallback(
+    (item: NavLinkItem<TData>, event: React.MouseEvent) => {
+      onItemClick?.(item, event);
+      if (shell?.isMobile) {
+        shell.closeMobile();
+      }
+    },
+    [onItemClick, shell],
+  );
 
   // Manage expanded state with accordion support
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
@@ -358,12 +437,13 @@ export function NavGroup<TData = unknown>({
 
   const { handleKeyDown } = useNavKeyboard({
     items: visibleItems,
+    treeItems: items,
     expandedKeys: expandedGroups,
     onToggle: handleToggleGroup,
     onSelect: (item) => {
-      if (item.type === 'link' && onItemClick) {
+      if (item.type === 'link') {
         const syntheticEvent = new MouseEvent('click', { bubbles: true }) as unknown as React.MouseEvent;
-        onItemClick(item, syntheticEvent);
+        wrappedOnItemClick(item, syntheticEvent);
       }
     },
     containerRef: containerRef as React.RefObject<HTMLElement>,
@@ -389,12 +469,13 @@ export function NavGroup<TData = unknown>({
           expandedGroups={expandedGroups}
           onToggleGroup={handleToggleGroup}
           isActive={isActive}
-          onItemClick={onItemClick}
+          onItemClick={wrappedOnItemClick}
           onGroupToggle={onGroupToggle}
           renderItem={renderItem}
           transitionDuration={resolvedDuration}
           variant={variant}
           color={color}
+          collapsed={isCollapsed}
         />
       ))}
     </div>
