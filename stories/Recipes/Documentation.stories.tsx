@@ -22,7 +22,7 @@ const docsItems: NavItemType[] = [
     id: 'getting-started',
     type: 'group',
     label: 'Getting Started',
-    icon: <IconRocket size={18} />,
+    icon: <IconRocket size={18} stroke={1.5} />,
     defaultOpened: true,
     children: [
       { id: 'introduction', type: 'link', label: 'Introduction', href: '/docs/intro' },
@@ -34,7 +34,7 @@ const docsItems: NavItemType[] = [
     id: 'components',
     type: 'group',
     label: 'Components',
-    icon: <IconPuzzle size={18} />,
+    icon: <IconPuzzle size={18} stroke={1.5} />,
     children: [
       { id: 'nav-shell', type: 'link', label: 'NavShell', href: '/docs/components/nav-shell' },
       { id: 'nav-sidebar', type: 'link', label: 'NavSidebar', href: '/docs/components/nav-sidebar' },
@@ -46,7 +46,7 @@ const docsItems: NavItemType[] = [
     id: 'theming',
     type: 'group',
     label: 'Theming',
-    icon: <IconBrush size={18} />,
+    icon: <IconBrush size={18} stroke={1.5} />,
     children: [
       { id: 'colors', type: 'link', label: 'Colors', href: '/docs/theming/colors' },
       { id: 'dark-mode', type: 'link', label: 'Dark Mode', href: '/docs/theming/dark-mode' },
@@ -56,7 +56,7 @@ const docsItems: NavItemType[] = [
     id: 'api',
     type: 'group',
     label: 'API Reference',
-    icon: <IconApi size={18} />,
+    icon: <IconApi size={18} stroke={1.5} />,
     children: [
       { id: 'hooks', type: 'link', label: 'Hooks', href: '/docs/api/hooks' },
       { id: 'types', type: 'link', label: 'Types', href: '/docs/api/types' },
@@ -82,7 +82,7 @@ export const Default: Story = {
         <NavHeader
           logo={
             <Text fw={700} size="lg">
-              <IconBook size={20} style={{ verticalAlign: 'middle', marginRight: 8 }} />
+              <IconBook size={20} stroke={1.5} style={{ verticalAlign: 'middle', marginRight: 8 }} />
               @ethanhann/nav
             </Text>
           }

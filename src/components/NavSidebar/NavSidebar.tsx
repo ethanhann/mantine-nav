@@ -36,6 +36,7 @@ function CollapseToggle() {
       >
         <IconChevronsLeft
           size={16}
+          stroke={1.5}
           style={{
             transform: desktopCollapsed ? 'rotate(180deg)' : undefined,
             transition: 'transform 200ms ease',

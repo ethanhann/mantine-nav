@@ -30,26 +30,26 @@ const saasWorkspaces = [
 ];
 
 const saasItems: NavItemType[] = [
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
-  { id: 'projects', type: 'link', label: 'Projects', href: '/projects', icon: <IconLayoutDashboard size={18} />, badge: <Badge size="xs" variant="light" color="blue">3</Badge> },
-  { id: 'team', type: 'link', label: 'Team', href: '/team', icon: <IconUsers size={18} /> },
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} stroke={1.5} /> },
+  { id: 'projects', type: 'link', label: 'Projects', href: '/projects', icon: <IconLayoutDashboard size={18} stroke={1.5} />, badge: <Badge size="xs" variant="light" color="blue">3</Badge> },
+  { id: 'team', type: 'link', label: 'Team', href: '/team', icon: <IconUsers size={18} stroke={1.5} /> },
   { id: 'div-1', type: 'divider' },
   { id: 'section-dev', type: 'section', label: 'Developer' },
-  { id: 'api-keys', type: 'link', label: 'API Keys', href: '/api-keys', icon: <IconKey size={18} /> },
-  { id: 'webhooks', type: 'link', label: 'Webhooks', href: '/webhooks', icon: <IconWebhook size={18} /> },
+  { id: 'api-keys', type: 'link', label: 'API Keys', href: '/api-keys', icon: <IconKey size={18} stroke={1.5} /> },
+  { id: 'webhooks', type: 'link', label: 'Webhooks', href: '/webhooks', icon: <IconWebhook size={18} stroke={1.5} /> },
   {
     id: 'integrations',
     type: 'group',
     label: 'Integrations',
-    icon: <IconBrandSlack size={18} />,
+    icon: <IconBrandSlack size={18} stroke={1.5} />,
     children: [
       { id: 'slack', type: 'link', label: 'Slack', href: '/integrations/slack' },
       { id: 'github', type: 'link', label: 'GitHub', href: '/integrations/github' },
     ],
   },
   { id: 'div-2', type: 'divider' },
-  { id: 'billing', type: 'link', label: 'Billing', href: '/billing', icon: <IconCreditCard size={18} /> },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
+  { id: 'billing', type: 'link', label: 'Billing', href: '/billing', icon: <IconCreditCard size={18} stroke={1.5} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} stroke={1.5} /> },
 ];
 
 const meta: Meta = {

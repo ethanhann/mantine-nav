@@ -34,6 +34,7 @@ export {
   UserMenu,
   PlanBadge,
   NotificationIndicator,
+  ColorSchemeToggle,
 } from './components/SaaS';
 export type {
   WorkspaceSwitcherProps,
@@ -42,6 +43,7 @@ export type {
   PlanBadgeProps,
   NotificationIndicatorProps,
   NotificationItem,
+  ColorSchemeToggleProps,
 } from './components/SaaS';
 
 // Hooks

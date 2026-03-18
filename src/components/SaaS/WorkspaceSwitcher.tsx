@@ -72,7 +72,7 @@ export function WorkspaceSwitcher({
               <Text size="sm" fw={600} truncate flex={1}>
                 {activeWorkspace.name}
               </Text>
-              <IconSelector size={14} opacity={0.5} />
+              <IconSelector size={14} stroke={1.5} opacity={0.5} />
             </Group>
           )}
         </UnstyledButton>
@@ -82,7 +82,7 @@ export function WorkspaceSwitcher({
         {searchable && (
           <TextInput
             placeholder="Search workspaces..."
-            leftSection={<IconSearch size={14} />}
+            leftSection={<IconSearch size={14} stroke={1.5} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
             mb="xs"
@@ -104,7 +104,7 @@ export function WorkspaceSwitcher({
                   {ws.name.charAt(0).toUpperCase()}
                 </Avatar>
               }
-              rightSection={ws.id === activeWorkspace.id ? <IconCheck size={14} /> : null}
+              rightSection={ws.id === activeWorkspace.id ? <IconCheck size={14} stroke={1.5} /> : null}
               onClick={() => onSwitch(ws)}
             >
               <Text size="sm">{ws.name}</Text>
@@ -115,7 +115,7 @@ export function WorkspaceSwitcher({
           <>
             <Menu.Divider />
             <Menu.Item
-              leftSection={<IconPlus size={14} />}
+              leftSection={<IconPlus size={14} stroke={1.5} />}
               onClick={onCreate}
             >
               Create workspace
