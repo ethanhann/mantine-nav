@@ -69,6 +69,7 @@ export function NotificationIndicator({
       color={color}
       disabled={count === 0}
       processing={count > 0}
+      offset={4}
     >
       <ActionIcon
         variant="subtle"
@@ -77,7 +78,7 @@ export function NotificationIndicator({
         color="gray"
         onClick={!showDropdown ? onClick : undefined}
       >
-        <IconBell size={20} />
+        <IconBell size={20} stroke={1.5} />
       </ActionIcon>
     </Indicator>
   );

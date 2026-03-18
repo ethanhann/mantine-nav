@@ -22,12 +22,12 @@ import {
 import type { NavItemType, Workspace, UserInfo } from '../src';
 
 export const sampleItems: NavItemType[] = [
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} stroke={1.5} /> },
   {
     id: 'products',
     type: 'group',
     label: 'Products',
-    icon: <IconPackage size={18} />,
+    icon: <IconPackage size={18} stroke={1.5} />,
     defaultOpened: true,
     children: [
       { id: 'catalog', type: 'link', label: 'Catalog', href: '/products' },
@@ -39,7 +39,7 @@ export const sampleItems: NavItemType[] = [
     id: 'orders',
     type: 'group',
     label: 'Orders',
-    icon: <IconClipboardList size={18} />,
+    icon: <IconClipboardList size={18} stroke={1.5} />,
     children: [
       { id: 'all-orders', type: 'link', label: 'All Orders', href: '/orders' },
       { id: 'drafts', type: 'link', label: 'Drafts', href: '/orders/drafts' },
@@ -47,9 +47,9 @@ export const sampleItems: NavItemType[] = [
     ],
   },
   { id: 'div-1', type: 'divider' },
-  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} /> },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
+  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} stroke={1.5} /> },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} stroke={1.5} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} stroke={1.5} /> },
 ];
 
 export const deepNestedItems: NavItemType[] = [
@@ -57,7 +57,7 @@ export const deepNestedItems: NavItemType[] = [
     id: 'docs',
     type: 'group',
     label: 'Documentation',
-    icon: <IconFileText size={18} />,
+    icon: <IconFileText size={18} stroke={1.5} />,
     defaultOpened: true,
     children: [
       {
@@ -85,15 +85,15 @@ export const deepNestedItems: NavItemType[] = [
 
 export const sectionedItems: NavItemType[] = [
   { id: 'section-main', type: 'section', label: 'Main' },
-  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} /> },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} /> },
+  { id: 'home', type: 'link', label: 'Home', href: '/', icon: <IconHome size={18} stroke={1.5} /> },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/analytics', icon: <IconChartBar size={18} stroke={1.5} /> },
   { id: 'section-commerce', type: 'section', label: 'Commerce' },
-  { id: 'products', type: 'link', label: 'Products', href: '/products', icon: <IconPackage size={18} /> },
-  { id: 'orders', type: 'link', label: 'Orders', href: '/orders', icon: <IconClipboardList size={18} /> },
-  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} /> },
+  { id: 'products', type: 'link', label: 'Products', href: '/products', icon: <IconPackage size={18} stroke={1.5} /> },
+  { id: 'orders', type: 'link', label: 'Orders', href: '/orders', icon: <IconClipboardList size={18} stroke={1.5} /> },
+  { id: 'customers', type: 'link', label: 'Customers', href: '/customers', icon: <IconUsers size={18} stroke={1.5} /> },
   { id: 'div-1', type: 'divider' },
   { id: 'section-system', type: 'section', label: 'System' },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/settings', icon: <IconSettings size={18} stroke={1.5} /> },
 ];
 
 export const sampleWorkspaces: Workspace[] = [
@@ -111,9 +111,9 @@ export const sampleUser: UserInfo = {
 };
 
 export const sampleUserMenuItems = [
-  { label: 'Profile', icon: <IconUser size={14} /> },
-  { label: 'Settings', icon: <IconSettings size={14} /> },
-  { label: 'Sign out', icon: <IconLogout size={14} />, color: 'red' as const, dividerBefore: true },
+  { label: 'Profile', icon: <IconUser size={14} stroke={1.5} /> },
+  { label: 'Settings', icon: <IconSettings size={14} stroke={1.5} /> },
+  { label: 'Sign out', icon: <IconLogout size={14} stroke={1.5} />, color: 'red' as const, dividerBefore: true },
 ];
 
 export const sampleNotifications = [

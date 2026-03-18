@@ -25,27 +25,27 @@ import type { NavItemType } from '../../src';
 import { sampleUser, sampleUserMenuItems, sampleWorkspaces, sampleNotifications } from '../_data';
 
 const adminItems: NavItemType[] = [
-  { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/admin', icon: <IconHome size={18} /> },
+  { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/admin', icon: <IconHome size={18} stroke={1.5} /> },
   { id: 'section-manage', type: 'section', label: 'Manage' },
-  { id: 'users', type: 'link', label: 'Users', href: '/admin/users', icon: <IconUsers size={18} />, badge: <Badge size="xs" variant="light">248</Badge> },
+  { id: 'users', type: 'link', label: 'Users', href: '/admin/users', icon: <IconUsers size={18} stroke={1.5} />, badge: <Badge size="xs" variant="light">248</Badge> },
   {
     id: 'content',
     type: 'group',
     label: 'Content',
-    icon: <IconFileText size={18} />,
+    icon: <IconFileText size={18} stroke={1.5} />,
     defaultOpened: true,
     children: [
       { id: 'pages', type: 'link', label: 'Pages', href: '/admin/content/pages' },
       { id: 'media', type: 'link', label: 'Media', href: '/admin/content/media' },
     ],
   },
-  { id: 'analytics', type: 'link', label: 'Analytics', href: '/admin/analytics', icon: <IconChartBar size={18} /> },
+  { id: 'analytics', type: 'link', label: 'Analytics', href: '/admin/analytics', icon: <IconChartBar size={18} stroke={1.5} /> },
   { id: 'div-1', type: 'divider' },
   { id: 'section-system', type: 'section', label: 'System' },
-  { id: 'security', type: 'link', label: 'Security', href: '/admin/security', icon: <IconShield size={18} /> },
-  { id: 'database', type: 'link', label: 'Database', href: '/admin/database', icon: <IconDatabase size={18} /> },
-  { id: 'infrastructure', type: 'link', label: 'Infrastructure', href: '/admin/infra', icon: <IconServer size={18} /> },
-  { id: 'settings', type: 'link', label: 'Settings', href: '/admin/settings', icon: <IconSettings size={18} /> },
+  { id: 'security', type: 'link', label: 'Security', href: '/admin/security', icon: <IconShield size={18} stroke={1.5} /> },
+  { id: 'database', type: 'link', label: 'Database', href: '/admin/database', icon: <IconDatabase size={18} stroke={1.5} /> },
+  { id: 'infrastructure', type: 'link', label: 'Infrastructure', href: '/admin/infra', icon: <IconServer size={18} stroke={1.5} /> },
+  { id: 'settings', type: 'link', label: 'Settings', href: '/admin/settings', icon: <IconSettings size={18} stroke={1.5} /> },
 ];
 
 const meta: Meta = {

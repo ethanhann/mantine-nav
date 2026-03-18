@@ -116,7 +116,10 @@ function NavItemRenderer<TData>({
             data-item-id={item.id}
             role="treeitem"
             tabIndex={-1}
-            styles={{ root: { justifyContent: 'center', padding: '8px 0' } }}
+            styles={{
+              root: { justifyContent: 'center', padding: '8px 0' },
+              section: { marginRight: 0 },
+            }}
             onClick={(e) => {
               if (item.disabled) {
                 e.preventDefault();
@@ -163,29 +166,51 @@ function NavItemRenderer<TData>({
     return null;
   }
 
-  // In collapsed mode, show icon-only group with tooltip (no children)
+  // In collapsed mode, show icon-only group with popover submenu
   if (collapsed && depth === 0) {
     return (
-      <Tooltip label={groupItem.label} position="right" withArrow>
-        <NavLink
-          label=""
-          leftSection={groupItem.icon}
-          active={groupActive}
-          variant={variant}
-          color={color}
-          disabled={groupItem.disabled}
-          data-item-id={groupItem.id}
-          role="treeitem"
-          aria-label={groupItem.label}
-          tabIndex={-1}
-          styles={{ root: { justifyContent: 'center', padding: '8px 0' } }}
-          onClick={() => {
-            if (groupItem.disabled) return;
-            onToggleGroup(groupItem.id);
-            onGroupToggle?.(groupItem, !isExpanded);
-          }}
-        />
-      </Tooltip>
+      <Menu position="right-start" withArrow offset={8} withinPortal>
+        <Menu.Target>
+          <Tooltip label={groupItem.label} position="right" withArrow disabled={groupItem.children.length > 0}>
+            <NavLink
+              label=""
+              leftSection={groupItem.icon}
+              active={groupActive}
+              variant={variant}
+              color={color}
+              disabled={groupItem.disabled}
+              data-item-id={groupItem.id}
+              role="treeitem"
+              aria-label={groupItem.label}
+              tabIndex={-1}
+              styles={{
+                root: { justifyContent: 'center', padding: '8px 0' },
+                section: { marginRight: 0 },
+              }}
+            />
+          </Tooltip>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Label>{groupItem.label}</Menu.Label>
+          {groupItem.children
+            .filter((child): child is NavLinkItem<TData> => child.type === 'link')
+            .map((child) => (
+              <Menu.Item
+                key={child.id}
+                leftSection={child.icon}
+                disabled={child.disabled}
+                component={child.href ? 'a' : undefined}
+                {...(child.href ? { href: child.href } : {})}
+                onClick={(e: React.MouseEvent) => {
+                  if (child.disabled) return;
+                  onItemClick?.(child, e);
+                }}
+              >
+                {child.label}
+              </Menu.Item>
+            ))}
+        </Menu.Dropdown>
+      </Menu>
     );
   }
 
