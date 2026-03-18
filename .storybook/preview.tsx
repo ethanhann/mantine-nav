@@ -11,6 +11,9 @@ const preview: Preview = {
         date: /date$/i,
       },
     },
+    chromatic: {
+      viewports: [375, 768, 1280],
+    },
   },
   decorators: [
     (Story) => (

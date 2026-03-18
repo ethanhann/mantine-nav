@@ -3,6 +3,7 @@
 import { Fragment, type ReactNode } from 'react';
 import {
   Avatar,
+  Box,
   Group,
   Menu,
   Text,
@@ -20,6 +21,7 @@ export interface UserMenuItem {
   dividerBefore?: boolean;
 }
 
+/** Props for the user menu dropdown. */
 export interface UserMenuProps {
   user: UserInfo;
   menuItems?: UserMenuItem[];
@@ -28,6 +30,23 @@ export interface UserMenuProps {
   avatarSize?: number | string;
 }
 
+/**
+ * User avatar with dropdown menu for profile actions.
+ *
+ * Displays the user's name, optional role/email, and a menu with
+ * configurable actions like profile, settings, and sign out.
+ *
+ * @example
+ * ```tsx
+ * <UserMenu
+ *   user={{ id: '1', name: 'Jane', email: 'jane@acme.com', role: 'Admin' }}
+ *   menuItems={[
+ *     { label: 'Profile', onClick: () => navigate('/profile') },
+ *     { label: 'Sign out', onClick: signOut, color: 'red', dividerBefore: true },
+ *   ]}
+ * />
+ * ```
+ */
 export function UserMenu({
   user,
   menuItems = [],
@@ -47,7 +66,7 @@ export function UserMenu({
               name={user.name}
               color="initials"
             />
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <Box flex={1} miw={0}>
               <Text size="sm" fw={500} truncate>
                 {user.name}
               </Text>
@@ -61,7 +80,7 @@ export function UserMenu({
                   {user.email}
                 </Text>
               )}
-            </div>
+            </Box>
           </Group>
         </UnstyledButton>
       </Menu.Target>

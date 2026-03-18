@@ -5,6 +5,7 @@ import { AppShell, ScrollArea, ActionIcon, Tooltip } from '@mantine/core';
 import { IconChevronsLeft } from '@tabler/icons-react';
 import { useNavShell } from '../NavShell';
 
+/** Props for the sidebar content component. */
 export interface NavSidebarProps {
   header?: ReactNode;
   children: ReactNode;
@@ -25,7 +26,7 @@ function CollapseToggle() {
         onClick={toggleDesktop}
         aria-label={desktopCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         color="gray"
-        style={{ width: '100%' }}
+        w="100%"
       >
         <IconChevronsLeft
           size={16}
@@ -39,6 +40,22 @@ function CollapseToggle() {
   );
 }
 
+/**
+ * Sidebar content with optional header, scrollable body, and footer sections.
+ *
+ * Renders inside `AppShell.Navbar` and includes an optional collapse toggle
+ * that integrates with `NavShell`'s sidebar state.
+ *
+ * @example
+ * ```tsx
+ * <NavSidebar
+ *   header={<WorkspaceSwitcher ... />}
+ *   footer={<UserMenu ... />}
+ * >
+ *   <NavGroup items={navItems} />
+ * </NavSidebar>
+ * ```
+ */
 export function NavSidebar({
   header,
   children,

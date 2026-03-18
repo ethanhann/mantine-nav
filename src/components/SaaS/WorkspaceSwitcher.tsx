@@ -13,6 +13,7 @@ import {
 import { IconCheck, IconPlus, IconSearch, IconSelector } from '@tabler/icons-react';
 import type { Workspace } from '../../types';
 
+/** Props for the workspace switcher dropdown. */
 export interface WorkspaceSwitcherProps {
   workspaces: Workspace[];
   activeWorkspace: Workspace;
@@ -23,6 +24,22 @@ export interface WorkspaceSwitcherProps {
   renderWorkspace?: (workspace: Workspace, isActive: boolean) => ReactNode;
 }
 
+/**
+ * Dropdown menu for switching between workspaces/organizations.
+ *
+ * Renders the active workspace with an avatar and name, with a dropdown
+ * showing all available workspaces. Supports optional search filtering.
+ *
+ * @example
+ * ```tsx
+ * <WorkspaceSwitcher
+ *   workspaces={workspaces}
+ *   activeWorkspace={current}
+ *   onSwitch={(ws) => setWorkspace(ws)}
+ *   searchable
+ * />
+ * ```
+ */
 export function WorkspaceSwitcher({
   workspaces,
   activeWorkspace,
@@ -52,10 +69,10 @@ export function WorkspaceSwitcher({
               >
                 {activeWorkspace.name.charAt(0).toUpperCase()}
               </Avatar>
-              <Text size="sm" fw={600} truncate style={{ flex: 1 }}>
+              <Text size="sm" fw={600} truncate flex={1}>
                 {activeWorkspace.name}
               </Text>
-              <IconSelector size={14} style={{ opacity: 0.5 }} />
+              <IconSelector size={14} opacity={0.5} />
             </Group>
           )}
         </UnstyledButton>

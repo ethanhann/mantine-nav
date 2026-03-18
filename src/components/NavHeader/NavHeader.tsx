@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 import { Group, Badge, type MantineColor } from '@mantine/core';
 
+/** Props for the header bar component. */
 export interface NavHeaderProps {
   logo?: ReactNode;
   children?: ReactNode;
@@ -10,6 +11,21 @@ export interface NavHeaderProps {
   environment?: { label: string; color: MantineColor };
 }
 
+/**
+ * Top header bar with logo, optional center content, and right-aligned actions.
+ *
+ * Renders inside `AppShell.Header`. Accepts an optional environment badge
+ * for staging/production indicators.
+ *
+ * @example
+ * ```tsx
+ * <NavHeader
+ *   logo={<Logo />}
+ *   environment={{ label: 'Staging', color: 'orange' }}
+ *   rightSection={<NotificationIndicator count={3} />}
+ * />
+ * ```
+ */
 export function NavHeader({
   logo,
   children,
@@ -17,7 +33,7 @@ export function NavHeader({
   environment,
 }: NavHeaderProps) {
   return (
-    <Group h="100%" justify="space-between" wrap="nowrap" style={{ flex: 1 }}>
+    <Group h="100%" justify="space-between" wrap="nowrap" flex={1}>
       <Group gap="md" wrap="nowrap">
         {logo}
         {environment && (
@@ -28,7 +44,7 @@ export function NavHeader({
       </Group>
 
       {children && (
-        <Group gap="xs" style={{ flex: 1 }} justify="center">
+        <Group gap="xs" flex={1} justify="center">
           {children}
         </Group>
       )}

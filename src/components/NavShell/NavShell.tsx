@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 
+/** Context value provided by NavShell to descendant components. */
 export interface NavShellContextValue {
   mobileOpened: boolean;
   toggleMobile: () => void;
@@ -28,6 +29,16 @@ export interface NavShellContextValue {
 
 const NavShellContext = createContext<NavShellContextValue | null>(null);
 
+/**
+ * Access the NavShell context for sidebar state and mobile toggles.
+ *
+ * @throws {Error} If used outside of a `<NavShell>` component.
+ *
+ * @example
+ * ```tsx
+ * const { desktopCollapsed, toggleDesktop } = useNavShell();
+ * ```
+ */
 export function useNavShell(): NavShellContextValue {
   const ctx = useContext(NavShellContext);
   if (!ctx) {
@@ -36,6 +47,7 @@ export function useNavShell(): NavShellContextValue {
   return ctx;
 }
 
+/** Props for the NavShell layout component. */
 export interface NavShellProps {
   header?: ReactNode;
   sidebar?: ReactNode;
@@ -54,6 +66,22 @@ export interface NavShellProps {
   transitionDuration?: number;
 }
 
+/**
+ * Top-level layout shell wrapping Mantine's AppShell.
+ *
+ * Provides responsive sidebar collapse, mobile drawer, and shared context
+ * via `useNavShell()` for descendant components.
+ *
+ * @example
+ * ```tsx
+ * <NavShell
+ *   header={<NavHeader logo={<Logo />} />}
+ *   sidebar={<NavSidebar><NavGroup items={items} /></NavSidebar>}
+ * >
+ *   <main>Page content</main>
+ * </NavShell>
+ * ```
+ */
 export function NavShell({
   header,
   sidebar,
