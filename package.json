@@ -1,5 +1,5 @@
 {
-  "name": "@nav/core",
+  "name": "@ethanhann/nav",
   "version": "0.1.0",
   "description": "A React navigation component library built on Mantine v8",
   "type": "module",
@@ -23,7 +23,8 @@
     "test:run": "vitest run",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
-    "storybook:build": "storybook build"
+    "storybook:build": "storybook build",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "@mantine/core": "^8.0.0",
@@ -52,7 +53,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://local_proxy@127.0.0.1:37631/git/ethanhann/nav"
+    "url": "https://github.com/ethanhann/nav.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "license": "MIT"
 }

@@ -18,7 +18,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@nav/core": ["./src/index.ts"]
+      "@ethanhann/nav": ["./src/index.ts"]
     }
   },
   "include": ["src"],
