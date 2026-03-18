@@ -250,6 +250,52 @@ const { collapsed, toggle, width, handlers } = useHeadlessSidebar({
 | `useRecentlyViewed` | Track recently visited pages |
 | `useStarredPages` | Star/bookmark pages |
 
+## Development
+
+### Storybook
+
+The component library ships with comprehensive Storybook stories covering every component, hook, and layout pattern. To run Storybook locally:
+
+```bash
+npm install
+npm run dev
+```
+
+This starts Storybook at [http://localhost:6006](http://localhost:6006).
+
+To build a static Storybook site:
+
+```bash
+npm run storybook:build
+```
+
+Stories are organized by category:
+
+| Category | What's covered |
+|----------|---------------|
+| **Sidebar** | Core sidebar, rail mode, mini variant, resizable, sections & dividers |
+| **NavBar** | Core navbar, mega menu, breadcrumbs, tab style, environment indicator, command palette |
+| **Layout** | Combined NavLayout, responsive behavior, print-friendly mode |
+| **SaaS** | Workspace switcher, user menu, plan badge, notification bell |
+| **Dashboard** | Dashboard switcher, filter panel, recently viewed, starred pages, live data status |
+| **Theming** | Preset themes, custom color schemes, dark mode toggle, RTL support |
+| **Recipes** | Full-page layouts — admin dashboard, SaaS platform, analytics dashboard, documentation site |
+
+### Tests
+
+```bash
+npm run test:run    # single run
+npm run test        # watch mode
+```
+
+### Build
+
+```bash
+npm run build       # build the library to dist/
+npm run typecheck   # type-check without emitting
+npm run lint        # lint src/
+```
+
 ## License
 
 MIT
