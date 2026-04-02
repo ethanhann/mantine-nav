@@ -108,48 +108,48 @@ export function NotificationIndicator({
 					</ActionIcon>
 				</Menu.Target>
 
-			<Menu.Dropdown>
-				<Group justify="space-between" px="sm" py="xs">
-					<Text fw={600} size="sm">
-						Notifications
-					</Text>
-					{onReadAll && hasUnread && (
-						<Anchor size="xs" onClick={onReadAll} component="button">
-							Mark all as read
-						</Anchor>
-					)}
-				</Group>
-				<Menu.Divider />
-				<ScrollArea.Autosize mah={300}>
-					{notifications.length === 0 ? (
-						<Text c="dimmed" ta="center" py="lg" size="sm">
-							No notifications
+				<Menu.Dropdown>
+					<Group justify="space-between" px="sm" py="xs">
+						<Text fw={600} size="sm">
+							Notifications
 						</Text>
-					) : (
-						notifications.map((n) => (
-							<Menu.Item
-								key={n.id}
-								leftSection={n.icon}
-								onClick={() => onRead?.(n.id)}
-								opacity={n.read ? 0.6 : 1}
-								component={n.href ? "a" : undefined}
-								aria-label={`${n.title}${n.read ? "" : " (unread)"}`}
-								{...(n.href ? { href: n.href } : {})}
-							>
-								<Text size="sm" fw={n.read ? 400 : 600}>
-									{n.title}
-								</Text>
-								{n.description && (
-									<Text size="xs" c="dimmed">
-										{n.description}
+						{onReadAll && hasUnread && (
+							<Anchor size="xs" onClick={onReadAll} component="button">
+								Mark all as read
+							</Anchor>
+						)}
+					</Group>
+					<Menu.Divider />
+					<ScrollArea.Autosize mah={300}>
+						{notifications.length === 0 ? (
+							<Text c="dimmed" ta="center" py="lg" size="sm">
+								No notifications
+							</Text>
+						) : (
+							notifications.map((n) => (
+								<Menu.Item
+									key={n.id}
+									leftSection={n.icon}
+									onClick={() => onRead?.(n.id)}
+									opacity={n.read ? 0.6 : 1}
+									component={n.href ? "a" : undefined}
+									aria-label={`${n.title}${n.read ? "" : " (unread)"}`}
+									{...(n.href ? { href: n.href } : {})}
+								>
+									<Text size="sm" fw={n.read ? 400 : 600}>
+										{n.title}
 									</Text>
-								)}
-							</Menu.Item>
-						))
-					)}
-				</ScrollArea.Autosize>
-			</Menu.Dropdown>
-		</Menu>
+									{n.description && (
+										<Text size="xs" c="dimmed">
+											{n.description}
+										</Text>
+									)}
+								</Menu.Item>
+							))
+						)}
+					</ScrollArea.Autosize>
+				</Menu.Dropdown>
+			</Menu>
 		</Indicator>
 	);
 }

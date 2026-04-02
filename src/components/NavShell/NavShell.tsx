@@ -29,6 +29,8 @@ export interface NavShellContextValue {
 	expandDesktop: () => void;
 	isMobile: boolean;
 	linkComponent?: React.ElementType;
+	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
+	hrefProp?: string;
 }
 
 const NavShellContext = createContext<NavShellContextValue | null>(null);
@@ -75,6 +77,8 @@ export interface NavShellProps {
 	transitionDuration?: number;
 	/** Component used to render nav link items (e.g. React Router's Link or Next.js Link). */
 	linkComponent?: React.ElementType;
+	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
+	hrefProp?: string;
 }
 
 /**
@@ -110,6 +114,7 @@ export function NavShell({
 	padding = "md",
 	transitionDuration = 200,
 	linkComponent,
+	hrefProp,
 }: NavShellProps) {
 	const [
 		mobileOpened,
@@ -160,6 +165,7 @@ export function NavShell({
 		expandDesktop,
 		isMobile,
 		linkComponent,
+		hrefProp,
 	};
 
 	return (

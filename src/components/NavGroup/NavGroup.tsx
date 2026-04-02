@@ -56,6 +56,7 @@ interface InternalNavItemProps<TData = unknown> {
 	color?: MantineColor;
 	collapsed?: boolean;
 	linkComponent?: React.FunctionComponent<Record<string, unknown>>;
+	hrefProp: string;
 }
 
 function CollapsedActiveIndicator() {
@@ -91,6 +92,7 @@ function NavItemRenderer<TData>({
 	color,
 	collapsed,
 	linkComponent,
+	hrefProp,
 }: InternalNavItemProps<TData>) {
 	if (renderItem) {
 		return <>{renderItem(item, depth)}</>;
@@ -138,10 +140,13 @@ function NavItemRenderer<TData>({
 
 		// In collapsed mode, show icon-only with tooltip
 		if (collapsed && depth === 0) {
+			const linkDest = useRouterLink
+				? { [hrefProp]: item.href }
+				: { href: item.href };
 			const collapsedProps = {
 				label: "" as const,
 				leftSection: item.icon,
-				href: item.href,
+				...linkDest,
 				active,
 				variant,
 				color,
@@ -188,11 +193,14 @@ function NavItemRenderer<TData>({
 			);
 		}
 
+		const stdLinkDest = useRouterLink
+			? { [hrefProp]: item.href }
+			: { href: item.href };
 		const standardProps = {
 			label: item.label,
 			leftSection: item.icon,
 			rightSection: item.badge,
-			href: item.href,
+			...stdLinkDest,
 			active,
 			variant,
 			color,
@@ -280,10 +288,16 @@ function NavItemRenderer<TData>({
 								(child): child is NavLinkItem<TData> => child.type === "link",
 							)
 							.map((child) => {
+								const useChildRouterLink = linkComponent && !child.external;
+								const menuLinkDest = child.href
+									? useChildRouterLink
+										? { [hrefProp]: child.href }
+										: { href: child.href }
+									: {};
 								const menuItemProps = {
 									leftSection: child.icon,
 									disabled: child.disabled,
-									...(child.href ? { href: child.href } : {}),
+									...menuLinkDest,
 									onClick: (e: React.MouseEvent) => {
 										if (child.disabled) return;
 										if (child.onClick) {
@@ -388,6 +402,7 @@ function NavItemRenderer<TData>({
 					color={color}
 					collapsed={collapsed}
 					linkComponent={linkComponent}
+					hrefProp={hrefProp}
 				/>
 			))}
 		</NavLink>
@@ -543,6 +558,7 @@ export function NavGroup<TData = unknown>({
 	const resolvedLinkComponent = shell?.linkComponent as
 		| React.FunctionComponent<Record<string, unknown>>
 		| undefined;
+	const resolvedHrefProp = shell?.hrefProp ?? "href";
 
 	// Auto-close mobile drawer on link click
 	const wrappedOnItemClick: NavCallbacks<TData>["onItemClick"] = useCallback(
@@ -666,6 +682,7 @@ export function NavGroup<TData = unknown>({
 					color={color}
 					collapsed={isCollapsed}
 					linkComponent={resolvedLinkComponent}
+					hrefProp={resolvedHrefProp}
 				/>
 			))}
 		</div>

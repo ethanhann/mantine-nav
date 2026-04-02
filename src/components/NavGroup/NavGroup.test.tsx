@@ -235,6 +235,36 @@ describe("NavGroup (Mantine NavLink)", () => {
 			expect(link).not.toHaveAttribute("data-router-link");
 		});
 
+		it("passes hrefProp to linkComponent instead of href", () => {
+			const FakeLink = React.forwardRef<
+				HTMLAnchorElement,
+				React.AnchorHTMLAttributes<HTMLAnchorElement> & { to?: string }
+			>((props, ref) => (
+				<a ref={ref} data-router-link data-to={props.to} {...props} />
+			));
+			FakeLink.displayName = "FakeLink";
+			const items = [
+				{
+					id: "home",
+					type: "link" as const,
+					label: "Home",
+					href: "/home",
+				},
+			];
+			render(
+				<NavShell
+					linkComponent={FakeLink}
+					hrefProp="to"
+					sidebar={<NavGroup items={items} />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			const link = screen.getByText("Home").closest("[data-router-link]");
+			expect(link).toHaveAttribute("data-to", "/home");
+		});
+
 		it("fires item onClick handler", async () => {
 			const user = userEvent.setup();
 			const handleClick = vi.fn();

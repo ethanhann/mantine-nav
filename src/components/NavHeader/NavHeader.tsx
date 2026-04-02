@@ -37,7 +37,12 @@ export function NavHeader({
 			<Group gap="md" wrap="nowrap">
 				{logo}
 				{environment && (
-					<Badge color={environment.color} variant="light" size="sm" autoContrast>
+					<Badge
+						color={environment.color}
+						variant="light"
+						size="sm"
+						autoContrast
+					>
 						{environment.label}
 					</Badge>
 				)}
