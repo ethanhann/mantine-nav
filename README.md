@@ -1,7 +1,7 @@
 # @ethanhann/mantine-nav
 
-[![CI](https://github.com/ethanhann/nav/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanhann/nav/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ethanhann/nav/blob/main/LICENSE)
+[![CI](https://github.com/ethanhann/mantine-nav/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanhann/mantine-nav/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ethanhann/mantine-nav/blob/main/LICENSE)
 [![Coverage](https://img.shields.io/endpoint?url=https://ethanhann.github.io/nav/coverage-badge.json)](https://ethanhann.github.io/nav/)
 [![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/nav/)
 

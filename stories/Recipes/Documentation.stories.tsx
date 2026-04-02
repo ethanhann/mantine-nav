@@ -87,7 +87,7 @@ export const Default: Story = {
             </Text>
           }
           rightSection={
-            <Anchor href="https://github.com/ethanhann/nav" target="_blank" size="sm">
+            <Anchor href="https://github.com/ethanhann/mantine-nav" target="_blank" size="sm">
               GitHub
             </Anchor>
           }
