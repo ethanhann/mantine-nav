@@ -1,4 +1,9 @@
 import "@testing-library/jest-dom/vitest";
+import * as vitestAxeMatchers from "vitest-axe/matchers";
+import { expect } from "vitest";
+
+expect.extend(vitestAxeMatchers);
+import "vitest-axe/extend-expect";
 
 // Mantine requires matchMedia in jsdom
 Object.defineProperty(window, "matchMedia", {

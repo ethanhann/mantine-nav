@@ -1,7 +1,15 @@
+import React from "react";
+import ReactDOM from "react-dom";
 import { MantineProvider } from "@mantine/core";
 import type { Preview } from "@storybook/react";
 
 import "@mantine/core/styles.css";
+
+if (process.env.NODE_ENV !== "production") {
+	import("@axe-core/react").then((axe) => {
+		axe.default(React, ReactDOM, 1000);
+	});
+}
 import "@mantine/code-highlight/styles.css";
 import "highlight.js/styles/an-old-hope.css";
 import {
