@@ -88,8 +88,25 @@ export function NotificationIndicator({
 	}
 
 	return (
-		<Menu width={340} position="bottom-end" withinPortal>
-			<Menu.Target>{bellButton}</Menu.Target>
+		<Indicator
+			label={count > 0 ? displayCount : undefined}
+			size={16}
+			color={color}
+			disabled={count === 0}
+			processing={false}
+			offset={4}
+		>
+			<Menu width={340} position="bottom-end" withinPortal>
+				<Menu.Target>
+					<ActionIcon
+						variant="subtle"
+						size="lg"
+						aria-label={ariaLabel}
+						color="gray"
+					>
+						<IconBell size={20} stroke={1.5} />
+					</ActionIcon>
+				</Menu.Target>
 
 			<Menu.Dropdown>
 				<Group justify="space-between" px="sm" py="xs">
@@ -133,5 +150,6 @@ export function NotificationIndicator({
 				</ScrollArea.Autosize>
 			</Menu.Dropdown>
 		</Menu>
+		</Indicator>
 	);
 }

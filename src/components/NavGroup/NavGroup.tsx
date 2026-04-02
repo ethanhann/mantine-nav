@@ -107,7 +107,7 @@ function NavItemRenderer<TData>({
 			<Text
 				size="xs"
 				fw={700}
-				c="dimmed"
+				c="gray.7"
 				tt="uppercase"
 				px="sm"
 				pt="lg"

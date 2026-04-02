@@ -38,6 +38,7 @@ export const FilledVariant: Story = {
 		items: sampleItems,
 		currentPath: "/analytics",
 		variant: "filled",
+		color: "blue.8",
 	},
 };
 
