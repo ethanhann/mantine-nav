@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   chromatic:
     runs-on: ubuntu-latest
@@ -21,7 +25,7 @@ jobs:
 
       - run: npm ci
 
-      - uses: chromaui/action@latest
+      - uses: chromaui/action@v11
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           onlyChanged: true
