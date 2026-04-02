@@ -11,6 +11,7 @@ import { NotificationIndicator } from "../components/SaaS/NotificationIndicator"
 import { PlanBadge } from "../components/SaaS/PlanBadge";
 import { UserMenu } from "../components/SaaS/UserMenu";
 import { WorkspaceSwitcher } from "../components/SaaS/WorkspaceSwitcher";
+import type { NavLinkItem, Workspace } from "../types";
 import { sampleNavItems, sampleUser, sampleWorkspaces } from "./helpers";
 
 const notifications: NotificationItem[] = [
@@ -36,8 +37,8 @@ function CollapseStatus() {
 function renderFullApp(
 	opts: {
 		currentPath?: string;
-		onItemClick?: (item: any, e: any) => void;
-		onWorkspaceSwitch?: (ws: any) => void;
+		onItemClick?: (item: NavLinkItem, e: React.MouseEvent) => void;
+		onWorkspaceSwitch?: (ws: Workspace) => void;
 	} = {},
 ) {
 	const onItemClick = opts.onItemClick ?? vi.fn();

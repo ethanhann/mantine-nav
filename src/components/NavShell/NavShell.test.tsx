@@ -58,7 +58,9 @@ describe("NavShell", () => {
 	});
 
 	it("provides linkComponent via context", () => {
-		const FakeLink = (props: any) => <a data-testid="fake-link" {...props} />;
+		const FakeLink = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+			<a data-testid="fake-link" {...props} />
+		);
 
 		function LinkConsumer() {
 			const ctx = useNavShell();

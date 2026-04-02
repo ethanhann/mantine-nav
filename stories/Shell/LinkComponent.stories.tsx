@@ -23,6 +23,8 @@ const MockRouterLink = forwardRef<
 	<a
 		ref={ref}
 		{...props}
+		role="link"
+		// biome-ignore lint/a11y/useValidAnchor: mock SPA router link for story demo
 		onClick={(e) => {
 			e.preventDefault();
 			// eslint-disable-next-line no-console

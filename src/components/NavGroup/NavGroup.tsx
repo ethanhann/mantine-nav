@@ -55,7 +55,7 @@ interface InternalNavItemProps<TData = unknown> {
 	variant: "subtle" | "light" | "filled";
 	color?: MantineColor;
 	collapsed?: boolean;
-	linkComponent?: React.FunctionComponent<any>;
+	linkComponent?: React.FunctionComponent<Record<string, unknown>>;
 }
 
 function NavItemRenderer<TData>({
@@ -521,7 +521,7 @@ export function NavGroup<TData = unknown>({
 	// Detect collapsed state for icon rail mode
 	const isCollapsed = shell ? shell.desktopCollapsed && !shell.isMobile : false;
 	const resolvedLinkComponent = shell?.linkComponent as
-		| React.FunctionComponent<any>
+		| React.FunctionComponent<Record<string, unknown>>
 		| undefined;
 
 	// Auto-close mobile drawer on link click

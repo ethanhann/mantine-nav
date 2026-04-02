@@ -52,7 +52,6 @@ export function useSidebarResize({
 	onResize,
 	onResizeEnd,
 	persistKey,
-	collapsedWidth = 60,
 	onCollapse,
 }: UseSidebarResizeOptions = {}): UseSidebarResizeReturn {
 	const [width, setWidth] = useState(() =>

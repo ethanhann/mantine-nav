@@ -209,9 +209,10 @@ describe("NavGroup (Mantine NavLink)", () => {
 		});
 
 		it("external link bypasses linkComponent from context", () => {
-			const FakeLink = React.forwardRef<HTMLAnchorElement, any>(
-				(props, ref) => <a ref={ref} data-router-link {...props} />,
-			);
+			const FakeLink = React.forwardRef<
+				HTMLAnchorElement,
+				React.AnchorHTMLAttributes<HTMLAnchorElement>
+			>((props, ref) => <a ref={ref} data-router-link {...props} />);
 			FakeLink.displayName = "FakeLink";
 
 			const items: NavItemType[] = [
