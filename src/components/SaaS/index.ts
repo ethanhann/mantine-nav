@@ -1,10 +1,13 @@
-export { WorkspaceSwitcher } from './WorkspaceSwitcher';
-export type { WorkspaceSwitcherProps } from './WorkspaceSwitcher';
-export { UserMenu } from './UserMenu';
-export type { UserMenuProps, UserMenuItem } from './UserMenu';
-export { PlanBadge } from './PlanBadge';
-export type { PlanBadgeProps } from './PlanBadge';
-export { NotificationIndicator } from './NotificationIndicator';
-export type { NotificationIndicatorProps, NotificationItem } from './NotificationIndicator';
-export { ColorSchemeToggle } from './ColorSchemeToggle';
-export type { ColorSchemeToggleProps } from './ColorSchemeToggle';
+export type { ColorSchemeToggleProps } from "./ColorSchemeToggle";
+export { ColorSchemeToggle } from "./ColorSchemeToggle";
+export type {
+	NotificationIndicatorProps,
+	NotificationItem,
+} from "./NotificationIndicator";
+export { NotificationIndicator } from "./NotificationIndicator";
+export type { PlanBadgeProps } from "./PlanBadge";
+export { PlanBadge } from "./PlanBadge";
+export type { UserMenuItem, UserMenuProps } from "./UserMenu";
+export { UserMenu } from "./UserMenu";
+export type { WorkspaceSwitcherProps } from "./WorkspaceSwitcher";
+export { WorkspaceSwitcher } from "./WorkspaceSwitcher";

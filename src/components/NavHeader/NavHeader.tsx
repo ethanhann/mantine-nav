@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { type ReactNode } from 'react';
-import { Group, Badge, type MantineColor } from '@mantine/core';
+import { Badge, Group, type MantineColor } from "@mantine/core";
+import type { ReactNode } from "react";
 
 /** Props for the header bar component. */
 export interface NavHeaderProps {
-  logo?: ReactNode;
-  children?: ReactNode;
-  rightSection?: ReactNode;
-  environment?: { label: string; color: MantineColor };
+	logo?: ReactNode;
+	children?: ReactNode;
+	rightSection?: ReactNode;
+	environment?: { label: string; color: MantineColor };
 }
 
 /**
@@ -27,33 +27,33 @@ export interface NavHeaderProps {
  * ```
  */
 export function NavHeader({
-  logo,
-  children,
-  rightSection,
-  environment,
+	logo,
+	children,
+	rightSection,
+	environment,
 }: NavHeaderProps) {
-  return (
-    <Group h="100%" justify="space-between" wrap="nowrap" flex={1}>
-      <Group gap="md" wrap="nowrap">
-        {logo}
-        {environment && (
-          <Badge color={environment.color} variant="light" size="sm">
-            {environment.label}
-          </Badge>
-        )}
-      </Group>
+	return (
+		<Group h="100%" justify="space-between" wrap="nowrap" flex={1}>
+			<Group gap="md" wrap="nowrap">
+				{logo}
+				{environment && (
+					<Badge color={environment.color} variant="light" size="sm">
+						{environment.label}
+					</Badge>
+				)}
+			</Group>
 
-      {children && (
-        <Group gap="xs" flex={1} justify="center">
-          {children}
-        </Group>
-      )}
+			{children && (
+				<Group gap="xs" flex={1} justify="center">
+					{children}
+				</Group>
+			)}
 
-      {rightSection && (
-        <Group gap="xs" wrap="nowrap">
-          {rightSection}
-        </Group>
-      )}
-    </Group>
-  );
+			{rightSection && (
+				<Group gap="xs" wrap="nowrap">
+					{rightSection}
+				</Group>
+			)}
+		</Group>
+	);
 }

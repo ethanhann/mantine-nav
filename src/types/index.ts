@@ -1,29 +1,23 @@
 export type {
-  // Core item types
-  NavItem,
-  NavItemType,
-  NavLinkItem,
-  NavGroupItem,
-  NavSectionHeader,
-  NavDividerItem,
-
-  // Active matching
-  ActiveMatchStrategy,
-  ActiveMatcher,
-
-  // CSS variables
-  NavCSSVariable,
-
-  // Callbacks
-  NavCallbacks,
-
-  // Variants
-  SidebarVariant,
-
-  // Animation
-  NavAnimationConfig,
-
-  // SaaS types
-  Workspace,
-  UserInfo,
-} from './nav-item';
+	ActiveMatcher,
+	// Active matching
+	ActiveMatchStrategy,
+	// Animation
+	NavAnimationConfig,
+	// Callbacks
+	NavCallbacks,
+	// CSS variables
+	NavCSSVariable,
+	NavDividerItem,
+	NavGroupItem,
+	// Core item types
+	NavItem,
+	NavItemType,
+	NavLinkItem,
+	NavSectionHeader,
+	// Variants
+	SidebarVariant,
+	UserInfo,
+	// SaaS types
+	Workspace,
+} from "./nav-item";

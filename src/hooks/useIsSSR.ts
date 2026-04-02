@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from "react";
 
 function subscribe() {
-  return () => {};
+	return () => {};
 }
 
 function getSnapshot() {
-  return false;
+	return false;
 }
 
 function getServerSnapshot() {
-  return true;
+	return true;
 }
 
 /**
@@ -19,12 +19,12 @@ function getServerSnapshot() {
  * Useful for rendering different content on server vs client.
  */
 export function useIsSSR(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+	return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 /**
  * Returns true after hydration is complete.
  */
 export function useHydrated(): boolean {
-  return !useIsSSR();
+	return !useIsSSR();
 }

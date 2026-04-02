@@ -1,4 +1,4 @@
-import type { NavItemType, NavGroupItem } from '../types';
+import type { NavGroupItem, NavItemType } from "../types";
 
 /**
  * Sort items by weight (lower weight = higher in list).
@@ -6,12 +6,19 @@ import type { NavItemType, NavGroupItem } from '../types';
  * original order for items with equal weight.
  * Recurses into group children.
  */
-export function sortItemsByWeight<TData>(items: NavItemType<TData>[]): NavItemType<TData>[] {
-  const sorted = items.slice().sort((a, b) => (a.weight ?? 0) - (b.weight ?? 0));
-  return sorted.map((item) => {
-    if (item.type === 'group') {
-      return { ...item, children: sortItemsByWeight(item.children) } as NavGroupItem<TData>;
-    }
-    return item;
-  });
+export function sortItemsByWeight<TData>(
+	items: NavItemType<TData>[],
+): NavItemType<TData>[] {
+	const sorted = items
+		.slice()
+		.sort((a, b) => (a.weight ?? 0) - (b.weight ?? 0));
+	return sorted.map((item) => {
+		if (item.type === "group") {
+			return {
+				...item,
+				children: sortItemsByWeight(item.children),
+			} as NavGroupItem<TData>;
+		}
+		return item;
+	});
 }
