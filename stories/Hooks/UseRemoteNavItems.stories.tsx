@@ -205,7 +205,7 @@ resolvers: {
 			<Text size="xl" fw={700} mb="md">
 				API-Driven Navigation
 			</Text>
-			<Text c="dimmed" mb="sm">
+			<Text mb="sm">
 				The sidebar items are loaded from a simulated API response after a 1.5s
 				delay. A resolver map on the client hydrates icon/badge string keys into
 				React components.
@@ -247,7 +247,7 @@ function InstantDataDemo() {
 			<Text size="xl" fw={700} mb="md">
 				Static JSON Data
 			</Text>
-			<Text c="dimmed">
+			<Text>
 				Same JSON payload passed synchronously — no loading state. Useful for
 				SSR or cached responses.
 			</Text>

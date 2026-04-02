@@ -64,7 +64,7 @@ export const Default: Story = {
 			<Text size="xl" fw={700} mb="md">
 				Dashboard
 			</Text>
-			<Text c="dimmed">
+			<Text>
 				This is the main content area. The sidebar uses Mantine AppShell with
 				NavLink components.
 			</Text>

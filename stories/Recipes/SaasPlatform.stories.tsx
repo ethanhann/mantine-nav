@@ -180,9 +180,7 @@ export const Default: Story = {
 							Active
 						</Badge>
 					</Group>
-					<Text size="sm" c="dimmed">
-						Last updated 2 hours ago
-					</Text>
+					<Text size="sm">Last updated 2 hours ago</Text>
 				</Card>
 				<Card shadow="sm" padding="lg" radius="md" withBorder>
 					<Group justify="space-between" mb="xs">
@@ -191,9 +189,7 @@ export const Default: Story = {
 							In Progress
 						</Badge>
 					</Group>
-					<Text size="sm" c="dimmed">
-						Last updated 5 hours ago
-					</Text>
+					<Text size="sm">Last updated 5 hours ago</Text>
 				</Card>
 				<Card shadow="sm" padding="lg" radius="md" withBorder>
 					<Group justify="space-between" mb="xs">
@@ -202,9 +198,7 @@ export const Default: Story = {
 							Planning
 						</Badge>
 					</Group>
-					<Text size="sm" c="dimmed">
-						Last updated 1 day ago
-					</Text>
+					<Text size="sm">Last updated 1 day ago</Text>
 				</Card>
 			</Stack>
 		</NavShell>

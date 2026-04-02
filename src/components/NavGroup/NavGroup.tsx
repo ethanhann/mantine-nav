@@ -58,6 +58,24 @@ interface InternalNavItemProps<TData = unknown> {
 	linkComponent?: React.FunctionComponent<Record<string, unknown>>;
 }
 
+function CollapsedActiveIndicator() {
+	return (
+		<span
+			aria-hidden
+			style={{
+				position: "absolute",
+				left: 0,
+				top: "50%",
+				transform: "translateY(-50%)",
+				width: 3,
+				height: "60%",
+				borderRadius: 3,
+				backgroundColor: "var(--mantine-primary-color-filled)",
+			}}
+		/>
+	);
+}
+
 function NavItemRenderer<TData>({
 	item,
 	depth,
@@ -140,11 +158,9 @@ function NavItemRenderer<TData>({
 						paddingInline: 0,
 						marginBottom: 4,
 						borderRadius: "var(--mantine-radius-sm)",
-						...(active
-							? { borderLeft: "3px solid var(--mantine-primary-color-filled)" }
-							: {}),
 					},
-					section: { marginRight: 0 },
+					section: { marginInlineEnd: 0 },
+					body: { display: "none" },
 				},
 				onClick: handleLinkClick,
 			};
@@ -163,9 +179,12 @@ function NavItemRenderer<TData>({
 			);
 
 			return (
-				<Tooltip label={item.label} position="right" withArrow>
-					{navLinkEl}
-				</Tooltip>
+				<div style={{ position: "relative" }}>
+					{active && <CollapsedActiveIndicator />}
+					<Tooltip label={item.label} position="right" withArrow>
+						{navLinkEl}
+					</Tooltip>
+				</div>
 			);
 		}
 
@@ -219,7 +238,9 @@ function NavItemRenderer<TData>({
 	// In collapsed mode, show icon-only group with popover submenu
 	if (collapsed && depth === 0) {
 		return (
-			<Menu position="right-start" withArrow offset={8} withinPortal>
+			<div style={{ position: "relative" }}>
+				{groupActive && <CollapsedActiveIndicator />}
+				<Menu position="right-start" withArrow offset={8} withinPortal>
 				<Menu.Target>
 					<Tooltip
 						label={groupItem.label}
@@ -245,14 +266,9 @@ function NavItemRenderer<TData>({
 									paddingInline: 0,
 									marginBottom: 4,
 									borderRadius: "var(--mantine-radius-sm)",
-									...(groupActive
-										? {
-												borderLeft:
-													"3px solid var(--mantine-primary-color-filled)",
-											}
-										: {}),
 								},
-								section: { marginRight: 0 },
+								section: { marginInlineEnd: 0 },
+								body: { display: "none" },
 							}}
 						/>
 					</Tooltip>
@@ -317,6 +333,7 @@ function NavItemRenderer<TData>({
 						})}
 				</Menu.Dropdown>
 			</Menu>
+			</div>
 		);
 	}
 

@@ -133,7 +133,7 @@ register('orders.all', { type: 'link', label: 'All Orders', ... })
 			<Text size="xl" fw={700} mb="md">
 				useNavRegistry
 			</Text>
-			<Text c="dimmed" mb="sm">
+			<Text mb="sm">
 				All nav items above were registered flat using dot-notation IDs and
 				assembled into a tree automatically.
 			</Text>
@@ -217,7 +217,7 @@ function LazyRegistrationDemo() {
 			<Text size="xl" fw={700} mb="md">
 				Dynamic Registration
 			</Text>
-			<Text c="dimmed" mb="md">
+			<Text mb="md">
 				Items can be registered and unregistered dynamically. Toggle the button
 				to add/remove the Admin section.
 			</Text>

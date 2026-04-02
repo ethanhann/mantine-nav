@@ -111,11 +111,11 @@ export const WithRouterLink: Story = {
 			<Text size="xl" fw={700} mb="md">
 				Dashboard
 			</Text>
-			<Text c="dimmed">
+			<Text>
 				Click sidebar links and check the browser console. Internal links log
 				&quot;SPA navigate to: ...&quot; while external links open in a new tab.
 			</Text>
-			<Text c="dimmed" mt="sm">
+			<Text mt="sm">
 				Inspect the DOM — internal links have a <code>data-router-link</code>{" "}
 				attribute from the mock component.
 			</Text>
