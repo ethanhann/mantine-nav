@@ -28,3 +28,5 @@ export type { UseStarredPagesOptions, UseStarredPagesReturn, StarredPage } from 
 export { useHeadlessSidebar } from './useHeadlessSidebar';
 export type { UseHeadlessSidebarOptions, UseHeadlessSidebarReturn } from './useHeadlessSidebar';
 export { useIsSSR, useHydrated } from './useIsSSR';
+export { useNavRegistry } from './useNavRegistry';
+export type { UseNavRegistryReturn, NavRegistryEntry } from './useNavRegistry';

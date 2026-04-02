@@ -28,6 +28,7 @@ export interface NavShellContextValue {
   collapseDesktop: () => void;
   expandDesktop: () => void;
   isMobile: boolean;
+  linkComponent?: React.ElementType;
 }
 
 const NavShellContext = createContext<NavShellContextValue | null>(null);
@@ -72,6 +73,8 @@ export interface NavShellProps {
   withBorder?: boolean;
   padding?: MantineSpacing;
   transitionDuration?: number;
+  /** Component used to render nav link items (e.g. React Router's Link or Next.js Link). */
+  linkComponent?: React.ElementType;
 }
 
 /**
@@ -106,6 +109,7 @@ export function NavShell({
   withBorder = true,
   padding = 'md',
   transitionDuration = 200,
+  linkComponent,
 }: NavShellProps) {
   const [mobileOpened, { toggle: toggleMobile, open: openMobile, close: closeMobile }] =
     useDisclosure(false);
@@ -144,6 +148,7 @@ export function NavShell({
     collapseDesktop,
     expandDesktop,
     isMobile,
+    linkComponent,
   };
 
   return (

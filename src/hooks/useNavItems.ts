@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { NavItemType } from '../types';
 import { filterVisibleItems } from '../utils/visibility';
+import { sortItemsByWeight } from '../utils/sorting';
 
 export interface UseNavItemsReturn<TData = unknown> {
   flatItems: NavItemType<TData>[];
@@ -54,7 +55,7 @@ function flattenVisible<TData>(
 export function useNavItems<TData = unknown>(
   items: NavItemType<TData>[],
 ): UseNavItemsReturn<TData> {
-  const visibleItemTree = filterVisibleItems(items);
+  const visibleItemTree = sortItemsByWeight(filterVisibleItems(items));
 
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
     () => new Set(collectDefaultExpanded(visibleItemTree)),

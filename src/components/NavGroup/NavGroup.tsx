@@ -15,6 +15,7 @@ import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
 import { useNavKeyboard } from '../../hooks/useNavKeyboard';
 import { useOptionalNavShell } from '../NavShell';
+import { sortItemsByWeight } from '../../utils/sorting';
 import { filterVisibleItems } from '../../utils/visibility';
 
 /** Props for the navigation item tree component. */
@@ -54,6 +55,7 @@ interface InternalNavItemProps<TData = unknown> {
   variant: 'subtle' | 'light' | 'filled';
   color?: MantineColor;
   collapsed?: boolean;
+  linkComponent?: React.ElementType;
 }
 
 function NavItemRenderer<TData>({
@@ -70,6 +72,7 @@ function NavItemRenderer<TData>({
   variant,
   color,
   collapsed,
+  linkComponent,
 }: InternalNavItemProps<TData>) {
   if (renderItem) {
     return <>{renderItem(item, depth)}</>;
@@ -101,6 +104,21 @@ function NavItemRenderer<TData>({
 
   if (item.type === 'link') {
     const active = isActive(item);
+    const useRouterLink = linkComponent && !item.external;
+    const componentProp = item.external ? 'a' : (useRouterLink ? linkComponent : undefined);
+    const externalProps = item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+
+    const handleLinkClick = (e: React.MouseEvent) => {
+      if (item.disabled) {
+        e.preventDefault();
+        return;
+      }
+      if (item.onClick) {
+        e.preventDefault();
+        item.onClick(e);
+      }
+      onItemClick?.(item, e);
+    };
 
     // In collapsed mode, show icon-only with tooltip
     if (collapsed && depth === 0) {
@@ -119,6 +137,8 @@ function NavItemRenderer<TData>({
             data-item-id={item.id}
             role="treeitem"
             tabIndex={-1}
+            component={componentProp}
+            {...externalProps}
             styles={{
               root: {
                 justifyContent: 'center',
@@ -130,13 +150,7 @@ function NavItemRenderer<TData>({
               },
               section: { marginRight: 0 },
             }}
-            onClick={(e) => {
-              if (item.disabled) {
-                e.preventDefault();
-                return;
-              }
-              onItemClick?.(item, e);
-            }}
+            onClick={handleLinkClick}
           />
         </Tooltip>
       );
@@ -156,19 +170,15 @@ function NavItemRenderer<TData>({
         data-item-id={item.id}
         role="treeitem"
         tabIndex={-1}
+        component={componentProp}
+        {...externalProps}
         styles={{
           root: {
             borderRadius: 'var(--mantine-radius-sm)',
             marginBottom: 2,
           },
         }}
-        onClick={(e) => {
-          if (item.disabled) {
-            e.preventDefault();
-            return;
-          }
-          onItemClick?.(item, e);
-        }}
+        onClick={handleLinkClick}
       />
     );
   }
@@ -217,21 +227,30 @@ function NavItemRenderer<TData>({
           <Menu.Label>{groupItem.label}</Menu.Label>
           {groupItem.children
             .filter((child): child is NavLinkItem<TData> => child.type === 'link')
-            .map((child) => (
-              <Menu.Item
-                key={child.id}
-                leftSection={child.icon}
-                disabled={child.disabled}
-                component={child.href ? 'a' : undefined}
-                {...(child.href ? { href: child.href } : {})}
-                onClick={(e: React.MouseEvent) => {
-                  if (child.disabled) return;
-                  onItemClick?.(child, e);
-                }}
-              >
-                {child.label}
-              </Menu.Item>
-            ))}
+            .map((child) => {
+              const childComponent = child.external ? 'a' : (linkComponent && !child.external && child.href ? linkComponent : (child.href ? 'a' : undefined));
+              const childExternalProps = child.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+              return (
+                <Menu.Item
+                  key={child.id}
+                  leftSection={child.icon}
+                  disabled={child.disabled}
+                  component={childComponent}
+                  {...(child.href ? { href: child.href } : {})}
+                  {...childExternalProps}
+                  onClick={(e: React.MouseEvent) => {
+                    if (child.disabled) return;
+                    if (child.onClick) {
+                      e.preventDefault();
+                      child.onClick(e);
+                    }
+                    onItemClick?.(child, e);
+                  }}
+                >
+                  {child.label}
+                </Menu.Item>
+              );
+            })}
         </Menu.Dropdown>
       </Menu>
     );
@@ -284,6 +303,7 @@ function NavItemRenderer<TData>({
           variant={variant}
           color={color}
           collapsed={collapsed}
+          linkComponent={linkComponent}
         />
       ))}
     </NavLink>
@@ -423,11 +443,12 @@ export function NavGroup<TData = unknown>({
   const containerRef = useRef<HTMLDivElement>(null);
   const shell = useOptionalNavShell();
 
-  // Filter out invisible items before any other logic
-  const visibleItemTree = filterVisibleItems(items);
+  // Filter out invisible items and sort by weight before any other logic
+  const visibleItemTree = sortItemsByWeight(filterVisibleItems(items));
 
   // Detect collapsed state for icon rail mode
   const isCollapsed = shell ? (shell.desktopCollapsed && !shell.isMobile) : false;
+  const resolvedLinkComponent = shell?.linkComponent;
 
   // Auto-close mobile drawer on link click
   const wrappedOnItemClick: NavCallbacks<TData>['onItemClick'] = useCallback(
@@ -539,6 +560,7 @@ export function NavGroup<TData = unknown>({
           variant={variant}
           color={color}
           collapsed={isCollapsed}
+          linkComponent={resolvedLinkComponent}
         />
       ))}
     </div>
