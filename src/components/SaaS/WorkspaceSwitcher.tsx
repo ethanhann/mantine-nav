@@ -58,7 +58,7 @@ export function WorkspaceSwitcher({
   return (
     <Menu width={280} position="bottom-start" withinPortal>
       <Menu.Target>
-        <UnstyledButton p="xs" w="100%">
+        <UnstyledButton p="xs" w="100%" aria-label={`Switch workspace, current: ${activeWorkspace.name}`}>
           {renderWorkspace ? renderWorkspace(activeWorkspace, true) : (
             <Group gap="sm" wrap="nowrap">
               <Avatar
@@ -72,7 +72,7 @@ export function WorkspaceSwitcher({
               <Text size="sm" fw={600} truncate flex={1}>
                 {activeWorkspace.name}
               </Text>
-              <IconSelector size={14} stroke={1.5} opacity={0.5} />
+              <IconSelector size={14} stroke={1.5} opacity={0.5} aria-hidden="true" />
             </Group>
           )}
         </UnstyledButton>
@@ -82,6 +82,7 @@ export function WorkspaceSwitcher({
         {searchable && (
           <TextInput
             placeholder="Search workspaces..."
+            aria-label="Search workspaces"
             leftSection={<IconSearch size={14} stroke={1.5} />}
             value={search}
             onChange={(e) => setSearch(e.currentTarget.value)}
@@ -91,6 +92,11 @@ export function WorkspaceSwitcher({
           />
         )}
         <ScrollArea.Autosize mah={maxVisible * 44}>
+          {filtered.length === 0 && searchable && search && (
+            <Text c="dimmed" ta="center" py="md" size="sm">
+              No workspaces found
+            </Text>
+          )}
           {filtered.map((ws) => (
             <Menu.Item
               key={ws.id}
@@ -104,7 +110,8 @@ export function WorkspaceSwitcher({
                   {ws.name.charAt(0).toUpperCase()}
                 </Avatar>
               }
-              rightSection={ws.id === activeWorkspace.id ? <IconCheck size={14} stroke={1.5} /> : null}
+              rightSection={ws.id === activeWorkspace.id ? <IconCheck size={14} stroke={1.5} aria-hidden="true" /> : null}
+              aria-current={ws.id === activeWorkspace.id ? true : undefined}
               onClick={() => onSwitch(ws)}
             >
               <Text size="sm">{ws.name}</Text>

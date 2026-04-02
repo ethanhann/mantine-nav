@@ -203,8 +203,10 @@ export function NavShell({
           <Overlay
             onClick={closeMobile}
             opacity={0.5}
-            color="#000"
-            zIndex={100}
+            color="var(--mantine-color-black)"
+            zIndex={'var(--mantine-z-index-overlay)' as unknown as number}
+            role="button"
+            aria-label="Close navigation"
           />
         )}
 

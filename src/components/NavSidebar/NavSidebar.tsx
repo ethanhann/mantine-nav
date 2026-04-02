@@ -77,7 +77,9 @@ export function NavSidebar({
   const isMobile = shell?.isMobile ?? false;
   // On desktop collapsed, visually hide header/footer to make room for icon rail
   const hideHeaderFooter = !isMobile && desktopCollapsed;
-  const hiddenStyle = hideHeaderFooter ? { display: 'none' } : undefined;
+  const hiddenStyle: React.CSSProperties | undefined = hideHeaderFooter
+    ? { opacity: 0, maxHeight: 0, overflow: 'hidden', transition: 'opacity 200ms ease, max-height 200ms ease' }
+    : { opacity: 1, maxHeight: '500px', overflow: 'hidden', transition: 'opacity 200ms ease, max-height 200ms ease' };
 
   return (
     <>

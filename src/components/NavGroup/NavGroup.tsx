@@ -75,8 +75,8 @@ function NavItemRenderer<TData>({
   }
 
   if (item.type === 'divider') {
-    if (collapsed) return <Divider my="xs" />;
-    return <Divider my="xs" />;
+    if (collapsed) return <Divider my="xs" role="presentation" />;
+    return <Divider my="xs" role="presentation" />;
   }
 
   if (item.type === 'section') {
@@ -90,6 +90,7 @@ function NavItemRenderer<TData>({
         px="sm"
         pt="md"
         pb={4}
+        role="presentation"
       >
         {item.label}
       </Text>
@@ -483,6 +484,7 @@ export function NavGroup<TData = unknown>({
       role="tree"
       aria-label="Navigation"
       ref={containerRef}
+      tabIndex={enableKeyboardNav ? 0 : undefined}
       onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLDivElement> : undefined}
     >
       {items.map((item) => (
