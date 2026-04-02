@@ -12,7 +12,7 @@ ecosystem. It defeats the purpose of building on Mantine.
 **This library is a Mantine v8 extension, not a standalone component library.**
 
 Every component must be built on top of Mantine primitives. We do not reimplement
-things Mantine already provides. The value-add of `@ethanhann/nav` is:
+things Mantine already provides. The value-add of `@ethanhann/mantine-nav` is:
 
 1. **Opinionated composition** -- wiring together Mantine's AppShell, NavLink, Menu,
    Tabs, Breadcrumbs, Avatar, Badge, etc. into a cohesive navigation system.

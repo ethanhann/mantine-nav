@@ -114,7 +114,7 @@ Identify gaps based on common consumer patterns:
 
 ### Internal Dogfooding
 
-1. **Identify 2-3 internal projects** that can adopt `@ethanhann/nav@beta`
+1. **Identify 2-3 internal projects** that can adopt `@ethanhann/mantine-nav@beta`
 2. **Time-box integration** to 1 day per project
 3. **Document friction points** in a shared feedback document
 

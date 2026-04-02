@@ -1,4 +1,4 @@
-# @ethanhann/nav
+# @ethanhann/mantine-nav
 
 [![CI](https://github.com/ethanhann/nav/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanhann/nav/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ethanhann/nav/blob/main/LICENSE)
@@ -10,7 +10,7 @@ A React navigation component library built on [Mantine v8](https://mantine.dev).
 ## Installation
 
 ```bash
-npm install @ethanhann/nav
+npm install @ethanhann/mantine-nav
 ```
 
 **Peer dependencies:** React 19+, `@mantine/core` 8+, `@mantine/hooks` 8+.
@@ -20,8 +20,8 @@ npm install @ethanhann/nav
 Wrap your app with `NavProvider` and use the `Nav` component for a config-driven layout:
 
 ```tsx
-import { NavProvider, Nav } from '@ethanhann/nav';
-import '@ethanhann/nav/styles.css';
+import { NavProvider, Nav } from '@ethanhann/mantine-nav';
+import '@ethanhann/mantine-nav/styles.css';
 
 const items = [
   { id: 'home', type: 'link', label: 'Home', href: '/', icon: <HomeIcon /> },
@@ -55,13 +55,13 @@ function App() {
 Here's a complete example showing how to define navigation for a marketing CRM, using all four item types (`link`, `group`, `section`, `divider`), badges, icons, and active path matching:
 
 ```tsx
-import { NavProvider, Nav } from '@ethanhann/nav';
+import { NavProvider, Nav } from '@ethanhann/mantine-nav';
 import {
   IconHome, IconUsers, IconMail, IconTarget,
   IconChartBar, IconSettings, IconCalendar, IconFileText,
 } from '@tabler/icons-react';
 import { Badge } from '@mantine/core';
-import '@ethanhann/nav/styles.css';
+import '@ethanhann/mantine-nav/styles.css';
 
 const crmItems: NavItemType[] = [
   { id: 'dashboard', type: 'link', label: 'Dashboard', href: '/', icon: <IconHome size={18} /> },
@@ -140,7 +140,7 @@ This demonstrates:
 Use `Sidebar` with `NavGroup` for a standalone sidebar:
 
 ```tsx
-import { Sidebar, NavGroup } from '@ethanhann/nav';
+import { Sidebar, NavGroup } from '@ethanhann/mantine-nav';
 
 function AppSidebar() {
   return (
@@ -174,7 +174,7 @@ Restrict open groups so only one is expanded at a time:
 A horizontal top navigation bar:
 
 ```tsx
-import { NavBar, NavBreadcrumbs, CommandPaletteSlot, EnvironmentIndicator } from '@ethanhann/nav';
+import { NavBar, NavBreadcrumbs, CommandPaletteSlot, EnvironmentIndicator } from '@ethanhann/mantine-nav';
 
 function TopBar() {
   return (
@@ -199,7 +199,7 @@ function TopBar() {
 Use `NavLayout` for a structural approach with both sidebar and navbar:
 
 ```tsx
-import { NavLayout, Sidebar, NavBar, NavGroup } from '@ethanhann/nav';
+import { NavLayout, Sidebar, NavBar, NavGroup } from '@ethanhann/mantine-nav';
 
 function AppShell() {
   return (
@@ -222,7 +222,7 @@ function AppShell() {
 Apply built-in presets or custom color schemes:
 
 ```tsx
-import { NavThemeProvider } from '@ethanhann/nav';
+import { NavThemeProvider } from '@ethanhann/mantine-nav';
 
 // Built-in preset
 <NavThemeProvider preset="corporate">
@@ -251,7 +251,7 @@ Available presets: `minimal`, `corporate`, `playful`.
 Components for multi-tenant SaaS apps:
 
 ```tsx
-import { WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell } from '@ethanhann/nav';
+import { WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell } from '@ethanhann/mantine-nav';
 
 <Sidebar
   header={
@@ -292,7 +292,7 @@ import { WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell } from '@ethan
 Access sidebar and navbar state from the `NavProvider` context:
 
 ```tsx
-import { useNav } from '@ethanhann/nav';
+import { useNav } from '@ethanhann/mantine-nav';
 
 function MenuButton() {
   const { sidebarOpen, toggleSidebar, sidebarCollapsed, toggleSidebarCollapse } = useNav();
@@ -305,7 +305,7 @@ function MenuButton() {
 Track which nav item matches the current path:
 
 ```tsx
-import { useActiveNavItem } from '@ethanhann/nav';
+import { useActiveNavItem } from '@ethanhann/mantine-nav';
 
 const active = useActiveNavItem(items, { currentPath: '/products', strategy: 'prefix' });
 // active => { id: 'products', label: 'Products', ... }
@@ -316,7 +316,7 @@ const active = useActiveNavItem(items, { currentPath: '/products', strategy: 'pr
 Get sidebar behavior without any UI — useful for fully custom sidebars:
 
 ```tsx
-import { useHeadlessSidebar } from '@ethanhann/nav';
+import { useHeadlessSidebar } from '@ethanhann/mantine-nav';
 
 const { collapsed, toggle, width, handlers } = useHeadlessSidebar({
   expandedWidth: 280,

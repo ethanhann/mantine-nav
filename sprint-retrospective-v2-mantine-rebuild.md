@@ -1,7 +1,7 @@
 # Sprint Retrospective: v2 Mantine Rebuild
 
 **Date:** 2026-03-18
-**Package:** `@ethanhann/nav` v0.1.0
+**Package:** `@ethanhann/mantine-nav` v0.1.0
 **Branch:** `claude/publish-private-npm-package-CRhzU`
 
 ## Sprint Goal
@@ -40,7 +40,7 @@ Rebuild the Nav component library on Mantine v8 primitives, replacing the v1 cus
 - All tests passing via Vitest.
 
 ### 5. Packaging & Publishing
-- Configured as `@ethanhann/nav` scoped to GitHub Packages (private).
+- Configured as `@ethanhann/mantine-nav` scoped to GitHub Packages (private).
 - Dual ESM/CJS output via Vite library mode.
 - `.npmignore` configured for clean publishes.
 - README with installation and usage examples.

@@ -8,7 +8,7 @@ Draft
 
 ## Summary
 Create a GitHub Actions workflow that automates pre-release publishing of
-`@ethanhann/nav` to GitHub Packages. Define versioning strategy, release
+`@ethanhann/mantine-nav` to GitHub Packages. Define versioning strategy, release
 triggers, and consumer setup documentation.
 
 ## Motivation
@@ -225,13 +225,13 @@ from GitHub Packages:
 
 ```bash
 # Install latest beta
-npm install @ethanhann/nav@beta
+npm install @ethanhann/mantine-nav@beta
 
 # Install specific version
-npm install @ethanhann/nav@0.2.0-beta.1
+npm install @ethanhann/mantine-nav@0.2.0-beta.1
 
 # Install stable (when available)
-npm install @ethanhann/nav
+npm install @ethanhann/mantine-nav
 ```
 
 ## Build Verification Checklist
@@ -279,7 +279,7 @@ __integration__/
 - [ ] Pre-release workflow triggers on push to `main`
 - [ ] Version is bumped automatically with `beta` preid
 - [ ] Package publishes to GitHub Packages successfully
-- [ ] Consumer can install via `npm install @ethanhann/nav@beta`
+- [ ] Consumer can install via `npm install @ethanhann/mantine-nav@beta`
 - [ ] Consumer can import and use components after install
 - [ ] Manual dispatch workflow works with all version type options
 - [ ] Stable release workflow triggers on `v*` tag

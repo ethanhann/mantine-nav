@@ -18,7 +18,7 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@ethanhann/nav": ["./src/index.ts"]
+      "@ethanhann/mantine-nav": ["./src/index.ts"]
     }
   },
   "include": ["src"],

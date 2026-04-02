@@ -1,5 +1,5 @@
 {
-  "name": "@ethanhann/nav",
+  "name": "@ethanhann/mantine-nav",
   "version": "0.1.1-beta.0",
   "description": "A React navigation component library built on Mantine v8",
   "type": "module",

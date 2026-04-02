@@ -83,7 +83,7 @@ export const Default: Story = {
           logo={
             <Text fw={700} size="lg">
               <IconBook size={20} stroke={1.5} style={{ verticalAlign: 'middle', marginRight: 8 }} />
-              @ethanhann/nav
+              @ethanhann/mantine-nav
             </Text>
           }
           rightSection={
@@ -107,17 +107,17 @@ export const Default: Story = {
 
       <Title order={1} mb="md">Installation</Title>
       <Text mb="md">
-        Install <Code>@ethanhann/nav</Code> and its peer dependencies:
+        Install <Code>@ethanhann/mantine-nav</Code> and its peer dependencies:
       </Text>
       <Code block mb="md">
-        {`npm install @ethanhann/nav @mantine/core @mantine/hooks @tabler/icons-react`}
+        {`npm install @ethanhann/mantine-nav @mantine/core @mantine/hooks @tabler/icons-react`}
       </Code>
       <Text mb="md">
         Then wrap your app with <Code>MantineProvider</Code> and use <Code>NavShell</Code> for the layout:
       </Text>
       <Code block>
 {`import { MantineProvider } from '@mantine/core';
-import { NavShell, NavSidebar, NavGroup } from '@ethanhann/nav';
+import { NavShell, NavSidebar, NavGroup } from '@ethanhann/mantine-nav';
 import '@mantine/core/styles.css';
 
 function App() {

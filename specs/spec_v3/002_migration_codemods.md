@@ -7,7 +7,7 @@ Implementation
 Draft
 
 ## Summary
-Build jscodeshift-based codemods that automate the migration from v1 (`@ethanhann/nav`)
+Build jscodeshift-based codemods that automate the migration from v1 (`@ethanhann/mantine-nav`)
 API to v2. Provide adapter components for cases where automated transforms are
 insufficient.
 
@@ -99,16 +99,16 @@ packages/codemods/
 
 ```bash
 # Run all codemods
-npx @ethanhann/nav-codemods --path ./src
+npx @ethanhann/mantine-nav-codemods --path ./src
 
 # Run specific transform
-npx @ethanhann/nav-codemods --transform rename-sidebar --path ./src
+npx @ethanhann/mantine-nav-codemods --transform rename-sidebar --path ./src
 
 # Dry run
-npx @ethanhann/nav-codemods --path ./src --dry
+npx @ethanhann/mantine-nav-codemods --path ./src --dry
 
 # Print transforms that would apply
-npx @ethanhann/nav-codemods --path ./src --list
+npx @ethanhann/mantine-nav-codemods --path ./src --list
 ```
 
 ### Transform Implementation Pattern
@@ -122,10 +122,10 @@ export default function transformer(file: FileInfo, api: API) {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  // Find imports from @ethanhann/nav
+  // Find imports from @ethanhann/mantine-nav
   root
     .find(j.ImportDeclaration, {
-      source: { value: '@ethanhann/nav' },
+      source: { value: '@ethanhann/mantine-nav' },
     })
     .forEach((path) => {
       // Rename specific import specifiers
@@ -236,7 +236,7 @@ defineTest(__dirname, 'rename-sidebar', null, 'rename-sidebar');
 - [ ] README documents all available transforms with before/after examples
 
 ## Open Questions
-- Should the codemods package be published separately (`@ethanhann/nav-codemods`)
-  or bundled in the main package under `@ethanhann/nav/codemods`?
+- Should the codemods package be published separately (`@ethanhann/mantine-nav-codemods`)
+  or bundled in the main package under `@ethanhann/mantine-nav/codemods`?
 - Should adapter components live in the main package or the codemods package?
 - How do we handle consumers who have customized v1 components with wrapper HOCs?
