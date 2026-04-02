@@ -13,7 +13,7 @@ You are running the Nav spec implementation pipeline. This skill orchestrates th
 
 ### Implementation Phases
 
-Based on the dependency analysis in `specs/COHERENCE_REVIEW.md`:
+Based on the dependency analysis in `specs/spec_v1/COHERENCE_REVIEW.md`:
 
 | Phase | Specs | Description |
 |-------|-------|-------------|
@@ -28,7 +28,7 @@ Based on the dependency analysis in `specs/COHERENCE_REVIEW.md`:
 
 ### Steps
 
-1. **Read progress**: Read `specs/progress.md` to determine which specs are already complete.
+1. **Read progress**: Read `specs/spec_v1/progress.md` to determine which specs are already complete.
 
 2. **Determine phase**: If a phase number is provided, use that. Otherwise, find the first phase with incomplete specs.
 
@@ -53,4 +53,4 @@ Based on the dependency analysis in `specs/COHERENCE_REVIEW.md`:
 
 ### Progress Tracking
 
-All progress is tracked in `specs/progress.md`. This file is the source of truth for what has been implemented.
+All progress is tracked in `specs/spec_v1/progress.md`. This file is the source of truth for what has been implemented.
