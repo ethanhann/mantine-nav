@@ -100,8 +100,10 @@ describe('Keyboard navigation integration', () => {
 
     await user.click(screen.getByText('Settings'));
 
-    // Should now have more treeitems
-    const treeItems = screen.getAllByRole('treeitem');
+    // Note: Mantine's Collapse has a 200ms CSS transition that doesn't complete
+    // in JSDOM, so expanded children remain "hidden" to accessibility queries.
+    // Use { hidden: true } to include them.
+    const treeItems = screen.getAllByRole('treeitem', { hidden: true });
     // Home, Dashboard, Settings, General, Security, Help = 6
     expect(treeItems.length).toBeGreaterThanOrEqual(6);
   });
