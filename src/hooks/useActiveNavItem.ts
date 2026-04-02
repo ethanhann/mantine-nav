@@ -32,7 +32,7 @@ function matchItem(
 		case "prefix": {
 			if (currentPath === href) return true;
 			// /settings matches /settings/team but not /settings-old
-			return currentPath.startsWith(href + "/");
+			return currentPath.startsWith(`${href}/`);
 		}
 		case "regex":
 			return new RegExp(href).test(currentPath);

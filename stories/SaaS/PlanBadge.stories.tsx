@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
+
 import { PlanBadge } from "../../src";
 
 const meta: Meta<typeof PlanBadge> = {

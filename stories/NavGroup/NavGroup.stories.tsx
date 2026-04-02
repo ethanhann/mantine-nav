@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
+
 import { NavGroup } from "../../src";
 import { deepNestedItems, sampleItems, sectionedItems } from "../_data";
 

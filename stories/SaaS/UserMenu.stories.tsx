@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
+
 import { UserMenu } from "../../src";
 import { sampleUser, sampleUserMenuItems } from "../_data";
 

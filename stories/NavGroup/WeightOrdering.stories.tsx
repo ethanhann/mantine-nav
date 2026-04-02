@@ -6,7 +6,7 @@ import {
 	IconSettings,
 	IconUsers,
 } from "@tabler/icons-react";
-import React from "react";
+
 import type { NavItemType } from "../../src";
 import { NavGroup } from "../../src";
 

@@ -1,24 +1,14 @@
 import {
-	IconBell,
 	IconChartBar,
 	IconClipboardList,
-	IconCode,
-	IconDatabase,
 	IconFileText,
 	IconHome,
 	IconLogout,
-	IconMail,
 	IconPackage,
-	IconPalette,
-	IconSearch,
-	IconServer,
 	IconSettings,
-	IconShield,
-	IconStar,
 	IconUser,
 	IconUsers,
 } from "@tabler/icons-react";
-import React from "react";
 import type { NavItemType, UserInfo, Workspace } from "../src";
 
 export const sampleItems: NavItemType[] = [

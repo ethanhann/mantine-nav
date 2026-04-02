@@ -8,7 +8,7 @@ import {
 	IconPuzzle,
 	IconRocket,
 } from "@tabler/icons-react";
-import React from "react";
+
 import type { NavItemType } from "../../src";
 import { NavGroup, NavHeader, NavShell, NavSidebar } from "../../src";
 

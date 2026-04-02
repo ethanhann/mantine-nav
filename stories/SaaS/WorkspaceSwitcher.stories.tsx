@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import React from "react";
+
 import { WorkspaceSwitcher } from "../../src";
 import { sampleWorkspaces } from "../_data";
 

@@ -1,6 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import type { Preview } from "@storybook/react";
-import React from "react";
+
 import "@mantine/core/styles.css";
 import "@mantine/code-highlight/styles.css";
 import "highlight.js/styles/an-old-hope.css";

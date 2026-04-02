@@ -10,7 +10,7 @@ import {
 	IconShield,
 	IconUsers,
 } from "@tabler/icons-react";
-import React from "react";
+
 import type { NavItemType } from "../../src";
 import {
 	NavGroup,
