@@ -8,8 +8,7 @@ export default defineConfig({
 		react(),
 		dts({
 			include: ["src"],
-			outDir: "dist",
-			entryRoot: "src",
+			exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
 		}),
 	],
 	css: {
