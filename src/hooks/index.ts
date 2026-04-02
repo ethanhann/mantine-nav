@@ -30,3 +30,5 @@ export type { UseHeadlessSidebarOptions, UseHeadlessSidebarReturn } from './useH
 export { useIsSSR, useHydrated } from './useIsSSR';
 export { useNavRegistry } from './useNavRegistry';
 export type { UseNavRegistryReturn, NavRegistryEntry } from './useNavRegistry';
+export { useRemoteNavItems } from './useRemoteNavItems';
+export type { UseRemoteNavItemsReturn, UseRemoteNavItemsOptions, RemoteNavItem, NavItemResolvers } from './useRemoteNavItems';
