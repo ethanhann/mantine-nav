@@ -7,8 +7,13 @@ on:
       - 'src/**'
       - 'package.json'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,9 +38,6 @@ jobs:
 
       - name: Build library
         run: npm run build
-
-      - name: Build Storybook
-        run: npx storybook build
 
       - name: Bump pre-release version
         run: |

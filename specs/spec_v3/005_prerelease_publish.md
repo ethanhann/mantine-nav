@@ -263,8 +263,8 @@ Files excluded (via `.npmignore`):
 ```
 src/
 stories/
-spec_v2/
-spec_v3/
+specs/spec_v2/
+specs/spec_v3/
 .storybook/
 *.test.*
 __integration__/
