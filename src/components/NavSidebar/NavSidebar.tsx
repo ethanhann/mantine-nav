@@ -92,8 +92,8 @@ export function NavSidebar({
             {!hideHeaderFooter && shell && collapseTogglePosition === 'header' && showCollapseToggle && (
               <CollapseToggle />
             )}
+            <Divider mt="xs" />
           </Box>
-          <Divider />
         </AppShell.Section>
       )}
 
@@ -103,8 +103,8 @@ export function NavSidebar({
 
       {(footer || (!hideHeaderFooter && shell && collapseTogglePosition === 'footer' && showCollapseToggle)) && (
         <AppShell.Section style={hiddenStyle}>
-          <Divider />
           <Box pt="xs">
+            <Divider mb="xs" />
             {footer}
             {!hideHeaderFooter && shell && collapseTogglePosition === 'footer' && showCollapseToggle && (
               <CollapseToggle />

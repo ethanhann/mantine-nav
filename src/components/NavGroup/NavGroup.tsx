@@ -75,7 +75,7 @@ function NavItemRenderer<TData>({
   }
 
   if (item.type === 'divider') {
-    if (collapsed) return <Divider my="sm" mx="sm" role="presentation" />;
+    if (collapsed) return null;
     return <Divider my="sm" mx="sm" role="presentation" />;
   }
 
@@ -122,8 +122,10 @@ function NavItemRenderer<TData>({
               root: {
                 justifyContent: 'center',
                 padding: '10px 0',
+                paddingInline: 0,
                 marginBottom: 4,
                 borderRadius: 'var(--mantine-radius-sm)',
+                ...(active ? { borderLeft: '3px solid var(--mantine-primary-color-filled)' } : {}),
               },
               section: { marginRight: 0 },
             }}
@@ -200,8 +202,10 @@ function NavItemRenderer<TData>({
                 root: {
                   justifyContent: 'center',
                   padding: '10px 0',
+                  paddingInline: 0,
                   marginBottom: 4,
                   borderRadius: 'var(--mantine-radius-sm)',
+                  ...(groupActive ? { borderLeft: '3px solid var(--mantine-primary-color-filled)' } : {}),
                 },
                 section: { marginRight: 0 },
               }}
