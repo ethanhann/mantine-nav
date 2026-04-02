@@ -57,7 +57,12 @@ export function UserMenu({
   return (
     <Menu width={200} position="top-start" withinPortal>
       <Menu.Target>
-        <UnstyledButton p="xs" w="100%" aria-label={`User menu for ${user.name}`}>
+        <UnstyledButton
+          p="xs"
+          w="100%"
+          aria-label={`User menu for ${user.name}`}
+          style={{ borderRadius: 'var(--mantine-radius-sm)' }}
+        >
           <Group gap="sm" wrap="nowrap">
             <Avatar
               src={user.avatarUrl}

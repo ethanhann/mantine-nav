@@ -58,7 +58,12 @@ export function WorkspaceSwitcher({
   return (
     <Menu width={280} position="bottom-start" withinPortal>
       <Menu.Target>
-        <UnstyledButton p="xs" w="100%" aria-label={`Switch workspace, current: ${activeWorkspace.name}`}>
+        <UnstyledButton
+          p="xs"
+          w="100%"
+          aria-label={`Switch workspace, current: ${activeWorkspace.name}`}
+          style={{ borderRadius: 'var(--mantine-radius-sm)' }}
+        >
           {renderWorkspace ? renderWorkspace(activeWorkspace, true) : (
             <Group gap="sm" wrap="nowrap">
               <Avatar
