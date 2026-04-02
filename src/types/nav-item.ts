@@ -17,6 +17,8 @@ export type NavCSSVariable = `--nav-${string}`;
 interface NavItemBase {
   id: string;
   disabled?: boolean;
+  visible?: boolean | (() => boolean);
+  weight?: number;
 }
 
 // --- Discriminated union item types ---
@@ -31,6 +33,8 @@ export interface NavLinkItem<TData = unknown> extends NavItemBase {
   activeMatch?: ActiveMatcher;
   activeExact?: boolean;
   'aria-label'?: string;
+  external?: boolean;
+  onClick?: (event: React.MouseEvent) => void;
 }
 
 export interface NavGroupItem<TData = unknown> extends NavItemBase {
@@ -72,6 +76,8 @@ export interface NavItem<TData = unknown> {
   children?: NavItem<TData>[];
   defaultOpened?: boolean;
   disabled?: boolean;
+  visible?: boolean | (() => boolean);
+  weight?: number;
   badge?: ReactNode;
   data?: TData;
   activeMatch?: ActiveMatcher;

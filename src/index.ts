@@ -46,6 +46,10 @@ export type {
   ColorSchemeToggleProps,
 } from './components/SaaS';
 
+// Utilities
+export { isItemVisible, filterVisibleItems } from './utils/visibility';
+export { sortItemsByWeight } from './utils/sorting';
+
 // Hooks
 export {
   useNavItems,
@@ -65,6 +69,7 @@ export {
   useHeadlessSidebar,
   useIsSSR,
   useHydrated,
+  useNavRegistry,
 } from './hooks';
 export type {
   UseNavItemsReturn,
@@ -93,4 +98,6 @@ export type {
   StarredPage,
   UseHeadlessSidebarOptions,
   UseHeadlessSidebarReturn,
+  UseNavRegistryReturn,
+  NavRegistryEntry,
 } from './hooks';

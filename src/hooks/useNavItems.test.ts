@@ -60,4 +60,31 @@ describe('useNavItems', () => {
     // flat: home, settings, admin (children hidden)
     expect(result.current.flatItems.length).toBe(3);
   });
+
+  it('flatItems excludes invisible items', () => {
+    const itemsWithHidden: NavItemType[] = [
+      { type: 'link', id: 'home', label: 'Home', href: '/' },
+      { type: 'link', id: 'hidden', label: 'Hidden', href: '/hidden', visible: false },
+      { type: 'link', id: 'about', label: 'About', href: '/about' },
+    ];
+    const { result } = renderHook(() => useNavItems(itemsWithHidden));
+    expect(result.current.flatItems.map((i) => i.id)).toEqual(['home', 'about']);
+  });
+
+  it('excludes group when all children are invisible', () => {
+    const itemsWithHiddenGroup: NavItemType[] = [
+      { type: 'link', id: 'home', label: 'Home', href: '/' },
+      {
+        type: 'group',
+        id: 'empty',
+        label: 'Empty',
+        defaultOpened: true,
+        children: [
+          { type: 'link', id: 'a', label: 'A', href: '/a', visible: false },
+        ],
+      },
+    ];
+    const { result } = renderHook(() => useNavItems(itemsWithHiddenGroup));
+    expect(result.current.flatItems.map((i) => i.id)).toEqual(['home']);
+  });
 });

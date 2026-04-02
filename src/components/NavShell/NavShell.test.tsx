@@ -59,4 +59,21 @@ describe('NavShell', () => {
       render(<ShellConsumer />, { wrapper: Wrapper });
     }).toThrow('useNavShell() must be used within a <NavShell>');
   });
+
+  it('provides linkComponent via context', () => {
+    const FakeLink = (props: any) => <a data-testid="fake-link" {...props} />;
+
+    function LinkConsumer() {
+      const ctx = useNavShell();
+      return <span data-testid="has-link-component">{String(!!ctx.linkComponent)}</span>;
+    }
+
+    render(
+      <NavShell linkComponent={FakeLink} sidebar={<LinkConsumer />}>
+        <div>Content</div>
+      </NavShell>,
+      { wrapper: Wrapper },
+    );
+    expect(screen.getByTestId('has-link-component')).toHaveTextContent('true');
+  });
 });
