@@ -17,6 +17,7 @@ export type NavCSSVariable = `--nav-${string}`;
 interface NavItemBase {
   id: string;
   disabled?: boolean;
+  visible?: boolean | (() => boolean);
 }
 
 // --- Discriminated union item types ---
@@ -72,6 +73,7 @@ export interface NavItem<TData = unknown> {
   children?: NavItem<TData>[];
   defaultOpened?: boolean;
   disabled?: boolean;
+  visible?: boolean | (() => boolean);
   badge?: ReactNode;
   data?: TData;
   activeMatch?: ActiveMatcher;

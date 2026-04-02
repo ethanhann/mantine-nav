@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { NavItemType } from '../types';
+import { filterVisibleItems } from '../utils/visibility';
 
 export interface UseNavItemsReturn<TData = unknown> {
   flatItems: NavItemType<TData>[];
@@ -53,8 +54,10 @@ function flattenVisible<TData>(
 export function useNavItems<TData = unknown>(
   items: NavItemType<TData>[],
 ): UseNavItemsReturn<TData> {
+  const visibleItemTree = filterVisibleItems(items);
+
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
-    () => new Set(collectDefaultExpanded(items)),
+    () => new Set(collectDefaultExpanded(visibleItemTree)),
   );
 
   const toggleGroup = useCallback((key: string) => {
@@ -70,8 +73,8 @@ export function useNavItems<TData = unknown>(
   }, []);
 
   const expandAll = useCallback(() => {
-    setExpandedKeys(new Set(collectGroupKeys(items)));
-  }, [items]);
+    setExpandedKeys(new Set(collectGroupKeys(visibleItemTree)));
+  }, [visibleItemTree]);
 
   const collapseAll = useCallback(() => {
     setExpandedKeys(new Set());
@@ -83,8 +86,8 @@ export function useNavItems<TData = unknown>(
   );
 
   const flatItems = useMemo(
-    () => flattenVisible(items, expandedKeys),
-    [items, expandedKeys],
+    () => flattenVisible(visibleItemTree, expandedKeys),
+    [visibleItemTree, expandedKeys],
   );
 
   return { flatItems, expandedKeys, toggleGroup, expandAll, collapseAll, isExpanded };

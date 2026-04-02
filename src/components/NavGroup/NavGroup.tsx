@@ -15,6 +15,7 @@ import { useActiveNavItem } from '../../hooks/useActiveNavItem';
 import { useNavAnimation } from '../../hooks/useNavAnimation';
 import { useNavKeyboard } from '../../hooks/useNavKeyboard';
 import { useOptionalNavShell } from '../NavShell';
+import { filterVisibleItems } from '../../utils/visibility';
 
 /** Props for the navigation item tree component. */
 export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
@@ -422,6 +423,9 @@ export function NavGroup<TData = unknown>({
   const containerRef = useRef<HTMLDivElement>(null);
   const shell = useOptionalNavShell();
 
+  // Filter out invisible items before any other logic
+  const visibleItemTree = filterVisibleItems(items);
+
   // Detect collapsed state for icon rail mode
   const isCollapsed = shell ? (shell.desktopCollapsed && !shell.isMobile) : false;
 
@@ -438,7 +442,7 @@ export function NavGroup<TData = unknown>({
 
   // Manage expanded state with accordion support
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    () => collectDefaultExpanded(items, accordion, accordionScope),
+    () => collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
   );
 
   const handleToggleGroup = useCallback(
@@ -453,7 +457,7 @@ export function NavGroup<TData = unknown>({
             if (accordionScope === 'global') {
               next.clear();
             } else {
-              const siblings = getSiblingGroupIds(items, key);
+              const siblings = getSiblingGroupIds(visibleItemTree, key);
               for (const s of siblings) {
                 if (s !== key) next.delete(s);
               }
@@ -465,11 +469,11 @@ export function NavGroup<TData = unknown>({
         return next;
       });
     },
-    [accordion, accordionScope, items, onAccordionChange],
+    [accordion, accordionScope, visibleItemTree, onAccordionChange],
   );
 
   // Active state
-  const { isActive: isActiveByRoute } = useActiveNavItem(items, {
+  const { isActive: isActiveByRoute } = useActiveNavItem(visibleItemTree, {
     currentPath,
     matcher: activeMatcher,
   });
@@ -491,11 +495,11 @@ export function NavGroup<TData = unknown>({
   const resolvedDuration = transitionDurationProp ?? duration;
 
   // Keyboard navigation
-  const visibleItems = flattenVisibleItems(items, expandedGroups, maxDepth);
+  const flatItems = flattenVisibleItems(visibleItemTree, expandedGroups, maxDepth);
 
   const { handleKeyDown } = useNavKeyboard({
-    items: visibleItems,
-    treeItems: items,
+    items: flatItems,
+    treeItems: visibleItemTree,
     expandedKeys: expandedGroups,
     onToggle: handleToggleGroup,
     onSelect: (item) => {
@@ -519,7 +523,7 @@ export function NavGroup<TData = unknown>({
       tabIndex={enableKeyboardNav ? 0 : undefined}
       onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLDivElement> : undefined}
     >
-      {items.map((item) => (
+      {visibleItemTree.map((item) => (
         <NavItemRenderer
           key={item.id}
           item={item}

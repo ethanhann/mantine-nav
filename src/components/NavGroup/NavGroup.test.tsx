@@ -83,4 +83,88 @@ describe('NavGroup (Mantine NavLink)', () => {
     render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
     expect(screen.getByRole('tree')).toBeInTheDocument();
   });
+
+  describe('visibility', () => {
+    it('hides item with visible: false', () => {
+      const items: NavItemType[] = [
+        { id: 'a', type: 'link', label: 'Visible', href: '/a' },
+        { id: 'b', type: 'link', label: 'Hidden', href: '/b', visible: false },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      expect(screen.getByText('Visible')).toBeInTheDocument();
+      expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
+    });
+
+    it('hides item with visible callback returning false', () => {
+      const items: NavItemType[] = [
+        { id: 'a', type: 'link', label: 'Visible', href: '/a' },
+        { id: 'b', type: 'link', label: 'Hidden', href: '/b', visible: () => false },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      expect(screen.getByText('Visible')).toBeInTheDocument();
+      expect(screen.queryByText('Hidden')).not.toBeInTheDocument();
+    });
+
+    it('renders items without visible property normally', () => {
+      render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.getByText('About')).toBeInTheDocument();
+      expect(screen.getByText('Settings')).toBeInTheDocument();
+    });
+
+    it('hides group with visible: false and its children', () => {
+      const items: NavItemType[] = [
+        { id: 'home', type: 'link', label: 'Home', href: '/' },
+        {
+          id: 'group',
+          type: 'group',
+          label: 'Admin',
+          visible: false,
+          children: [
+            { id: 'users', type: 'link', label: 'Users', href: '/users' },
+          ],
+        },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      expect(screen.getByText('Home')).toBeInTheDocument();
+      expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+      expect(screen.queryByText('Users')).not.toBeInTheDocument();
+    });
+
+    it('auto-hides group when all children are invisible', () => {
+      const items: NavItemType[] = [
+        {
+          id: 'group',
+          type: 'group',
+          label: 'Empty Group',
+          defaultOpened: true,
+          children: [
+            { id: 'a', type: 'link', label: 'A', href: '/a', visible: false },
+            { id: 'b', type: 'link', label: 'B', href: '/b', visible: false },
+          ],
+        },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      expect(screen.queryByText('Empty Group')).not.toBeInTheDocument();
+    });
+
+    it('keeps group when at least one child is visible', () => {
+      const items: NavItemType[] = [
+        {
+          id: 'group',
+          type: 'group',
+          label: 'Partial',
+          defaultOpened: true,
+          children: [
+            { id: 'a', type: 'link', label: 'Hidden Child', href: '/a', visible: false },
+            { id: 'b', type: 'link', label: 'Visible Child', href: '/b' },
+          ],
+        },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      expect(screen.getByText('Partial')).toBeInTheDocument();
+      expect(screen.queryByText('Hidden Child')).not.toBeInTheDocument();
+      expect(screen.getByText('Visible Child')).toBeInTheDocument();
+    });
+  });
 });

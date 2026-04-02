@@ -46,6 +46,9 @@ export type {
   ColorSchemeToggleProps,
 } from './components/SaaS';
 
+// Utilities
+export { isItemVisible, filterVisibleItems } from './utils/visibility';
+
 // Hooks
 export {
   useNavItems,
