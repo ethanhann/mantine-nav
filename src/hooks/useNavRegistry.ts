@@ -145,11 +145,8 @@ export function useNavRegistry<TData = unknown>(): UseNavRegistryReturn<TData> {
 		setVersion((v) => v + 1);
 	}, []);
 
-	const items = useMemo(
-		() => buildTree(registryRef.current),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[version],
-	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: version is a counter that signals registryRef mutation
+	const items = useMemo(() => buildTree(registryRef.current), [version]);
 
 	return { items, register, unregister, clear };
 }

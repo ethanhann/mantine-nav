@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import type { NavGroupItem, NavItemType } from "../types";
 
 /**
@@ -138,9 +138,11 @@ export function useRemoteNavItems({
 }: UseRemoteNavItemsOptions): UseRemoteNavItemsReturn {
 	const isLoading = rawItems == null;
 
+	const resolversRef = useRef(resolvers);
+	resolversRef.current = resolvers;
+
 	const items = useMemo(
-		() => (rawItems ? hydrateItems(rawItems, resolvers) : []),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		() => (rawItems ? hydrateItems(rawItems, resolversRef.current) : []),
 		[rawItems],
 	);
 
