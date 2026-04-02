@@ -237,7 +237,6 @@ function NavItemRenderer<TData>({
             .filter((child): child is NavLinkItem<TData> => child.type === 'link')
             .map((child) => {
               const menuItemProps = {
-                key: child.id,
                 leftSection: child.icon,
                 disabled: child.disabled,
                 ...(child.href ? { href: child.href } : {}),
@@ -252,15 +251,15 @@ function NavItemRenderer<TData>({
               };
 
               if (child.external) {
-                return <Menu.Item component="a" target="_blank" rel="noopener noreferrer" {...menuItemProps}>{child.label}</Menu.Item>;
+                return <Menu.Item key={child.id} component="a" target="_blank" rel="noopener noreferrer" {...menuItemProps}>{child.label}</Menu.Item>;
               }
               if (linkComponent && child.href) {
-                return <Menu.Item component={linkComponent} {...menuItemProps}>{child.label}</Menu.Item>;
+                return <Menu.Item key={child.id} component={linkComponent} {...menuItemProps}>{child.label}</Menu.Item>;
               }
               if (child.href) {
-                return <Menu.Item component="a" {...menuItemProps}>{child.label}</Menu.Item>;
+                return <Menu.Item key={child.id} component="a" {...menuItemProps}>{child.label}</Menu.Item>;
               }
-              return <Menu.Item {...menuItemProps}>{child.label}</Menu.Item>;
+              return <Menu.Item key={child.id} {...menuItemProps}>{child.label}</Menu.Item>;
             })}
         </Menu.Dropdown>
       </Menu>
