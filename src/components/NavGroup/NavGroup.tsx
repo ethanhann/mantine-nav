@@ -241,98 +241,98 @@ function NavItemRenderer<TData>({
 			<div style={{ position: "relative" }}>
 				{groupActive && <CollapsedActiveIndicator />}
 				<Menu position="right-start" withArrow offset={8} withinPortal>
-				<Menu.Target>
-					<Tooltip
-						label={groupItem.label}
-						position="right"
-						withArrow
-						disabled={groupItem.children.length > 0}
-					>
-						<NavLink
-							label=""
-							leftSection={groupItem.icon}
-							active={groupActive}
-							variant={variant}
-							color={color}
-							disabled={groupItem.disabled}
-							data-item-id={groupItem.id}
-							role="treeitem"
-							aria-label={groupItem.label}
-							tabIndex={-1}
-							styles={{
-								root: {
-									justifyContent: "center",
-									padding: "10px 0",
-									paddingInline: 0,
-									marginBottom: 4,
-									borderRadius: "var(--mantine-radius-sm)",
-								},
-								section: { marginInlineEnd: 0 },
-								body: { display: "none" },
-							}}
-						/>
-					</Tooltip>
-				</Menu.Target>
-				<Menu.Dropdown>
-					<Menu.Label>{groupItem.label}</Menu.Label>
-					{groupItem.children
-						.filter(
-							(child): child is NavLinkItem<TData> => child.type === "link",
-						)
-						.map((child) => {
-							const menuItemProps = {
-								leftSection: child.icon,
-								disabled: child.disabled,
-								...(child.href ? { href: child.href } : {}),
-								onClick: (e: React.MouseEvent) => {
-									if (child.disabled) return;
-									if (child.onClick) {
-										e.preventDefault();
-										child.onClick(e);
-									}
-									onItemClick?.(child, e);
-								},
-							};
+					<Menu.Target>
+						<Tooltip
+							label={groupItem.label}
+							position="right"
+							withArrow
+							disabled={groupItem.children.length > 0}
+						>
+							<NavLink
+								label=""
+								leftSection={groupItem.icon}
+								active={groupActive}
+								variant={variant}
+								color={color}
+								disabled={groupItem.disabled}
+								data-item-id={groupItem.id}
+								role="treeitem"
+								aria-label={groupItem.label}
+								tabIndex={-1}
+								styles={{
+									root: {
+										justifyContent: "center",
+										padding: "10px 0",
+										paddingInline: 0,
+										marginBottom: 4,
+										borderRadius: "var(--mantine-radius-sm)",
+									},
+									section: { marginInlineEnd: 0 },
+									body: { display: "none" },
+								}}
+							/>
+						</Tooltip>
+					</Menu.Target>
+					<Menu.Dropdown>
+						<Menu.Label>{groupItem.label}</Menu.Label>
+						{groupItem.children
+							.filter(
+								(child): child is NavLinkItem<TData> => child.type === "link",
+							)
+							.map((child) => {
+								const menuItemProps = {
+									leftSection: child.icon,
+									disabled: child.disabled,
+									...(child.href ? { href: child.href } : {}),
+									onClick: (e: React.MouseEvent) => {
+										if (child.disabled) return;
+										if (child.onClick) {
+											e.preventDefault();
+											child.onClick(e);
+										}
+										onItemClick?.(child, e);
+									},
+								};
 
-							if (child.external) {
+								if (child.external) {
+									return (
+										<Menu.Item
+											key={child.id}
+											component="a"
+											target="_blank"
+											rel="noopener noreferrer"
+											{...menuItemProps}
+										>
+											{child.label}
+										</Menu.Item>
+									);
+								}
+								if (linkComponent && child.href) {
+									return (
+										<Menu.Item
+											key={child.id}
+											component={linkComponent}
+											{...menuItemProps}
+										>
+											{child.label}
+										</Menu.Item>
+									);
+								}
+								if (child.href) {
+									return (
+										<Menu.Item key={child.id} component="a" {...menuItemProps}>
+											{child.label}
+										</Menu.Item>
+									);
+								}
 								return (
-									<Menu.Item
-										key={child.id}
-										component="a"
-										target="_blank"
-										rel="noopener noreferrer"
-										{...menuItemProps}
-									>
+									<Menu.Item key={child.id} {...menuItemProps}>
 										{child.label}
 									</Menu.Item>
 								);
-							}
-							if (linkComponent && child.href) {
-								return (
-									<Menu.Item
-										key={child.id}
-										component={linkComponent}
-										{...menuItemProps}
-									>
-										{child.label}
-									</Menu.Item>
-								);
-							}
-							if (child.href) {
-								return (
-									<Menu.Item key={child.id} component="a" {...menuItemProps}>
-										{child.label}
-									</Menu.Item>
-								);
-							}
-							return (
-								<Menu.Item key={child.id} {...menuItemProps}>
-									{child.label}
-								</Menu.Item>
-							);
-						})}
-				</Menu.Dropdown>
-			</Menu>
+							})}
+					</Menu.Dropdown>
+				</Menu>
 			</div>
 		);
 	}
@@ -361,6 +361,9 @@ function NavItemRenderer<TData>({
 					marginLeft: "var(--mantine-spacing-md)",
 					paddingLeft: "var(--mantine-spacing-xs)",
 				},
+			}}
+			attributes={{
+				collapse: { role: "group" },
 			}}
 			onClick={() => {
 				if (groupItem.disabled) return;

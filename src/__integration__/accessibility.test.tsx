@@ -32,10 +32,7 @@ function renderApp(
 					</NavHeader>
 				}
 				sidebar={
-					<NavSidebar
-						header={opts.sidebarHeader}
-						footer={opts.sidebarFooter}
-					>
+					<NavSidebar header={opts.sidebarHeader} footer={opts.sidebarFooter}>
 						<NavGroup
 							items={items}
 							currentPath={opts.currentPath}
@@ -92,12 +89,7 @@ describe("Accessibility (axe-core)", () => {
 			items,
 			currentPath: "/settings/general",
 		});
-		// Mantine's NavLink wraps children in a Collapse div that breaks
-		// the strict tree > treeitem ARIA hierarchy. This is a known
-		// Mantine limitation — disable that specific rule here.
-		const results = await axe(container, {
-			rules: { "aria-required-children": { enabled: false } },
-		});
+		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 	});
 

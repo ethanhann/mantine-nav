@@ -1,7 +1,7 @@
-import React from "react";
-import ReactDOM from "react-dom";
 import { MantineProvider } from "@mantine/core";
 import type { Preview } from "@storybook/react";
+import React from "react";
+import ReactDOM from "react-dom";
 
 import "@mantine/core/styles.css";
 
