@@ -5,7 +5,7 @@
 [![Coverage](https://img.shields.io/endpoint?url=https://ethanhann.github.io/nav/coverage-badge.json)](https://ethanhann.github.io/nav/)
 [![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/nav/)
 
-A React navigation component library built on [Mantine v8](https://mantine.dev). Provides sidebar navigation, top nav bars, and a combined layout with support for multi-level nesting, keyboard navigation, theming, and SaaS-oriented components.
+A React navigation component library built on [Mantine v9](https://mantine.dev). Provides sidebar navigation, top nav bars, and a combined layout with support for multi-level nesting, keyboard navigation, theming, and SaaS-oriented components.
 
 ## Installation
 

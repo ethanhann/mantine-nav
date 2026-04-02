@@ -1,6 +1,6 @@
 {
 	"name": "@ethanhann/mantine-nav",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "A React navigation component library built on Mantine v9",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -11,15 +11,12 @@
 			"types": "./dist/index.d.ts",
 			"import": "./dist/index.js",
 			"require": "./dist/index.cjs"
-		},
-		"./styles.css": "./dist/styles.css"
+		}
 	},
 	"files": [
 		"dist"
 	],
-	"sideEffects": [
-		"**/*.css"
-	],
+	"sideEffects": false,
 	"scripts": {
 		"dev": "storybook dev -p 6006",
 		"build": "vite build",

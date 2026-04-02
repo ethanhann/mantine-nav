@@ -7,8 +7,9 @@ export default defineConfig({
 	plugins: [
 		react(),
 		dts({
-			insertTypesEntry: true,
 			include: ["src"],
+			outDir: "dist",
+			entryRoot: "src",
 		}),
 	],
 	css: {
