@@ -68,7 +68,7 @@ export function NotificationIndicator({
       size={16}
       color={color}
       disabled={count === 0}
-      processing={count > 0}
+      processing={false}
       offset={4}
     >
       <ActionIcon
@@ -116,6 +116,7 @@ export function NotificationIndicator({
                 onClick={() => onRead?.(n.id)}
                 opacity={n.read ? 0.6 : 1}
                 component={n.href ? 'a' : undefined}
+                aria-label={`${n.title}${n.read ? '' : ' (unread)'}`}
                 {...(n.href ? { href: n.href } : {})}
               >
                 <Text size="sm" fw={n.read ? 400 : 600}>{n.title}</Text>

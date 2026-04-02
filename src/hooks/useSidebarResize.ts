@@ -19,7 +19,7 @@ export interface UseSidebarResizeReturn {
   handleRef: React.RefObject<HTMLDivElement>;
   getHandleProps: () => {
     ref: React.RefObject<HTMLDivElement>;
-    onMouseDown: (e: React.MouseEvent) => void;
+    onPointerDown: (e: React.PointerEvent) => void;
     onDoubleClick: () => void;
     onKeyDown: (e: React.KeyboardEvent) => void;
     role: string;
@@ -63,8 +63,8 @@ export function useSidebarResize({
   const startXRef = useRef(0);
   const startWidthRef = useRef(0);
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
       const delta = e.clientX - startXRef.current;
       let newWidth = startWidthRef.current + delta;
 
@@ -81,7 +81,7 @@ export function useSidebarResize({
     [minWidth, maxWidth, onResize, onCollapse],
   );
 
-  const handleMouseUp = useCallback(
+  const handlePointerUp = useCallback(
     () => {
       setIsResizing(false);
       document.body.style.cursor = '';
@@ -98,17 +98,18 @@ export function useSidebarResize({
 
   useEffect(() => {
     if (!isResizing) return;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [isResizing, handleMouseMove, handleMouseUp]);
+  }, [isResizing, handlePointerMove, handlePointerUp]);
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
       e.preventDefault();
+      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
       startXRef.current = e.clientX;
       startWidthRef.current = width;
       setIsResizing(true);
@@ -157,7 +158,7 @@ export function useSidebarResize({
   const getHandleProps = useCallback(
     () => ({
       ref: handleRef,
-      onMouseDown: handleMouseDown,
+      onPointerDown: handlePointerDown,
       onDoubleClick: resetWidth,
       onKeyDown: handleKeyDown,
       role: 'separator',
@@ -177,11 +178,12 @@ export function useSidebarResize({
         zIndex: 10,
         backgroundColor: 'transparent',
         transition: 'background-color 150ms ease',
-        // Visible on hover via CSS-in-JS — consumers can override
+        outline: 'none',
+        touchAction: 'none' as const,
       } satisfies React.CSSProperties,
       'data-resize-handle': true,
     }),
-    [handleMouseDown, resetWidth, handleKeyDown, width, minWidth, maxWidth],
+    [handlePointerDown, resetWidth, handleKeyDown, width, minWidth, maxWidth],
   );
 
   return { width, isResizing, handleRef, getHandleProps, resetWidth };

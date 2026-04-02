@@ -26,7 +26,7 @@ describe('Spec 009: useSidebarResize', () => {
     expect(props.role).toBe('separator');
     expect(props['aria-label']).toBe('Resize sidebar');
     expect(props['aria-orientation']).toBe('vertical');
-    expect(typeof props.onMouseDown).toBe('function');
+    expect(typeof props.onPointerDown).toBe('function');
     expect(typeof props.onDoubleClick).toBe('function');
   });
 });

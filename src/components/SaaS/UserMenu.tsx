@@ -57,7 +57,12 @@ export function UserMenu({
   return (
     <Menu width={200} position="top-start" withinPortal>
       <Menu.Target>
-        <UnstyledButton p="xs" w="100%">
+        <UnstyledButton
+          p="xs"
+          w="100%"
+          aria-label={`User menu for ${user.name}`}
+          style={{ borderRadius: 'var(--mantine-radius-sm)' }}
+        >
           <Group gap="sm" wrap="nowrap">
             <Avatar
               src={user.avatarUrl}
@@ -89,8 +94,8 @@ export function UserMenu({
         <Menu.Label>{user.name}</Menu.Label>
         {user.email && <Menu.Label>{user.email}</Menu.Label>}
         <Menu.Divider />
-        {menuItems.map((item, i) => (
-          <Fragment key={i}>
+        {menuItems.map((item) => (
+          <Fragment key={item.label}>
             {item.dividerBefore && <Menu.Divider />}
             <Menu.Item
               leftSection={item.icon}

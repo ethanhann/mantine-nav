@@ -75,8 +75,8 @@ function NavItemRenderer<TData>({
   }
 
   if (item.type === 'divider') {
-    if (collapsed) return <Divider my="xs" />;
-    return <Divider my="xs" />;
+    if (collapsed) return <Divider my="sm" mx="sm" role="presentation" />;
+    return <Divider my="sm" mx="sm" role="presentation" />;
   }
 
   if (item.type === 'section') {
@@ -88,8 +88,10 @@ function NavItemRenderer<TData>({
         c="dimmed"
         tt="uppercase"
         px="sm"
-        pt="md"
-        pb={4}
+        pt="lg"
+        pb="xs"
+        role="presentation"
+        style={{ letterSpacing: '0.05em' }}
       >
         {item.label}
       </Text>
@@ -117,7 +119,12 @@ function NavItemRenderer<TData>({
             role="treeitem"
             tabIndex={-1}
             styles={{
-              root: { justifyContent: 'center', padding: '8px 0' },
+              root: {
+                justifyContent: 'center',
+                padding: '10px 0',
+                marginBottom: 4,
+                borderRadius: 'var(--mantine-radius-sm)',
+              },
               section: { marginRight: 0 },
             }}
             onClick={(e) => {
@@ -146,6 +153,12 @@ function NavItemRenderer<TData>({
         data-item-id={item.id}
         role="treeitem"
         tabIndex={-1}
+        styles={{
+          root: {
+            borderRadius: 'var(--mantine-radius-sm)',
+            marginBottom: 2,
+          },
+        }}
         onClick={(e) => {
           if (item.disabled) {
             e.preventDefault();
@@ -184,7 +197,12 @@ function NavItemRenderer<TData>({
               aria-label={groupItem.label}
               tabIndex={-1}
               styles={{
-                root: { justifyContent: 'center', padding: '8px 0' },
+                root: {
+                  justifyContent: 'center',
+                  padding: '10px 0',
+                  marginBottom: 4,
+                  borderRadius: 'var(--mantine-radius-sm)',
+                },
                 section: { marginRight: 0 },
               }}
             />
@@ -228,6 +246,17 @@ function NavItemRenderer<TData>({
       role="treeitem"
       aria-expanded={isExpanded}
       tabIndex={-1}
+      styles={{
+        root: {
+          borderRadius: 'var(--mantine-radius-sm)',
+          marginBottom: 2,
+        },
+        children: {
+          borderLeft: '1px solid var(--mantine-color-default-border)',
+          marginLeft: 'var(--mantine-spacing-md)',
+          paddingLeft: 'var(--mantine-spacing-xs)',
+        },
+      }}
       onClick={() => {
         if (groupItem.disabled) return;
         onToggleGroup(groupItem.id);
@@ -483,6 +512,7 @@ export function NavGroup<TData = unknown>({
       role="tree"
       aria-label="Navigation"
       ref={containerRef}
+      tabIndex={enableKeyboardNav ? 0 : undefined}
       onKeyDown={enableKeyboardNav ? handleKeyDown as React.KeyboardEventHandler<HTMLDivElement> : undefined}
     >
       {items.map((item) => (
