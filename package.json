@@ -27,7 +27,6 @@
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit",
     "storybook:build": "storybook build",
-    "chromatic": "chromatic --exit-zero-on-changes --exit-once-uploaded",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
@@ -51,7 +50,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.1",
-    "chromatic": "^15.3.0",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
