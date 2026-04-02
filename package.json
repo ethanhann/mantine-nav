@@ -25,6 +25,7 @@
     "build": "vite build",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "storybook:build": "storybook build",
     "prepublishOnly": "npm run build"
@@ -50,6 +51,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^4.1.2",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
