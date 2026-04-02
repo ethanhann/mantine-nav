@@ -105,8 +105,11 @@ function NavItemRenderer<TData>({
   if (item.type === 'link') {
     const active = isActive(item);
     const useRouterLink = linkComponent && !item.external;
-    const componentProp = item.external ? 'a' : (useRouterLink ? linkComponent : undefined);
-    const externalProps = item.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+    const componentProps = item.external
+      ? { component: 'a' as const, target: '_blank', rel: 'noopener noreferrer' }
+      : useRouterLink
+        ? { component: linkComponent }
+        : {};
 
     const handleLinkClick = (e: React.MouseEvent) => {
       if (item.disabled) {
@@ -137,8 +140,7 @@ function NavItemRenderer<TData>({
             data-item-id={item.id}
             role="treeitem"
             tabIndex={-1}
-            component={componentProp}
-            {...externalProps}
+            {...(componentProps as Record<string, unknown>)}
             styles={{
               root: {
                 justifyContent: 'center',
@@ -170,8 +172,7 @@ function NavItemRenderer<TData>({
         data-item-id={item.id}
         role="treeitem"
         tabIndex={-1}
-        component={componentProp}
-        {...externalProps}
+        {...(componentProps as Record<string, unknown>)}
         styles={{
           root: {
             borderRadius: 'var(--mantine-radius-sm)',
@@ -228,16 +229,20 @@ function NavItemRenderer<TData>({
           {groupItem.children
             .filter((child): child is NavLinkItem<TData> => child.type === 'link')
             .map((child) => {
-              const childComponent = child.external ? 'a' : (linkComponent && !child.external && child.href ? linkComponent : (child.href ? 'a' : undefined));
-              const childExternalProps = child.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+              const childComponentProps = child.external
+                ? { component: 'a' as const, target: '_blank', rel: 'noopener noreferrer' }
+                : linkComponent && child.href
+                  ? { component: linkComponent }
+                  : child.href
+                    ? { component: 'a' as const }
+                    : {};
               return (
                 <Menu.Item
                   key={child.id}
                   leftSection={child.icon}
                   disabled={child.disabled}
-                  component={childComponent}
+                  {...(childComponentProps as Record<string, unknown>)}
                   {...(child.href ? { href: child.href } : {})}
-                  {...childExternalProps}
                   onClick={(e: React.MouseEvent) => {
                     if (child.disabled) return;
                     if (child.onClick) {
