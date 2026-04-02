@@ -1,8 +1,10 @@
+import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MantineProvider } from '@mantine/core';
 import { NavGroup } from './NavGroup';
+import { NavShell } from '../NavShell';
 import type { NavItemType } from '../../types';
 
 function Wrapper({ children }: { children: React.ReactNode }) {
@@ -165,6 +167,62 @@ describe('NavGroup (Mantine NavLink)', () => {
       expect(screen.getByText('Partial')).toBeInTheDocument();
       expect(screen.queryByText('Hidden Child')).not.toBeInTheDocument();
       expect(screen.getByText('Visible Child')).toBeInTheDocument();
+    });
+  });
+
+  describe('external and onClick', () => {
+    it('renders external link with target and rel attributes', () => {
+      const items: NavItemType[] = [
+        { id: 'ext', type: 'link', label: 'External', href: 'https://example.com', external: true },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      const link = screen.getByText('External').closest('a');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    });
+
+    it('external link bypasses linkComponent from context', () => {
+      const FakeLink = React.forwardRef<HTMLAnchorElement, any>((props, ref) => (
+        <a ref={ref} data-router-link {...props} />
+      ));
+      FakeLink.displayName = 'FakeLink';
+
+      const items: NavItemType[] = [
+        { id: 'ext', type: 'link', label: 'External', href: 'https://example.com', external: true },
+      ];
+      render(
+        <NavShell linkComponent={FakeLink} sidebar={<NavGroup items={items} />}>
+          <div>Content</div>
+        </NavShell>,
+        { wrapper: Wrapper },
+      );
+      const link = screen.getByText('External').closest('a');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).not.toHaveAttribute('data-router-link');
+    });
+
+    it('fires item onClick handler', async () => {
+      const user = userEvent.setup();
+      const handleClick = vi.fn();
+      const items: NavItemType[] = [
+        { id: 'action', type: 'link', label: 'Action', href: '#', onClick: handleClick },
+      ];
+      render(<NavGroup items={items} />, { wrapper: Wrapper });
+      await user.click(screen.getByText('Action'));
+      expect(handleClick).toHaveBeenCalled();
+    });
+
+    it('item onClick does not suppress onItemClick callback', async () => {
+      const user = userEvent.setup();
+      const itemOnClick = vi.fn();
+      const groupOnItemClick = vi.fn();
+      const items: NavItemType[] = [
+        { id: 'action', type: 'link', label: 'Action', href: '#', onClick: itemOnClick },
+      ];
+      render(<NavGroup items={items} onItemClick={groupOnItemClick} />, { wrapper: Wrapper });
+      await user.click(screen.getByText('Action'));
+      expect(itemOnClick).toHaveBeenCalled();
+      expect(groupOnItemClick).toHaveBeenCalled();
     });
   });
 });

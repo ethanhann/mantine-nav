@@ -55,7 +55,7 @@ interface InternalNavItemProps<TData = unknown> {
   variant: 'subtle' | 'light' | 'filled';
   color?: MantineColor;
   collapsed?: boolean;
-  linkComponent?: React.ElementType;
+  linkComponent?: React.FunctionComponent<any>;
 }
 
 function NavItemRenderer<TData>({
@@ -105,11 +105,6 @@ function NavItemRenderer<TData>({
   if (item.type === 'link') {
     const active = isActive(item);
     const useRouterLink = linkComponent && !item.external;
-    const componentProps = item.external
-      ? { component: 'a' as const, target: '_blank', rel: 'noopener noreferrer' }
-      : useRouterLink
-        ? { component: linkComponent }
-        : {};
 
     const handleLinkClick = (e: React.MouseEvent) => {
       if (item.disabled) {
@@ -125,63 +120,75 @@ function NavItemRenderer<TData>({
 
     // In collapsed mode, show icon-only with tooltip
     if (collapsed && depth === 0) {
+      const collapsedProps = {
+        label: '' as const,
+        leftSection: item.icon,
+        href: item.href,
+        active,
+        variant,
+        color,
+        disabled: item.disabled,
+        'aria-label': item.label,
+        'aria-current': active ? ('page' as const) : undefined,
+        'data-item-id': item.id,
+        role: 'treeitem' as const,
+        tabIndex: -1 as const,
+        styles: {
+          root: {
+            justifyContent: 'center' as const,
+            padding: '10px 0',
+            paddingInline: 0,
+            marginBottom: 4,
+            borderRadius: 'var(--mantine-radius-sm)',
+            ...(active ? { borderLeft: '3px solid var(--mantine-primary-color-filled)' } : {}),
+          },
+          section: { marginRight: 0 },
+        },
+        onClick: handleLinkClick,
+      };
+
+      const navLinkEl = item.external
+        ? <NavLink component="a" target="_blank" rel="noopener noreferrer" {...collapsedProps} />
+        : useRouterLink
+          ? <NavLink component={linkComponent!} {...collapsedProps} />
+          : <NavLink {...collapsedProps} />;
+
       return (
         <Tooltip label={item.label} position="right" withArrow>
-          <NavLink
-            label=""
-            leftSection={item.icon}
-            href={item.href}
-            active={active}
-            variant={variant}
-            color={color}
-            disabled={item.disabled}
-            aria-label={item.label}
-            aria-current={active ? 'page' : undefined}
-            data-item-id={item.id}
-            role="treeitem"
-            tabIndex={-1}
-            {...(componentProps as Record<string, unknown>)}
-            styles={{
-              root: {
-                justifyContent: 'center',
-                padding: '10px 0',
-                paddingInline: 0,
-                marginBottom: 4,
-                borderRadius: 'var(--mantine-radius-sm)',
-                ...(active ? { borderLeft: '3px solid var(--mantine-primary-color-filled)' } : {}),
-              },
-              section: { marginRight: 0 },
-            }}
-            onClick={handleLinkClick}
-          />
+          {navLinkEl}
         </Tooltip>
       );
     }
 
-    return (
-      <NavLink
-        label={item.label}
-        leftSection={item.icon}
-        rightSection={item.badge}
-        href={item.href}
-        active={active}
-        variant={variant}
-        color={color}
-        disabled={item.disabled}
-        aria-current={active ? 'page' : undefined}
-        data-item-id={item.id}
-        role="treeitem"
-        tabIndex={-1}
-        {...(componentProps as Record<string, unknown>)}
-        styles={{
-          root: {
-            borderRadius: 'var(--mantine-radius-sm)',
-            marginBottom: 2,
-          },
-        }}
-        onClick={handleLinkClick}
-      />
-    );
+    const standardProps = {
+      label: item.label,
+      leftSection: item.icon,
+      rightSection: item.badge,
+      href: item.href,
+      active,
+      variant,
+      color,
+      disabled: item.disabled,
+      'aria-current': active ? ('page' as const) : undefined,
+      'data-item-id': item.id,
+      role: 'treeitem' as const,
+      tabIndex: -1 as const,
+      styles: {
+        root: {
+          borderRadius: 'var(--mantine-radius-sm)',
+          marginBottom: 2,
+        },
+      },
+      onClick: handleLinkClick,
+    };
+
+    if (item.external) {
+      return <NavLink component="a" target="_blank" rel="noopener noreferrer" {...standardProps} />;
+    }
+    if (useRouterLink) {
+      return <NavLink component={linkComponent!} {...standardProps} />;
+    }
+    return <NavLink {...standardProps} />;
   }
 
   // type === 'group'
@@ -229,32 +236,31 @@ function NavItemRenderer<TData>({
           {groupItem.children
             .filter((child): child is NavLinkItem<TData> => child.type === 'link')
             .map((child) => {
-              const childComponentProps = child.external
-                ? { component: 'a' as const, target: '_blank', rel: 'noopener noreferrer' }
-                : linkComponent && child.href
-                  ? { component: linkComponent }
-                  : child.href
-                    ? { component: 'a' as const }
-                    : {};
-              return (
-                <Menu.Item
-                  key={child.id}
-                  leftSection={child.icon}
-                  disabled={child.disabled}
-                  {...(childComponentProps as Record<string, unknown>)}
-                  {...(child.href ? { href: child.href } : {})}
-                  onClick={(e: React.MouseEvent) => {
-                    if (child.disabled) return;
-                    if (child.onClick) {
-                      e.preventDefault();
-                      child.onClick(e);
-                    }
-                    onItemClick?.(child, e);
-                  }}
-                >
-                  {child.label}
-                </Menu.Item>
-              );
+              const menuItemProps = {
+                key: child.id,
+                leftSection: child.icon,
+                disabled: child.disabled,
+                ...(child.href ? { href: child.href } : {}),
+                onClick: (e: React.MouseEvent) => {
+                  if (child.disabled) return;
+                  if (child.onClick) {
+                    e.preventDefault();
+                    child.onClick(e);
+                  }
+                  onItemClick?.(child, e);
+                },
+              };
+
+              if (child.external) {
+                return <Menu.Item component="a" target="_blank" rel="noopener noreferrer" {...menuItemProps}>{child.label}</Menu.Item>;
+              }
+              if (linkComponent && child.href) {
+                return <Menu.Item component={linkComponent} {...menuItemProps}>{child.label}</Menu.Item>;
+              }
+              if (child.href) {
+                return <Menu.Item component="a" {...menuItemProps}>{child.label}</Menu.Item>;
+              }
+              return <Menu.Item {...menuItemProps}>{child.label}</Menu.Item>;
             })}
         </Menu.Dropdown>
       </Menu>
@@ -453,7 +459,7 @@ export function NavGroup<TData = unknown>({
 
   // Detect collapsed state for icon rail mode
   const isCollapsed = shell ? (shell.desktopCollapsed && !shell.isMobile) : false;
-  const resolvedLinkComponent = shell?.linkComponent;
+  const resolvedLinkComponent = shell?.linkComponent as React.FunctionComponent<any> | undefined;
 
   // Auto-close mobile drawer on link click
   const wrappedOnItemClick: NavCallbacks<TData>['onItemClick'] = useCallback(

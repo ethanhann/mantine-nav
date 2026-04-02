@@ -82,11 +82,12 @@ function convertNodes<TData>(
         children: convertNodes(node.children),
       } as NavGroupItem<TData>);
     } else if (config) {
-      // Leaf node with config
-      result.push({
-        ...config,
-        id: node.id,
-      } as NavItemType<TData>);
+      // Leaf node with config — groups get empty children array
+      const item = { ...config, id: node.id } as NavItemType<TData>;
+      if (item.type === 'group') {
+        (item as NavGroupItem<TData>).children = [];
+      }
+      result.push(item);
     }
     // Skip leaf nodes without config (shouldn't happen with our logic)
   }
@@ -122,7 +123,12 @@ export function useNavRegistry<TData = unknown>(): UseNavRegistryReturn<TData> {
   }, []);
 
   const unregister = useCallback((id: string) => {
-    registryRef.current.delete(id);
+    const registry = registryRef.current;
+    registry.delete(id);
+    const prefix = id + '.';
+    for (const key of Array.from(registry.keys())) {
+      if (key.startsWith(prefix)) registry.delete(key);
+    }
     setVersion((v) => v + 1);
   }, []);
 

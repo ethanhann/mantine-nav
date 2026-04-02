@@ -156,6 +156,44 @@ describe('useNavRegistry', () => {
     expect(result.current.items.map((i) => i.id)).toEqual(['a', 'b', 'c']);
   });
 
+  it('cascades unregister to children', () => {
+    const { result } = renderHook(() => useNavRegistry());
+
+    act(() => {
+      result.current.register('products', { type: 'group', label: 'Products' });
+      result.current.register('products.catalog', { type: 'link', label: 'Catalog', href: '/products/catalog' });
+      result.current.register('products.inventory', { type: 'link', label: 'Inventory', href: '/products/inventory' });
+      result.current.register('dashboard', { type: 'link', label: 'Dashboard', href: '/' });
+    });
+
+    expect(result.current.items).toHaveLength(2);
+
+    act(() => {
+      result.current.unregister('products');
+    });
+
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0]).toMatchObject({ id: 'dashboard' });
+  });
+
+  it('cascades unregister through deeply nested children', () => {
+    const { result } = renderHook(() => useNavRegistry());
+
+    act(() => {
+      result.current.register('a', { type: 'group', label: 'A' });
+      result.current.register('a.b', { type: 'group', label: 'B' });
+      result.current.register('a.b.c', { type: 'link', label: 'C', href: '/a/b/c' });
+    });
+
+    act(() => {
+      result.current.unregister('a.b');
+    });
+
+    // 'a' remains but with no children — rendered as a leaf group
+    expect(result.current.items).toHaveLength(1);
+    expect(result.current.items[0]).toMatchObject({ id: 'a', type: 'group' });
+  });
+
   it('register and unregister callbacks are stable', () => {
     const { result, rerender } = renderHook(() => useNavRegistry());
 
