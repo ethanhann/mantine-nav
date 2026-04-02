@@ -70,6 +70,7 @@ export {
   useIsSSR,
   useHydrated,
   useNavRegistry,
+  useRemoteNavItems,
 } from './hooks';
 export type {
   UseNavItemsReturn,
@@ -100,4 +101,8 @@ export type {
   UseHeadlessSidebarReturn,
   UseNavRegistryReturn,
   NavRegistryEntry,
+  UseRemoteNavItemsReturn,
+  UseRemoteNavItemsOptions,
+  RemoteNavItem,
+  NavItemResolvers,
 } from './hooks';
