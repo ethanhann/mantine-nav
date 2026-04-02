@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import type { NavItemType, SidebarVariant } from "../types";
 
 export interface UseHeadlessSidebarOptions<TData = unknown> {

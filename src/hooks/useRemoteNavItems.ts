@@ -95,7 +95,6 @@ function hydrateItems(
 					children: item.children ? hydrateItems(item.children, resolvers) : [],
 				} as NavGroupItem;
 
-			case "link":
 			default:
 				return {
 					...base,

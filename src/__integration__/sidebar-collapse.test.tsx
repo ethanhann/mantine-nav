@@ -1,11 +1,11 @@
 import { MantineProvider } from "@mantine/core";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { NavGroup } from "../components/NavGroup";
 import { NavShell, useNavShell } from "../components/NavShell";
 import { NavSidebar } from "../components/NavSidebar";
-import { mockViewport, resetViewport, sampleNavItems } from "./helpers";
+import { resetViewport, sampleNavItems } from "./helpers";
 
 afterEach(() => {
 	resetViewport();

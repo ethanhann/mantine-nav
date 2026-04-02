@@ -97,7 +97,6 @@ describe("Workspace switching integration", () => {
 	});
 
 	it("workspace switcher integrates with sidebar collapse toggle", async () => {
-		const user = userEvent.setup();
 		renderWithWorkspaceSwitcher();
 
 		// Both workspace switcher and collapse toggle exist

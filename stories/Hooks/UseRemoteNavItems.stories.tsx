@@ -11,7 +11,7 @@ import {
 	IconSettings,
 	IconUsers,
 } from "@tabler/icons-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { NavItemResolvers, RemoteNavItem } from "../../src";
 import {
 	NavGroup,

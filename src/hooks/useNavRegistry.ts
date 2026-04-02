@@ -133,7 +133,7 @@ export function useNavRegistry<TData = unknown>(): UseNavRegistryReturn<TData> {
 	const unregister = useCallback((id: string) => {
 		const registry = registryRef.current;
 		registry.delete(id);
-		const prefix = id + ".";
+		const prefix = `${id}.`;
 		for (const key of Array.from(registry.keys())) {
 			if (key.startsWith(prefix)) registry.delete(key);
 		}

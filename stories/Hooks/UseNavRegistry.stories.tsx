@@ -9,7 +9,7 @@ import {
 	IconSettings,
 	IconUsers,
 } from "@tabler/icons-react";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
 	NavGroup,
 	NavHeader,

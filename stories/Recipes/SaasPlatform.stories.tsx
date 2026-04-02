@@ -1,4 +1,4 @@
-import { Anchor, Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
+import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
 	IconBrandSlack,

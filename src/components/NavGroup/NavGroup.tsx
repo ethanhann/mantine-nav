@@ -1,7 +1,7 @@
 "use client";
 
 import type { MantineColor } from "@mantine/core";
-import { Center, Divider, Menu, NavLink, Text, Tooltip } from "@mantine/core";
+import { Divider, Menu, NavLink, Text, Tooltip } from "@mantine/core";
 import { type ReactNode, useCallback, useRef, useState } from "react";
 import { useActiveNavItem } from "../../hooks/useActiveNavItem";
 import { useNavAnimation } from "../../hooks/useNavAnimation";

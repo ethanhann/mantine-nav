@@ -1,4 +1,3 @@
-import { Badge } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
 	IconBrandGithub,
@@ -61,7 +60,7 @@ const items: NavItemType[] = [
 		label: "Send Feedback",
 		href: "#",
 		icon: <IconMessage size={18} stroke={1.5} />,
-		onClick: (e) => {
+		onClick: () => {
 			alert("Feedback modal would open here!");
 		},
 	},
