@@ -11,7 +11,7 @@ Rebuild the Nav component library on Mantine v8 primitives, replacing the v1 cus
 ## What Was Accomplished
 
 ### 1. V2 Architecture & Specs
-- Authored 11 spec documents (`spec_v2/000`–`010`) covering architecture, components, migration, and Storybook strategy.
+- Authored 11 spec documents (`specs/spec_v2/000`–`010`) covering architecture, components, migration, and Storybook strategy.
 - Defined a simplified component tree: `NavShell > NavSidebar + NavBar`, with `NavGroup`, `NavHeader`, `WorkspaceSwitcher`, `UserMenu`, `NotificationIndicator`, and `PlanBadge`.
 
 ### 2. Full V2 Implementation
@@ -58,7 +58,7 @@ Rebuild the Nav component library on Mantine v8 primitives, replacing the v1 cus
 
 ## What Could Be Improved
 
-- **V1 to V2 migration gap.** The migration plan (`spec_v2/010`) exists but no automated codemods or adapter components were built. Consumers upgrading from v1 will need manual migration effort.
+- **V1 to V2 migration gap.** The migration plan (`specs/spec_v2/010`) exists but no automated codemods or adapter components were built. Consumers upgrading from v1 will need manual migration effort.
 - **Test coverage depth.** Tests cover component rendering and basic interactions but lack integration tests for complex flows (e.g., full sidebar collapse + keyboard nav + workspace switch in sequence).
 - **CSS module consolidation.** Some components use Mantine's built-in styles while others have `.module.css` files. A single styling strategy would be cleaner.
 - **No visual regression testing.** Storybook is set up but Chromatic or similar visual snapshot testing is not integrated.
