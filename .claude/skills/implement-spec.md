@@ -12,13 +12,13 @@ Example: `/implement-spec 001`
 You are implementing a feature spec from the Nav component library. Follow these steps:
 
 ### 1. Read the Spec
-Read `specs/<NNN>_*.md` (where NNN is the zero-padded spec number provided). Understand every section: Summary, API Design, Component Structure, Behavior, Accessibility, Dependencies, and Testing Criteria.
+Read `specs/spec_v1/<NNN>_*.md` (where NNN is the zero-padded spec number provided). Understand every section: Summary, API Design, Component Structure, Behavior, Accessibility, Dependencies, and Testing Criteria.
 
 ### 2. Check Dependencies
 Read the "Dependencies" section. For each dependency spec, verify the referenced component/hook already exists in the codebase. If a dependency is not yet implemented, stop and inform the user which specs must be implemented first.
 
 ### 3. Check the Coherence Review
-Read `specs/COHERENCE_REVIEW.md` for any issues or recommendations related to this spec number. Apply relevant recommendations during implementation.
+Read `specs/spec_v1/COHERENCE_REVIEW.md` for any issues or recommendations related to this spec number. Apply relevant recommendations during implementation.
 
 ### 4. Plan the Implementation
 Before writing code, outline:
@@ -45,7 +45,7 @@ Implement every checkbox item from the spec's "Testing Criteria" section as a te
 Create a story file (`*.story.tsx`) demonstrating the component with interactive controls. Follow the conventions from Spec 045.
 
 ### 8. Update Progress
-After implementation, update `specs/progress.md`:
+After implementation, update `specs/spec_v1/progress.md`:
 - Change the spec's status from `pending` to `complete`
 - Add the date of completion
 - List all files created or modified
