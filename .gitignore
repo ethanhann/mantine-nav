@@ -133,7 +133,6 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-package-lock.json
 bun.lock
 
 # Vite logs files
