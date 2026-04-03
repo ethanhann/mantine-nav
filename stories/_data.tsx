@@ -108,6 +108,26 @@ export const deepNestedItems: NavItemType[] = [
 						label: "Quick Start",
 						href: "/docs/quickstart",
 					},
+					{
+						id: "philosophy",
+						type: "group",
+						label: "Philosophy",
+						defaultOpened: true,
+						children: [
+							{
+								id: "navel-gazing",
+								type: "link",
+								label: "Navel Gazing",
+								href: "/docs/navel-gazing",
+							},
+							{
+								id: "bikeshedding",
+								type: "link",
+								label: "Bikeshedding",
+								href: "/docs/bikeshedding",
+							},
+						],
+					},
 				],
 			},
 			{
