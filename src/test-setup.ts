@@ -1,3 +1,4 @@
+import "vitest-canvas-mock";
 import "@testing-library/jest-dom/vitest";
 import { expect } from "vitest";
 import * as vitestAxeMatchers from "vitest-axe/matchers";

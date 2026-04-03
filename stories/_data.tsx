@@ -2,6 +2,7 @@ import {
 	IconChartBar,
 	IconClipboardList,
 	IconFileText,
+	IconFolder,
 	IconHome,
 	IconLogout,
 	IconPackage,
@@ -106,6 +107,26 @@ export const deepNestedItems: NavItemType[] = [
 						type: "link",
 						label: "Quick Start",
 						href: "/docs/quickstart",
+					},
+					{
+						id: "philosophy",
+						type: "group",
+						label: "Philosophy",
+						defaultOpened: true,
+						children: [
+							{
+								id: "navel-gazing",
+								type: "link",
+								label: "Navel Gazing",
+								href: "/docs/navel-gazing",
+							},
+							{
+								id: "bikeshedding",
+								type: "link",
+								label: "Bikeshedding",
+								href: "/docs/bikeshedding",
+							},
+						],
 					},
 				],
 			},
@@ -224,5 +245,126 @@ export const sampleNotifications = [
 		title: "Update available",
 		description: "Version 2.1 is ready",
 		read: true,
+	},
+];
+
+export const ultraDeepItems: NavItemType[] = [
+	{
+		id: "platform",
+		type: "group",
+		label: "Platform",
+		icon: <IconFolder size={18} stroke={1.5} />,
+		defaultOpened: true,
+		children: [
+			{
+				id: "infrastructure",
+				type: "group",
+				label: "Infrastructure",
+				defaultOpened: true,
+				children: [
+					{
+						id: "compute",
+						type: "group",
+						label: "Compute",
+						children: [
+							{
+								id: "instances",
+								type: "group",
+								label: "Instances",
+								children: [
+									{
+										id: "instance-list",
+										type: "link",
+										label: "Instance List",
+										href: "/platform/infra/compute/instances/list",
+										icon: <IconPackage size={16} />,
+									},
+									{
+										id: "instance-monitoring",
+										type: "link",
+										label: "Monitoring",
+										href: "/platform/infra/compute/instances/monitoring",
+										icon: <IconChartBar size={16} />,
+									},
+									{
+										id: "instance-logs",
+										type: "link",
+										label: "Logs",
+										href: "/platform/infra/compute/instances/logs",
+										badge: "Live",
+									},
+								],
+							},
+							{
+								id: "serverless",
+								type: "link",
+								label: "Serverless Functions",
+								href: "/platform/infra/compute/serverless",
+							},
+						],
+					},
+					{
+						id: "storage",
+						type: "group",
+						label: "Storage",
+						children: [
+							{
+								id: "blobs",
+								type: "link",
+								label: "Blob Storage",
+								href: "/platform/infra/storage/blobs",
+							},
+							{
+								id: "databases",
+								type: "link",
+								label: "Databases",
+								href: "/platform/infra/storage/databases",
+							},
+						],
+					},
+					{ id: "infra-divider", type: "divider" },
+					{
+						id: "networking",
+						type: "link",
+						label: "Networking",
+						href: "/platform/infra/networking",
+					},
+				],
+			},
+			{
+				id: "services",
+				type: "group",
+				label: "Services",
+				children: [
+					{
+						id: "api-gateway",
+						type: "link",
+						label: "API Gateway",
+						href: "/platform/services/api-gateway",
+					},
+					{
+						id: "message-queue",
+						type: "link",
+						label: "Message Queue",
+						href: "/platform/services/message-queue",
+					},
+				],
+			},
+		],
+	},
+	{ id: "platform-section", type: "section", label: "Administration" },
+	{
+		id: "billing",
+		type: "link",
+		label: "Billing & Usage",
+		href: "/platform/billing",
+		icon: <IconChartBar size={18} />,
+	},
+	{
+		id: "team-settings",
+		type: "link",
+		label: "Team Settings",
+		href: "/platform/team",
+		icon: <IconUsers size={18} />,
 	},
 ];
