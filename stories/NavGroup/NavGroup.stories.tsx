@@ -1,7 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react";
 
 import { NavGroup } from "../../src";
-import { deepNestedItems, sampleItems, sectionedItems } from "../_data";
+import {
+	deepNestedItems,
+	sampleItems,
+	sectionedItems,
+	ultraDeepItems,
+} from "../_data";
 
 const meta: Meta<typeof NavGroup> = {
 	title: "NavGroup/NavGroup",
@@ -71,5 +76,26 @@ export const AccordionMode: Story = {
 		items: sampleItems,
 		accordion: true,
 		variant: "subtle",
+	},
+};
+
+export const DeepInteractionTest: Story = {
+	args: {
+		items: ultraDeepItems,
+		currentPath: "/platform/infra/compute/instances/monitoring",
+		variant: "subtle",
+		accordion: true,
+		accordionScope: "sibling",
+		maxDepth: 5,
+		enableKeyboardNav: true,
+		typeAhead: true,
+	},
+	parameters: {
+		docs: {
+			description: {
+				story:
+					"Tests maximum depth nesting (5 levels), accordion mode, type-ahead search, and active item matching simultaneously. The 'Monitoring' link at depth 4 should be highlighted as active.",
+			},
+		},
 	},
 };
