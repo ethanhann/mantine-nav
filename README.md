@@ -5,7 +5,7 @@
 [![Coverage](https://img.shields.io/endpoint?url=https://ethanhann.github.io/nav/coverage-badge.json)](https://ethanhann.github.io/nav/)
 [![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/nav/)
 
-A React navigation component library built on [Mantine v9](https://mantine.dev). Provides sidebar navigation, top nav bars, and a combined layout with support for multi-level nesting, keyboard navigation, theming, and SaaS-oriented components.
+A React navigation component library built on [Mantine v9](https://mantine.dev). Provides a responsive app shell, sidebar, header, and nav-tree components with multi-level nesting, keyboard navigation, and SaaS-oriented building blocks (workspace switcher, user menu, plan badge, notification indicator).
 
 ## Installation
 
@@ -13,17 +13,18 @@ A React navigation component library built on [Mantine v9](https://mantine.dev).
 npm install @ethanhann/mantine-nav
 ```
 
-**Peer dependencies:** React 19+, `@mantine/core` 9+, `@mantine/hooks` 9+.
+**Peer dependencies:** React 19+, `@mantine/core` 9+, `@mantine/hooks` 9+, `@tabler/icons-react` 3+.
 
 ## Quick Start
 
-Wrap your app with `NavProvider` and use the `Nav` component for a config-driven layout:
+Compose `NavShell`, `NavHeader`, `NavSidebar`, and `NavGroup` to get a responsive layout with a collapsible sidebar and mobile drawer:
 
 ```tsx
-import { NavProvider, Nav } from '@ethanhann/mantine-nav';
+import { NavShell, NavHeader, NavSidebar, NavGroup } from '@ethanhann/mantine-nav';
+import type { NavItemType } from '@ethanhann/mantine-nav';
 import '@ethanhann/mantine-nav/styles.css';
 
-const items = [
+const items: NavItemType[] = [
   { id: 'home', type: 'link', label: 'Home', href: '/', icon: <HomeIcon /> },
   {
     id: 'products',
@@ -31,7 +32,7 @@ const items = [
     label: 'Products',
     icon: <BoxIcon />,
     children: [
-      { id: 'catalog', type: 'link', label: 'Catalog', href: '/products' },
+      { id: 'catalog',   type: 'link', label: 'Catalog',   href: '/products' },
       { id: 'inventory', type: 'link', label: 'Inventory', href: '/products/inventory' },
     ],
   },
@@ -41,21 +42,47 @@ const items = [
 
 function App() {
   return (
-    <NavProvider onNavigate={(href) => router.push(href)}>
-      <Nav config={{ items }}>
-        <main>{/* page content */}</main>
-      </Nav>
-    </NavProvider>
+    <NavShell
+      header={<NavHeader logo={<Logo />} />}
+      sidebar={
+        <NavSidebar>
+          <NavGroup items={items} currentPath={location.pathname} />
+        </NavSidebar>
+      }
+    >
+      <main>{/* page content */}</main>
+    </NavShell>
   );
 }
 ```
 
-## Example: Marketing CRM
+`NavShell` wraps Mantine's `AppShell` and manages responsive collapse (desktop) and drawer toggling (mobile). Any descendant can read state via `useNavShell()` or `useOptionalNavShell()`.
 
-Here's a complete example showing how to define navigation for a marketing CRM, using all four item types (`link`, `group`, `section`, `divider`), badges, icons, and active path matching:
+## Nav Items
+
+`NavItemType` is a discriminated union with four variants:
 
 ```tsx
-import { NavProvider, Nav } from '@ethanhann/mantine-nav';
+// Clickable link
+{ id, type: 'link', label, href, icon?, badge?, disabled?, external?, onClick?, activeMatch? }
+
+// Collapsible group containing children
+{ id, type: 'group', label, icon?, badge?, children: NavItemType[], defaultOpened?, disabled? }
+
+// Non-interactive section header
+{ id, type: 'section', label }
+
+// Horizontal divider
+{ id, type: 'divider' }
+```
+
+All items support `visible?: boolean | (() => boolean)` to hide per role/flag, and `weight?: number` to control sort order.
+
+## Example: Marketing CRM
+
+```tsx
+import { NavShell, NavHeader, NavSidebar, NavGroup } from '@ethanhann/mantine-nav';
+import type { NavItemType } from '@ethanhann/mantine-nav';
 import {
   IconHome, IconUsers, IconMail, IconTarget,
   IconChartBar, IconSettings, IconCalendar, IconFileText,
@@ -98,7 +125,6 @@ const crmItems: NavItemType[] = [
   { id: 'calendar',    type: 'link', label: 'Calendar',    href: '/calendar',    icon: <IconCalendar size={18} /> },
 
   { id: 'div-1', type: 'divider' },
-
   { id: 'section-analyze', type: 'section', label: 'Analyze' },
 
   { id: 'reports',   type: 'link', label: 'Reports',   href: '/reports',   icon: <IconChartBar size={18} /> },
@@ -111,17 +137,16 @@ const crmItems: NavItemType[] = [
 
 function MarketingCRM() {
   return (
-    <NavProvider onNavigate={(href) => router.push(href)}>
-      <Nav
-        config={{
-          items: crmItems,
-          sidebar: { accordion: true },
-          activeMatcher: 'prefix',
-        }}
-      >
-        <main>{/* page content */}</main>
-      </Nav>
-    </NavProvider>
+    <NavShell
+      header={<NavHeader logo={<Logo />} />}
+      sidebar={
+        <NavSidebar>
+          <NavGroup items={crmItems} currentPath={location.pathname} activeMatcher="prefix" accordion />
+        </NavSidebar>
+      }
+    >
+      <main>{/* page content */}</main>
+    </NavShell>
   );
 }
 ```
@@ -131,129 +156,86 @@ This demonstrates:
 - **Collapsible groups** with nested links (Contacts, Campaigns)
 - **Badges** on groups to surface live status ("2 active")
 - **Dividers** to separate logical sections
-- **Prefix matching** so `/contacts` highlights the Contacts group and its children
+- **Prefix matching** so `/contacts/segments` highlights the Contacts group and the Segments link
 - **Accordion mode** so only one group is open at a time
 - **Disabled items** for features not yet available
 
-## Sidebar
+## Active Matching
 
-Use `Sidebar` with `NavGroup` for a standalone sidebar:
+Pass `activeMatcher` to `NavGroup` to control how the current path maps to items:
 
 ```tsx
-import { Sidebar, NavGroup } from '@ethanhann/mantine-nav';
-
-function AppSidebar() {
-  return (
-    <Sidebar
-      header={<Logo />}
-      footer={<UserProfile />}
-      expandedWidth={280}
-      collapsedWidth={60}
-    >
-      <NavGroup
-        items={items}
-        maxDepth={3}
-        currentPath={window.location.pathname}
-        onItemClick={(item) => navigate(item.href)}
-      />
-    </Sidebar>
-  );
-}
+<NavGroup items={items} currentPath="/products/inventory" activeMatcher="prefix" />
 ```
 
-### Accordion Mode
+| Strategy | Behavior |
+|---|---|
+| `'exact'` (default) | `href` must equal `currentPath` |
+| `'prefix'` | `currentPath` must start with `href` |
+| `'regex'` | `href` is treated as a regex pattern |
+| `RegExp` | Match `currentPath` against the provided regex |
+| `(currentPath, itemHref) => boolean` | Custom matcher |
 
-Restrict open groups so only one is expanded at a time:
+Individual items can override the strategy via `activeMatch`.
 
-```tsx
-<NavGroup items={items} accordion accordionScope="sibling" />
-```
-
-## NavBar
-
-A horizontal top navigation bar:
-
-```tsx
-import { NavBar, NavBreadcrumbs, CommandPaletteSlot, EnvironmentIndicator } from '@ethanhann/mantine-nav';
-
-function TopBar() {
-  return (
-    <NavBar
-      logo={<Logo />}
-      sticky
-      rightSection={
-        <>
-          <CommandPaletteSlot shortcut="⌘K" onTrigger={openPalette} />
-          <EnvironmentIndicator environment="staging" color="#f59e0b" />
-        </>
-      }
-    >
-      <NavBreadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Settings' }]} />
-    </NavBar>
-  );
-}
-```
-
-## Combined Layout
-
-Use `NavLayout` for a structural approach with both sidebar and navbar:
+## NavHeader
 
 ```tsx
-import { NavLayout, Sidebar, NavBar, NavGroup } from '@ethanhann/mantine-nav';
-
-function AppShell() {
-  return (
-    <NavLayout
-      sidebar={
-        <Sidebar header={<Logo />}>
-          <NavGroup items={sidebarItems} currentPath={currentPath} />
-        </Sidebar>
-      }
-      navbar={<NavBar logo={<AppName />} sticky />}
-    >
-      <main>{/* page content */}</main>
-    </NavLayout>
-  );
-}
-```
-
-## Theming
-
-Apply built-in presets or custom color schemes:
-
-```tsx
-import { NavThemeProvider } from '@ethanhann/mantine-nav';
-
-// Built-in preset
-<NavThemeProvider preset="corporate">
-  <App />
-</NavThemeProvider>
-
-// Custom colors
-<NavThemeProvider
-  colorScheme={{
-    primary: '#6366f1',
-    background: '#1e1b4b',
-    text: '#e0e7ff',
-    activeBackground: '#4338ca',
-    activeText: '#ffffff',
-    hoverBackground: '#312e81',
-  }}
+<NavHeader
+  logo={<Logo />}
+  environment={{ label: 'Staging', color: 'orange' }}
+  rightSection={
+    <Group gap="xs">
+      <NotificationIndicator count={3} />
+      <ColorSchemeToggle />
+      <UserMenu user={user} menuItems={menuItems} />
+    </Group>
+  }
 >
-  <App />
-</NavThemeProvider>
+  {/* Optional center content (breadcrumbs, search, etc.) */}
+</NavHeader>
 ```
 
-Available presets: `minimal`, `corporate`, `playful`.
+## NavSidebar
+
+`NavSidebar` provides header/body/footer slots. Header and footer hide automatically when the sidebar is collapsed on desktop:
+
+```tsx
+<NavSidebar
+  header={<WorkspaceSwitcher workspaces={workspaces} activeWorkspace={current} onSwitch={setWorkspace} />}
+  footer={<UserMenu user={user} menuItems={menuItems} />}
+  collapseTogglePosition="footer"
+>
+  <NavGroup items={items} currentPath={location.pathname} />
+</NavSidebar>
+```
+
+## Router Integration
+
+Pass a router-aware `linkComponent` (and optionally `hrefProp`) to `NavShell` — all link items in descendant `NavGroup`s will use it. Items with `external: true` bypass it and render as `<a target="_blank" rel="noopener noreferrer">`.
+
+```tsx
+// Next.js
+import Link from 'next/link';
+<NavShell linkComponent={Link} /* hrefProp defaults to "href" */>...</NavShell>
+
+// React Router
+import { Link } from 'react-router-dom';
+<NavShell linkComponent={Link} hrefProp="to">...</NavShell>
+```
 
 ## SaaS Components
 
-Components for multi-tenant SaaS apps:
-
 ```tsx
-import { WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell } from '@ethanhann/mantine-nav';
+import {
+  WorkspaceSwitcher,
+  UserMenu,
+  PlanBadge,
+  NotificationIndicator,
+  ColorSchemeToggle,
+} from '@ethanhann/mantine-nav';
 
-<Sidebar
+<NavSidebar
   header={
     <WorkspaceSwitcher
       workspaces={workspaces}
@@ -265,125 +247,131 @@ import { WorkspaceSwitcher, UserMenu, PlanBadge, NotificationBell } from '@ethan
   }
   footer={
     <>
-      <PlanBadge plan="Pro" daysRemaining={14} />
-      <NotificationBell
+      <PlanBadge plan="Pro" showUpgrade onUpgrade={() => navigate('/billing')} />
+      <NotificationIndicator
+        count={unreadCount}
         notifications={notifications}
-        unreadCount={3}
-        onNotificationClick={handleNotification}
+        onRead={markRead}
+        onReadAll={markAllRead}
       />
       <UserMenu
         user={{ id: '1', name: 'Jane Doe', email: 'jane@example.com', role: 'Admin' }}
         menuItems={[
-          { label: 'Profile', href: '/profile' },
-          { label: 'Sign out', onClick: signOut },
+          { label: 'Profile', onClick: () => navigate('/profile') },
+          { label: 'Sign out', onClick: signOut, color: 'red', dividerBefore: true },
         ]}
       />
     </>
   }
 >
   <NavGroup items={items} />
-</Sidebar>
+</NavSidebar>
 ```
 
 ## Hooks
 
-### `useNav`
+### `useNavShell` / `useOptionalNavShell`
 
-Access sidebar and navbar state from the `NavProvider` context:
+Access the shell's sidebar and mobile-drawer state from any descendant of `NavShell`:
 
 ```tsx
-import { useNav } from '@ethanhann/mantine-nav';
+import { useNavShell } from '@ethanhann/mantine-nav';
 
 function MenuButton() {
-  const { sidebarOpen, toggleSidebar, sidebarCollapsed, toggleSidebarCollapse } = useNav();
-  return <button onClick={toggleSidebar}>Menu</button>;
+  const { isMobile, toggleMobile, desktopCollapsed, toggleDesktop } = useNavShell();
+  return (
+    <button onClick={isMobile ? toggleMobile : toggleDesktop}>
+      Menu
+    </button>
+  );
 }
 ```
 
+Use `useOptionalNavShell()` when the component may render outside a `NavShell`.
+
 ### `useActiveNavItem`
 
-Track which nav item matches the current path:
-
 ```tsx
-import { useActiveNavItem } from '@ethanhann/mantine-nav';
-
-const active = useActiveNavItem(items, { currentPath: '/products', strategy: 'prefix' });
-// active => { id: 'products', label: 'Products', ... }
+const { activeItem, activeHref, isActive } = useActiveNavItem(items, {
+  currentPath: '/products/inventory',
+  matcher: 'prefix',
+});
 ```
 
 ### `useHeadlessSidebar`
 
-Get sidebar behavior without any UI — useful for fully custom sidebars:
+Sidebar behavior without any UI — for fully custom sidebars:
 
 ```tsx
-import { useHeadlessSidebar } from '@ethanhann/mantine-nav';
-
-const { collapsed, toggle, width, handlers } = useHeadlessSidebar({
-  expandedWidth: 280,
-  collapsedWidth: 60,
+const sidebar = useHeadlessSidebar({
+  items,
+  defaultExpandedKeys: ['products'],
 });
+// { expandedKeys, collapsed, toggleGroup, getItemProps, getGroupProps, ... }
 ```
 
 ### Other Hooks
 
 | Hook | Purpose |
 |------|---------|
-| `useNavItems` | Filter, search, and flatten nav item trees |
-| `useNavKeyboard` | Arrow key navigation and type-ahead search |
-| `useNavAnimation` | Transition configuration for expand/collapse |
+| `useCurrentPath` | Reactive pathname for active matching |
+| `useNavItems` | Flatten, expand/collapse, and traverse item trees |
+| `useNavKeyboard` | Arrow keys, Home/End, Enter/Space, Escape, type-ahead |
+| `useNavAnimation` | Transition config that respects `prefers-reduced-motion` |
 | `useNavColorScheme` | Read and toggle light/dark color scheme |
-| `useSidebarResize` | Drag-to-resize sidebar width |
-| `useSidebarVariant` | Switch sidebar between `full`, `compact`, `mini` |
-| `useResponsiveNav` | Auto-collapse sidebar at breakpoints |
+| `useNavRegistry` | Flat dot-notation registration of nav entries |
+| `useNavVars` | Read/write CSS custom properties for nav tokens |
+| `useSidebarResize` | Drag-to-resize sidebar with localStorage persistence |
+| `useSidebarVariant` | Cycle sidebar between `full`, `rail`, `mini` |
+| `useResponsiveNav` | Mobile/tablet/desktop breakpoint state and helpers |
 | `useReorderableNav` | Drag-and-drop reordering of nav items |
-| `usePinnedItems` | Pin/unpin favorite nav items |
-| `useRecentlyViewed` | Track recently visited pages |
-| `useStarredPages` | Star/bookmark pages |
+| `useRemoteNavItems` | Hydrate items from an async source |
+| `usePinnedItems` | Pin/unpin favorites (localStorage-backed) |
+| `useRecentlyViewed` | Track recently visited pages (localStorage-backed) |
+| `useStarredPages` | Star/bookmark pages (localStorage-backed) |
+| `useIsSSR` / `useHydrated` | SSR-safety helpers |
+
+## Utilities
+
+| Function | Purpose |
+|---|---|
+| `filterVisibleItems(items)` | Recursively drop items where `visible` evaluates to `false`; prunes empty groups |
+| `isItemVisible(item)` | Resolve an item's `visible` flag (boolean or function) |
+| `sortItemsByWeight(items)` | Stable sort by `weight` (lower first); recurses into group children |
 
 ## Development
 
 ### Storybook
 
-The component library ships with comprehensive Storybook stories covering every component, hook, and layout pattern. To run Storybook locally:
-
 ```bash
 npm install
-npm run dev
+npm run dev             # starts Storybook at http://localhost:6006
+npm run storybook:build # build static Storybook site
 ```
 
-This starts Storybook at [http://localhost:6006](http://localhost:6006).
-
-To build a static Storybook site:
-
-```bash
-npm run storybook:build
-```
-
-Stories are organized by category:
+Stories are organized by area:
 
 | Category | What's covered |
 |----------|---------------|
-| **Sidebar** | Core sidebar, rail mode, mini variant, resizable, sections & dividers |
-| **NavBar** | Core navbar, mega menu, breadcrumbs, tab style, environment indicator, command palette |
-| **Layout** | Combined NavLayout, responsive behavior, print-friendly mode |
-| **SaaS** | Workspace switcher, user menu, plan badge, notification bell |
-| **Dashboard** | Dashboard switcher, filter panel, recently viewed, starred pages, live data status |
-| **Theming** | Preset themes, custom color schemes, dark mode toggle, RTL support |
-| **Recipes** | Full-page layouts — admin dashboard, SaaS platform, analytics dashboard, documentation site |
+| **Shell** | `NavShell` variants, responsive collapse, router `linkComponent` integration |
+| **NavGroup** | Core tree, external links / onClick items, weight-based ordering |
+| **SaaS** | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator` |
+| **Hooks** | `useNavRegistry`, `useRemoteNavItems` |
+| **Recipes** | Full-page layouts — admin dashboard, SaaS platform, documentation site |
 
 ### Tests
 
 ```bash
-npm run test:run    # single run
-npm run test        # watch mode
+npm run test:run        # single run
+npm run test            # watch mode
+npm run test:coverage   # with v8 coverage
 ```
 
 ### Build
 
 ```bash
-npm run build       # build the library to dist/
-npm run typecheck   # type-check without emitting
-npm run lint        # lint src/
+npm run build           # build the library to dist/ (ESM + CJS + .d.ts)
+npm run typecheck       # type-check without emitting
 ```
 
 ## License
