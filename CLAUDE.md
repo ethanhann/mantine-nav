@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A React navigation component library (`@ethanhann/mantine-nav`) built on Mantine v8. Provides NavShell, NavGroup, NavHeader, NavSidebar, and SaaS-specific components (WorkspaceSwitcher, UserMenu, PlanBadge, etc.) along with 21+ composable hooks.
+A React navigation component library (`@ethanhann/mantine-nav`) built on Mantine v9. Provides NavShell, NavGroup, NavHeader, NavSidebar, and SaaS-specific components (WorkspaceSwitcher, UserMenu, PlanBadge, etc.) along with 21+ composable hooks.
 
 ## Commands
 
@@ -39,7 +39,7 @@ Hooks in `src/hooks/` cover: active item matching (`useActiveNavItem`), keyboard
 - **Context-based state**: NavShell provides sidebar state via React Context
 - **Discriminated unions**: Type-safe item rendering via `NavItemType`
 - **Headless hooks**: `useHeadlessSidebar` provides behavior without UI coupling
-- **Mantine v8 integration**: Built on Mantine's AppShell, NavLink, Collapse, and CSS variable system
+- **Mantine v9 integration**: Built on Mantine's AppShell, NavLink, Collapse, and CSS variable system
 
 ## Testing
 
@@ -53,4 +53,4 @@ Hooks in `src/hooks/` cover: active item matching (`useActiveNavItem`), keyboard
 - Entry: `src/index.ts` (barrel export)
 - Output: `dist/` with ESM (`index.js`), CJS (`index.cjs`), types (`index.d.ts`), and `styles.css`
 - Externals: React, ReactDOM, Mantine, Tabler icons (peer dependencies)
-- Peer deps: React 19+, @mantine/core 8+, @mantine/hooks 8+, @tabler/icons-react 3+
+- Peer deps: React 19+, @mantine/core 9+, @mantine/hooks 9+, @tabler/icons-react 3+
