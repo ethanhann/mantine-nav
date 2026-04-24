@@ -13,7 +13,7 @@ A React navigation component library built on [Mantine v9](https://mantine.dev).
 npm install @ethanhann/mantine-nav
 ```
 
-**Peer dependencies:** React 19+, `@mantine/core` 8+, `@mantine/hooks` 8+.
+**Peer dependencies:** React 19+, `@mantine/core` 9+, `@mantine/hooks` 9+.
 
 ## Quick Start
 
