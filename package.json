@@ -1,6 +1,6 @@
 {
 	"name": "@ethanhann/mantine-nav",
-	"version": "0.3.4-beta.0",
+	"version": "0.3.5",
 	"description": "A React navigation component library built on Mantine v9",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -75,7 +75,7 @@
 		"url": "https://github.com/ethanhann/mantine-nav.git"
 	},
 	"publishConfig": {
-		"registry": "https://npm.pkg.github.com"
+		"registry": "https://registry.npmjs.org"
 	},
 	"license": "MIT"
 }
