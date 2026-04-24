@@ -9,6 +9,7 @@ export default defineConfig({
 		dts({
 			include: ["src"],
 			exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
+			entryRoot: "src",
 		}),
 	],
 	css: {

@@ -16,6 +16,7 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"outDir": "dist",
+		"rootDir": "src",
 		"paths": {
 			"@ethanhann/mantine-nav": ["./src/index.ts"]
 		}
