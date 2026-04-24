@@ -11,7 +11,7 @@ import {
 	Text,
 } from "@mantine/core";
 import { IconBell } from "@tabler/icons-react";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 export interface NotificationItem {
 	id: string;
@@ -57,7 +57,7 @@ export function NotificationIndicator({
 	onClick,
 	showDropdown = true,
 	color = "red",
-}: NotificationIndicatorProps) {
+}: NotificationIndicatorProps): ReactElement {
 	const displayCount = count > maxCount ? `${maxCount}+` : String(count);
 	const hasUnread = notifications.some((n) => !n.read);
 	const ariaLabel = `Notifications${count > 0 ? ` (${count} unread)` : ""}`;

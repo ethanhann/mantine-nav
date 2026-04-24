@@ -15,7 +15,7 @@ import {
 	IconSearch,
 	IconSelector,
 } from "@tabler/icons-react";
-import { type ReactNode, useState } from "react";
+import { type ReactElement, type ReactNode, useState } from "react";
 import type { Workspace } from "../../types";
 
 /** Props for the workspace switcher dropdown. */
@@ -53,7 +53,7 @@ export function WorkspaceSwitcher({
 	searchable = false,
 	maxVisible = 5,
 	renderWorkspace,
-}: WorkspaceSwitcherProps) {
+}: WorkspaceSwitcherProps): ReactElement {
 	const [search, setSearch] = useState("");
 
 	const filtered =

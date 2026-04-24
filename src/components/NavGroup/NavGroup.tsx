@@ -2,7 +2,13 @@
 
 import type { MantineColor } from "@mantine/core";
 import { Divider, Menu, NavLink, Text, Tooltip } from "@mantine/core";
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import {
+	type ReactElement,
+	type ReactNode,
+	useCallback,
+	useRef,
+	useState,
+} from "react";
 import { useActiveNavItem } from "../../hooks/useActiveNavItem";
 import { useNavAnimation } from "../../hooks/useNavAnimation";
 import { useNavKeyboard } from "../../hooks/useNavKeyboard";
@@ -546,7 +552,7 @@ export function NavGroup<TData = unknown>({
 	typeAhead = true,
 	typeAheadTimeout = 500,
 	loopNavigation = true,
-}: NavGroupProps<TData>) {
+}: NavGroupProps<TData>): ReactElement {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const shell = useOptionalNavShell();
 

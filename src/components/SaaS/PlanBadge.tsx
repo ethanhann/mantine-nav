@@ -1,7 +1,7 @@
 "use client";
 
 import { Anchor, Badge, Group, type MantineColor } from "@mantine/core";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /** Props for the subscription plan badge. */
 export interface PlanBadgeProps {
@@ -32,7 +32,7 @@ export function PlanBadge({
 	onUpgrade,
 	upgradeLabel = "Upgrade",
 	icon,
-}: PlanBadgeProps) {
+}: PlanBadgeProps): ReactElement {
 	return (
 		<Group gap="xs">
 			<Badge

@@ -9,7 +9,7 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import { IconChevronsLeft } from "@tabler/icons-react";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useOptionalNavShell } from "../NavShell";
 
 /** Props for the sidebar content component. */
@@ -80,7 +80,7 @@ export function NavSidebar({
 	footer,
 	showCollapseToggle = true,
 	collapseTogglePosition = "footer",
-}: NavSidebarProps) {
+}: NavSidebarProps): ReactElement {
 	const shell = useOptionalNavShell();
 	const desktopCollapsed = shell?.desktopCollapsed ?? false;
 	const isMobile = shell?.isMobile ?? false;

@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge, Group, type MantineColor } from "@mantine/core";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 /** Props for the header bar component. */
 export interface NavHeaderProps {
@@ -31,7 +31,7 @@ export function NavHeader({
 	children,
 	rightSection,
 	environment,
-}: NavHeaderProps) {
+}: NavHeaderProps): ReactElement {
 	return (
 		<Group h="100%" justify="space-between" wrap="nowrap" flex={1}>
 			<Group gap="md" wrap="nowrap">

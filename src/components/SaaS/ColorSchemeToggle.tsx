@@ -2,6 +2,7 @@
 
 import { ActionIcon, Tooltip } from "@mantine/core";
 import { IconMoon, IconSun } from "@tabler/icons-react";
+import type { ReactElement } from "react";
 import { useNavColorScheme } from "../../hooks/useNavColorScheme";
 
 /** Props for the color scheme toggle button. */
@@ -24,7 +25,9 @@ export interface ColorSchemeToggleProps {
  * />
  * ```
  */
-export function ColorSchemeToggle({ size = "lg" }: ColorSchemeToggleProps) {
+export function ColorSchemeToggle({
+	size = "lg",
+}: ColorSchemeToggleProps): ReactElement {
 	const { isDark, toggleColorScheme } = useNavColorScheme();
 
 	return (

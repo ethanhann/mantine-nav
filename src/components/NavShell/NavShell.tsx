@@ -11,6 +11,7 @@ import {
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import {
 	createContext,
+	type ReactElement,
 	type ReactNode,
 	useCallback,
 	useContext,
@@ -115,7 +116,7 @@ export function NavShell({
 	transitionDuration = 200,
 	linkComponent,
 	hrefProp,
-}: NavShellProps) {
+}: NavShellProps): ReactElement {
 	const [
 		mobileOpened,
 		{ toggle: toggleMobile, open: openMobile, close: closeMobile },

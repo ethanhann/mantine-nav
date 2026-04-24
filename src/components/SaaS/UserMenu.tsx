@@ -9,7 +9,7 @@ import {
 	Text,
 	UnstyledButton,
 } from "@mantine/core";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactElement, type ReactNode } from "react";
 import type { UserInfo } from "../../types";
 
 export interface UserMenuItem {
@@ -53,7 +53,7 @@ export function UserMenu({
 	showRole = true,
 	showEmail = false,
 	avatarSize = "sm",
-}: UserMenuProps) {
+}: UserMenuProps): ReactElement {
 	return (
 		<Menu width={200} position="top-start" withinPortal>
 			<Menu.Target>
