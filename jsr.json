@@ -1,6 +1,6 @@
 {
-	"name": "@ethanhan/mantine-nav",
-	"version": "0.3.3",
+	"name": "@ethanhann/mantine-nav",
+	"version": "0.3.4",
 	"exports": "./src/index.ts",
 	"publish": {
 		"exclude": [
