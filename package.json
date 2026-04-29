@@ -1,6 +1,6 @@
 {
 	"name": "@ethanhann/mantine-nav",
-	"version": "0.3.6",
+	"version": "0.3.7",
 	"description": "A React navigation component library built on Mantine v9",
 	"type": "module",
 	"main": "./dist/index.cjs",

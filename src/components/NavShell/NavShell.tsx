@@ -223,7 +223,9 @@ export function NavShell({
 						onClick={closeMobile}
 						opacity={0.5}
 						color="var(--mantine-color-black)"
-						zIndex={"var(--mantine-z-index-overlay)" as unknown as number}
+						zIndex={
+						"calc(var(--mantine-z-index-app) - 1)" as unknown as number
+					}
 						role="button"
 						aria-label="Close navigation"
 					/>
