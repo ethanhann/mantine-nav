@@ -18,7 +18,7 @@ export interface NotificationItem {
 	title: string;
 	description?: string;
 	read?: boolean;
-	timestamp?: Date;
+	timestamp?: string | Date;
 	icon?: ReactNode;
 	href?: string;
 }
@@ -142,6 +142,13 @@ export function NotificationIndicator({
 									{n.description && (
 										<Text size="xs" c="dimmed">
 											{n.description}
+										</Text>
+									)}
+									{n.timestamp && (
+										<Text size="xs" c="dimmed">
+											{n.timestamp instanceof Date
+												? n.timestamp.toLocaleString()
+												: n.timestamp}
 										</Text>
 									)}
 								</Menu.Item>

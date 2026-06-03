@@ -66,7 +66,43 @@ describe("SaaS Components (Mantine v2)", () => {
 		).toBeInTheDocument();
 	});
 
-	it("NotificationIndicator caps at maxCount", () => {
+	it("NotificationIndicator opens dropdown with timestamp notification", async () => {
+		const user = userEvent.setup();
+		const notifications = [
+			{ id: "1", title: "New message", timestamp: "2 hours ago" },
+		];
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		const trigger = screen.getByLabelText("Notifications (1 unread)");
+		await user.click(trigger);
+		expect(trigger).toHaveAttribute("aria-expanded", "true");
+		expect(trigger).toHaveAttribute("aria-haspopup", "menu");
+	});
+
+	it("NotificationIndicator accepts notifications without timestamp", () => {
+		const notifications = [
+			{ id: "1", title: "New message", description: "Hello" },
+		];
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		expect(
+			screen.getByLabelText("Notifications (1 unread)"),
+		).toBeInTheDocument();
+	});
+
+it("NotificationIndicator caps at maxCount", () => {
 		render(<NotificationIndicator count={150} maxCount={99} />, {
 			wrapper: Wrapper,
 		});
