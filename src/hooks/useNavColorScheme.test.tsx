@@ -24,6 +24,23 @@ describe("Spec 037: useNavColorScheme", () => {
 		expect(typeof result.current.setColorScheme).toBe("function");
 	});
 
+	it("exposes rawColorScheme matching the configured default", () => {
+		const { result } = renderHook(() => useNavColorScheme(), { wrapper });
+		expect(result.current.rawColorScheme).toBe("light");
+	});
+
+	it("exposes rawColorScheme as auto when configured", () => {
+		function autoWrapper({ children }: { children: ReactNode }) {
+			return (
+				<MantineProvider defaultColorScheme="auto">{children}</MantineProvider>
+			);
+		}
+		const { result } = renderHook(() => useNavColorScheme(), {
+			wrapper: autoWrapper,
+		});
+		expect(result.current.rawColorScheme).toBe("auto");
+	});
+
 	it("returns dark scheme when configured", () => {
 		function darkWrapper({ children }: { children: ReactNode }) {
 			return (

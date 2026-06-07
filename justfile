@@ -5,3 +5,6 @@ validate:
     npx vitest run
     npx vite build
     npx storybook build
+
+docs:
+    npm run dev

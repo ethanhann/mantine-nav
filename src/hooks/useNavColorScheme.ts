@@ -5,6 +5,7 @@ import { useMemo } from "react";
 
 export interface UseNavColorSchemeReturn {
 	colorScheme: "light" | "dark";
+	rawColorScheme: "light" | "dark" | "auto";
 	toggleColorScheme: () => void;
 	setColorScheme: (scheme: "light" | "dark" | "auto") => void;
 	isLight: boolean;
@@ -12,17 +13,22 @@ export interface UseNavColorSchemeReturn {
 }
 
 export function useNavColorScheme(): UseNavColorSchemeReturn {
-	const { setColorScheme, toggleColorScheme } = useMantineColorScheme();
+	const {
+		colorScheme: rawColorScheme,
+		setColorScheme,
+		toggleColorScheme,
+	} = useMantineColorScheme();
 	const computedScheme = useComputedColorScheme("light");
 
 	return useMemo(
 		() => ({
 			colorScheme: computedScheme,
+			rawColorScheme,
 			toggleColorScheme,
 			setColorScheme,
 			isLight: computedScheme === "light",
 			isDark: computedScheme === "dark",
 		}),
-		[computedScheme, toggleColorScheme, setColorScheme],
+		[computedScheme, rawColorScheme, toggleColorScheme, setColorScheme],
 	);
 }

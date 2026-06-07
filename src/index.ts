@@ -17,6 +17,8 @@ export {
 } from "./components/NavShell";
 export type { NavSidebarProps } from "./components/NavSidebar";
 export { NavSidebar } from "./components/NavSidebar";
+export type { ColorMode, ColorModePickerProps } from "./components/ColorModePicker";
+export { ColorModePicker } from "./components/ColorModePicker";
 export type {
 	ColorSchemeToggleProps,
 	NotificationIndicatorProps,
