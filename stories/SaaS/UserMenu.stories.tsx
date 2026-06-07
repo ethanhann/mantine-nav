@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { UserMenu } from "../../src";
 import { sampleUser, sampleUserMenuItems } from "../_data";
 
+/** Avatar button that opens a dropdown with user info and action items. */
 const meta: Meta<typeof UserMenu> = {
 	title: "SaaS/UserMenu",
 	component: UserMenu,
@@ -19,6 +20,7 @@ const meta: Meta<typeof UserMenu> = {
 export default meta;
 type Story = StoryObj<typeof UserMenu>;
 
+/** Avatar and name only. */
 export const Default: Story = {
 	args: {
 		user: sampleUser,
@@ -26,6 +28,7 @@ export const Default: Story = {
 	},
 };
 
+/** Displays the user's email below their name. */
 export const WithEmail: Story = {
 	args: {
 		user: sampleUser,
@@ -34,6 +37,7 @@ export const WithEmail: Story = {
 	},
 };
 
+/** Shows both email and role badge. */
 export const WithRole: Story = {
 	args: {
 		user: sampleUser,

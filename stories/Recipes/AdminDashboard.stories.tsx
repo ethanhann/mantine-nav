@@ -1,5 +1,5 @@
 import { Badge, Card, Group, SimpleGrid, Text, Title } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconChartBar,
 	IconDatabase,
@@ -110,8 +110,10 @@ const adminItems: NavItemType[] = [
 	},
 ];
 
+/** Full admin dashboard layout combining NavShell, WorkspaceSwitcher, UserMenu, PlanBadge, and NotificationIndicator. */
 const meta: Meta = {
 	title: "Recipes/AdminDashboard",
+	component: NavShell,
 	tags: ["autodocs"],
 	parameters: {
 		layout: "fullscreen",
@@ -121,6 +123,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
+/** Enterprise admin panel with workspace switching, notifications, and sectioned navigation. */
 export const Default: Story = {
 	render: () => (
 		<NavShell

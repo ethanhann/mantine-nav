@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { WorkspaceSwitcher } from "../../src";
 import { sampleWorkspaces } from "../_data";
 
+/** Dropdown for switching between workspaces/organizations with optional search and create. */
 const meta: Meta<typeof WorkspaceSwitcher> = {
 	title: "SaaS/WorkspaceSwitcher",
 	component: WorkspaceSwitcher,
@@ -19,6 +20,7 @@ const meta: Meta<typeof WorkspaceSwitcher> = {
 export default meta;
 type Story = StoryObj<typeof WorkspaceSwitcher>;
 
+/** Basic workspace list. */
 export const Default: Story = {
 	args: {
 		workspaces: sampleWorkspaces,
@@ -27,6 +29,7 @@ export const Default: Story = {
 	},
 };
 
+/** Filterable workspace list. */
 export const WithSearch: Story = {
 	args: {
 		workspaces: sampleWorkspaces,
@@ -36,6 +39,7 @@ export const WithSearch: Story = {
 	},
 };
 
+/** Search enabled plus a "Create workspace" action. */
 export const WithCreate: Story = {
 	args: {
 		workspaces: sampleWorkspaces,

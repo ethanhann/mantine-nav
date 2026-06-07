@@ -1,7 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { PlanBadge } from "../../src";
 
+/** Displays the current subscription plan with an optional upgrade button. */
 const meta: Meta<typeof PlanBadge> = {
 	title: "SaaS/PlanBadge",
 	component: PlanBadge,
@@ -11,6 +12,7 @@ const meta: Meta<typeof PlanBadge> = {
 export default meta;
 type Story = StoryObj<typeof PlanBadge>;
 
+/** Simple plan label. */
 export const Default: Story = {
 	args: {
 		plan: "Pro",
@@ -18,6 +20,7 @@ export const Default: Story = {
 	},
 };
 
+/** Free tier with an upgrade call-to-action. */
 export const WithUpgrade: Story = {
 	args: {
 		plan: "Free",
@@ -27,6 +30,7 @@ export const WithUpgrade: Story = {
 	},
 };
 
+/** All Mantine badge variants side-by-side. */
 export const Variants: Story = {
 	render: () => (
 		<div style={{ display: "flex", gap: 16, alignItems: "center" }}>

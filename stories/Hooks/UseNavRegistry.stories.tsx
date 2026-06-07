@@ -1,6 +1,6 @@
 import { CodeHighlight } from "@mantine/code-highlight";
 import { Button, Text } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconChartBar,
 	IconClipboardList,

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { NavGroup } from "../../src";
 import {
@@ -8,6 +8,7 @@ import {
 	ultraDeepItems,
 } from "../_data";
 
+/** Renders a hierarchical tree of navigation items with support for accordion mode, keyboard navigation, type-ahead search, and active item highlighting. */
 const meta: Meta<typeof NavGroup> = {
 	title: "NavGroup/NavGroup",
 	component: NavGroup,
@@ -22,6 +23,7 @@ const meta: Meta<typeof NavGroup> = {
 export default meta;
 type Story = StoryObj<typeof NavGroup>;
 
+/** Basic nav tree with nested groups and links. */
 export const Default: Story = {
 	args: {
 		items: sampleItems,
@@ -30,6 +32,7 @@ export const Default: Story = {
 	},
 };
 
+/** A deeply nested link is highlighted as the active item. */
 export const ActiveState: Story = {
 	args: {
 		items: sampleItems,
@@ -38,6 +41,7 @@ export const ActiveState: Story = {
 	},
 };
 
+/** Filled variant with a custom color. */
 export const FilledVariant: Story = {
 	args: {
 		items: sampleItems,
@@ -47,6 +51,7 @@ export const FilledVariant: Story = {
 	},
 };
 
+/** Light variant with default color. */
 export const LightVariant: Story = {
 	args: {
 		items: sampleItems,
@@ -55,6 +60,7 @@ export const LightVariant: Story = {
 	},
 };
 
+/** Multiple levels of nested groups. */
 export const DeepNesting: Story = {
 	args: {
 		items: deepNestedItems,
@@ -63,6 +69,7 @@ export const DeepNesting: Story = {
 	},
 };
 
+/** Section headers and dividers to visually group links. */
 export const SectionHeaders: Story = {
 	args: {
 		items: sectionedItems,
@@ -71,6 +78,7 @@ export const SectionHeaders: Story = {
 	},
 };
 
+/** Only one group can be open at a time. */
 export const AccordionMode: Story = {
 	args: {
 		items: sampleItems,

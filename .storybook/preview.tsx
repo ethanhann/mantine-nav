@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/react-vite";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -25,6 +25,7 @@ hljs.registerLanguage("shell", shellLang);
 const highlightJsAdapter = createHighlightJsAdapter(hljs);
 
 const preview: Preview = {
+	tags: ["autodocs"],
 	parameters: {
 		controls: {
 			matchers: {

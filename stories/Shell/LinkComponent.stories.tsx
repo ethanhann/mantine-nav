@@ -1,5 +1,5 @@
 import { Text } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconChartBar,
 	IconExternalLink,

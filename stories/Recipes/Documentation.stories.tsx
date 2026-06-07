@@ -1,6 +1,6 @@
 import { CodeHighlight } from "@mantine/code-highlight";
 import { Anchor, Breadcrumbs, Code, Text, Title } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconApi,
 	IconBook,
@@ -104,8 +104,10 @@ const docsItems: NavItemType[] = [
 	},
 ];
 
+/** Documentation site layout with a non-collapsible sidebar and nested content groups. */
 const meta: Meta = {
 	title: "Recipes/Documentation",
+	component: NavShell,
 	tags: ["autodocs"],
 	parameters: {
 		layout: "fullscreen",
@@ -115,6 +117,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
+/** Docs site with breadcrumbs, code blocks, and a hierarchical sidebar. */
 export const Default: Story = {
 	render: () => {
 		const setupExampleCode = `

@@ -1,5 +1,5 @@
 import { Badge, Card, Group, Stack, Text, Title } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconBrandSlack,
 	IconCreditCard,
@@ -109,8 +109,10 @@ const saasItems: NavItemType[] = [
 	},
 ];
 
+/** Typical SaaS app layout with workspace switcher, plan badge, notifications, and developer-section navigation. */
 const meta: Meta = {
 	title: "Recipes/SaasPlatform",
+	component: NavShell,
 	tags: ["autodocs"],
 	parameters: {
 		layout: "fullscreen",
@@ -120,6 +122,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
+/** SaaS dashboard with projects, integrations, and billing sections. */
 export const Default: Story = {
 	render: () => (
 		<NavShell

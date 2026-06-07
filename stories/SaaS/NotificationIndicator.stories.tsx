@@ -1,8 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { NotificationIndicator } from "../../src";
 import { sampleNotifications } from "../_data";
 
+/** Bell icon with unread count badge and an optional dropdown listing recent notifications. */
 const meta: Meta<typeof NotificationIndicator> = {
 	title: "SaaS/NotificationIndicator",
 	component: NotificationIndicator,
@@ -12,6 +13,7 @@ const meta: Meta<typeof NotificationIndicator> = {
 export default meta;
 type Story = StoryObj<typeof NotificationIndicator>;
 
+/** Shows 3 unread notifications with a dropdown. */
 export const Default: Story = {
 	args: {
 		count: 3,
@@ -21,6 +23,7 @@ export const Default: Story = {
 	},
 };
 
+/** Badge hidden when count is zero. */
 export const NoNotifications: Story = {
 	args: {
 		count: 0,
@@ -28,6 +31,7 @@ export const NoNotifications: Story = {
 	},
 };
 
+/** Count exceeds maxCount and displays as "99+". */
 export const HighCount: Story = {
 	args: {
 		count: 150,
@@ -36,6 +40,7 @@ export const HighCount: Story = {
 	},
 };
 
+/** Dropdown disabled; clicking the bell fires onClick instead. */
 export const WithoutDropdown: Story = {
 	args: {
 		count: 5,

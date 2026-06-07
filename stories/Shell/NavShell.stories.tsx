@@ -1,5 +1,5 @@
 import { Text } from "@mantine/core";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import {
 	NavGroup,
@@ -16,6 +16,7 @@ import {
 	sampleWorkspaces,
 } from "../_data";
 
+/** Top-level layout wrapper built on Mantine AppShell. Provides header, collapsible sidebar, and main content area with responsive mobile drawer. */
 const meta: Meta<typeof NavShell> = {
 	title: "Shell/NavShell",
 	component: NavShell,
@@ -28,6 +29,7 @@ const meta: Meta<typeof NavShell> = {
 export default meta;
 type Story = StoryObj<typeof NavShell>;
 
+/** Full shell with header, sidebar (workspace switcher + user menu), and content. */
 export const Default: Story = {
 	render: () => (
 		<NavShell
@@ -72,6 +74,7 @@ export const Default: Story = {
 	),
 };
 
+/** Shell with sidebar only, no top header bar. */
 export const WithoutHeader: Story = {
 	render: () => (
 		<NavShell
@@ -86,6 +89,7 @@ export const WithoutHeader: Story = {
 	),
 };
 
+/** Header displays a colored environment badge (e.g. Staging, Production). */
 export const WithEnvironment: Story = {
 	render: () => (
 		<NavShell
