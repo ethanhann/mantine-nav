@@ -1,5 +1,17 @@
 // Types
 
+export type {
+	ColorMode,
+	ColorModePickerProps,
+} from "./components/ColorModePicker";
+export { ColorModePicker } from "./components/ColorModePicker";
+// Command Palette (wraps @mantine/spotlight)
+export type {
+	CommandPaletteAction,
+	CommandPaletteGroupLabels,
+	CommandPaletteProps,
+} from "./components/CommandPalette";
+export { CommandPalette } from "./components/CommandPalette";
 export type { NavGroupProps } from "./components/NavGroup";
 // Navigation
 export { NavGroup } from "./components/NavGroup";
@@ -17,8 +29,6 @@ export {
 } from "./components/NavShell";
 export type { NavSidebarProps } from "./components/NavSidebar";
 export { NavSidebar } from "./components/NavSidebar";
-export type { ColorMode, ColorModePickerProps } from "./components/ColorModePicker";
-export { ColorModePicker } from "./components/ColorModePicker";
 export type {
 	ColorSchemeToggleProps,
 	NotificationIndicatorProps,
@@ -37,6 +47,7 @@ export {
 	UserMenu,
 	WorkspaceSwitcher,
 } from "./components/SaaS";
+// Hooks
 export type {
 	NavItemResolvers,
 	NavRegistryEntry,
@@ -45,6 +56,7 @@ export type {
 	StarredPage,
 	UseActiveNavItemOptions,
 	UseActiveNavItemReturn,
+	UseCommandPaletteReturn,
 	UseHeadlessSidebarOptions,
 	UseHeadlessSidebarReturn,
 	UseNavAnimationReturn,
@@ -71,9 +83,11 @@ export type {
 	UseStarredPagesOptions,
 	UseStarredPagesReturn,
 } from "./hooks";
-// Hooks
 export {
+	commandPaletteControls,
+	commandPaletteStore,
 	useActiveNavItem,
+	useCommandPalette,
 	useCurrentPath,
 	useHeadlessSidebar,
 	useHydrated,
@@ -109,6 +123,10 @@ export type {
 	UserInfo,
 	Workspace,
 } from "./types";
-export { sortItemsByWeight } from "./utils/sorting";
 // Utilities
+export type { NavCommand } from "./utils/flatten";
+export { flattenNavCommands } from "./utils/flatten";
+export type { FuzzyResult, RankedItem } from "./utils/fuzzy";
+export { fuzzyMatch, rankCommands } from "./utils/fuzzy";
+export { sortItemsByWeight } from "./utils/sorting";
 export { filterVisibleItems, isItemVisible } from "./utils/visibility";

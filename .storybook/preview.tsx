@@ -4,6 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import "@mantine/core/styles.css";
+import "@mantine/spotlight/styles.css";
 
 if (process.env.NODE_ENV !== "production") {
 	import("@axe-core/react").then((axe) => {

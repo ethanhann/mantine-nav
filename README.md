@@ -269,6 +269,44 @@ import {
 </NavSidebar>
 ```
 
+## Command Palette
+
+`CommandPalette` is a ⌘K command palette built on [`@mantine/spotlight`](https://mantine.dev/x/spotlight/). It auto-flattens your nav-item tree into searchable destinations, accepts extra non-navigation `actions`, ranks results with a lightweight fuzzy matcher, and shows Recently Viewed / Starred sections when the search box is empty.
+
+`@mantine/spotlight` is a peer dependency — install it and import its stylesheet once in your app:
+
+```bash
+npm install @mantine/spotlight
+```
+
+```tsx
+import { CommandPalette, useCommandPalette } from '@ethanhann/mantine-nav';
+import '@mantine/core/styles.css';
+import '@mantine/spotlight/styles.css'; // required
+
+function App() {
+  const palette = useCommandPalette();
+
+  return (
+    <>
+      <button onClick={palette.open}>Search…</button>
+
+      <CommandPalette
+        items={items}
+        actions={[
+          { id: 'theme', label: 'Toggle color scheme', keywords: ['dark', 'light'], onSelect: toggleColorScheme },
+          { id: 'logout', label: 'Log out', onSelect: signOut },
+        ]}
+        // For SPA routing, navigate via your router instead of a full page load:
+        onNavigate={(command) => router.push(command.href)}
+      />
+    </>
+  );
+}
+```
+
+The palette opens on ⌘K / Ctrl+K by default (configurable via `shortcut`, or `null` to disable) and shares a single instance with `useCommandPalette()` so a trigger button and the shortcut drive the same palette.
+
 ## Hooks
 
 ### `useNavShell` / `useOptionalNavShell`
