@@ -42,11 +42,7 @@ function deferred() {
 describe("ContextSwitcher", () => {
 	it("renders the active item's label and description in the trigger", () => {
 		render(
-			<ContextSwitcher
-				items={personas}
-				active="admin:1"
-				onSelect={() => {}}
-			/>,
+			<ContextSwitcher items={personas} active="admin:1" onSelect={() => {}} />,
 			{ wrapper: Wrapper },
 		);
 		expect(screen.getByText("Admin")).toBeInTheDocument();
@@ -73,11 +69,7 @@ describe("ContextSwitcher", () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
 		render(
-			<ContextSwitcher
-				items={personas}
-				active="admin:1"
-				onSelect={onSelect}
-			/>,
+			<ContextSwitcher items={personas} active="admin:1" onSelect={onSelect} />,
 			{ wrapper: Wrapper },
 		);
 
@@ -96,11 +88,7 @@ describe("ContextSwitcher", () => {
 	it("closes the menu after a sync selection", async () => {
 		const user = userEvent.setup();
 		render(
-			<ContextSwitcher
-				items={personas}
-				active="admin:1"
-				onSelect={() => {}}
-			/>,
+			<ContextSwitcher items={personas} active="admin:1" onSelect={() => {}} />,
 			{ wrapper: Wrapper },
 		);
 
@@ -118,11 +106,7 @@ describe("ContextSwitcher", () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
 		render(
-			<ContextSwitcher
-				items={personas}
-				active="admin:1"
-				onSelect={onSelect}
-			/>,
+			<ContextSwitcher items={personas} active="admin:1" onSelect={onSelect} />,
 			{ wrapper: Wrapper },
 		);
 
@@ -340,7 +324,9 @@ describe("ContextSwitcher", () => {
 				items={personas}
 				active={null}
 				onSelect={() => {}}
-				actions={[{ id: "manage", label: "Manage workspaces", onClick: onManage }]}
+				actions={[
+					{ id: "manage", label: "Manage workspaces", onClick: onManage },
+				]}
 			/>,
 			{ wrapper: Wrapper },
 		);

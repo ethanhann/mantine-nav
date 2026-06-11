@@ -135,7 +135,7 @@ describe("useCommandSearch", () => {
 		rerender({ q: "abc" });
 		await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
 		expect(result.current.stalled).toBe(false);
-		resolvers.forEach((r) => r([]));
+		for (const resolve of resolvers) resolve([]);
 	});
 
 	it("refetches when the search function identity changes", async () => {
