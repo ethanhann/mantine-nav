@@ -2,6 +2,7 @@
 
 import { Loader } from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
+import { IconAlertTriangle } from "@tabler/icons-react";
 import { type ReactNode, useMemo, useState } from "react";
 import { commandPaletteStore } from "../../hooks/useCommandPalette";
 import {
@@ -66,10 +67,14 @@ export interface CommandPaletteProps {
 	/** Async backend search source. Called (debounced) as the user types; its
 	 * results are appended below the local matches in a "Results" group. */
 	search?: CommandSearchFn;
-	/** Don't hit the backend until the query reaches this length. @default 2 */
+	/** Don't hit the backend until the query reaches this length. `0` also
+	 * fires `search("")` on an empty query (server-side suggestions). @default 2 */
 	minSearchLength?: number;
 	/** Debounce before firing `search`, in ms. @default 200 */
 	searchDebounce?: number;
+	/** Delay after a `search` request fires before the spinner shows, so fast
+	 * responses don't flicker one. @default 300 */
+	searchStallThreshold?: number;
 	placeholder?: string;
 	nothingFoundMessage?: ReactNode;
 	/** Shown while a backend search is pending/running. @default "Searching…" */
@@ -104,6 +109,7 @@ export function CommandPalette({
 	search,
 	minSearchLength = 2,
 	searchDebounce = 200,
+	searchStallThreshold = 300,
 	placeholder = "Search…",
 	nothingFoundMessage = "Nothing found",
 	searchingMessage = "Searching…",
@@ -118,6 +124,7 @@ export function CommandPalette({
 	const remote = useCommandSearch(query, search, {
 		minLength: minSearchLength,
 		debounce: searchDebounce,
+		stallThreshold: searchStallThreshold,
 	});
 
 	const navCommands = useMemo(() => flattenNavCommands(items), [items]);
@@ -146,11 +153,18 @@ export function CommandPalette({
 		if (shell?.isMobile) shell.closeMobile();
 	};
 
-	const renderNavAction = (command: NavCommand, key: string) => (
+	const renderNavAction = (
+		command: NavCommand,
+		key: string,
+		description?: string,
+	) => (
 		<Spotlight.Action
 			key={key}
 			label={command.label}
-			description={command.path.length ? command.path.join(" / ") : undefined}
+			description={
+				description ??
+				(command.path.length ? command.path.join(" / ") : undefined)
+			}
 			leftSection={command.icon}
 			disabled={command.disabled}
 			onClick={(event) => handleNavSelect(command, event)}
@@ -170,26 +184,35 @@ export function CommandPalette({
 		/>
 	);
 
-	const renderSearchResult = (result: CommandSearchResult) => (
-		<Spotlight.Action
-			key={`result-${result.id}`}
-			label={result.label}
-			description={result.description}
-			leftSection={result.icon}
-			onClick={(event) =>
-				handleNavSelect(
-					{
-						id: result.id,
-						label: result.label,
-						href: result.href,
-						external: result.external,
-						path: [],
-					},
-					event,
-				)
-			}
-		/>
-	);
+	const renderSearchResult = (result: CommandSearchResult) =>
+		renderNavAction(
+			{
+				id: result.id,
+				label: result.label,
+				href: result.href,
+				icon: result.icon,
+				external: result.external,
+				path: [],
+			},
+			`result-${result.id}`,
+			result.description,
+		);
+
+	// Backend results group. Dedup by href against the local rows actually
+	// displayed (not the whole nav tree — a hit must stay reachable when its
+	// local counterpart didn't match the query), and cap to `limit` like the
+	// local groups.
+	const resultsGroupElement = (shownHrefs: ReadonlySet<string>) => {
+		const remoteResults = remote.results
+			.filter((r) => !shownHrefs.has(r.href))
+			.slice(0, limit);
+		if (remoteResults.length === 0) return null;
+		return (
+			<Spotlight.ActionsGroup key="results" label={groupLabels.results}>
+				{remoteResults.map(renderSearchResult)}
+			</Spotlight.ActionsGroup>
+		);
+	};
 
 	const navGroupElement = (commands: NavCommand[]) => (
 		<Spotlight.ActionsGroup key="pages" label={groupLabels.pages}>
@@ -235,6 +258,13 @@ export function CommandPalette({
 		}
 		if (actions.length > 0) groups.push(actionsGroupElement(actions));
 		if (navCommands.length > 0) groups.push(navGroupElement(navCommands));
+		// With minSearchLength={0} the backend also answers the empty query
+		// (suggestions on open); every nav command is displayed above, so dedup
+		// against all of them.
+		const resultsEl = resultsGroupElement(
+			new Set(navCommands.map((c) => c.href)),
+		);
+		if (resultsEl) groups.push(resultsEl);
 	} else {
 		const rankedNav = rankCommands(
 			trimmed,
@@ -264,26 +294,20 @@ export function CommandPalette({
 
 		// Backend results are appended *below* local matches (stable position —
 		// the selection stays anchored on the first local row when they arrive).
-		// Dedup by href so a backend hit doesn't repeat a local destination.
-		const localHrefs = new Set(navCommands.map((c) => c.href));
-		const remoteResults = remote.results.filter((r) => !localHrefs.has(r.href));
-		if (remoteResults.length > 0) {
-			groups.push(
-				<Spotlight.ActionsGroup key="results" label={groupLabels.results}>
-					{remoteResults.map(renderSearchResult)}
-				</Spotlight.ActionsGroup>,
-			);
-		}
+		const resultsEl = resultsGroupElement(
+			new Set(rankedNav.map((r) => r.item.href)),
+		);
+		if (resultsEl) groups.push(resultsEl);
 	}
 
 	// When nothing is shown, prefer "Searching…" over "Nothing found" while a
-	// backend request is pending, and surface a failed search.
-	let emptyContent: ReactNode = nothingFoundMessage;
-	if (trimmed !== "" && remote.active) {
-		emptyContent = searchingMessage;
-	} else if (remote.error) {
-		emptyContent = searchErrorMessage;
-	}
+	// backend request is pending, and surface a failed search. The hook gates
+	// `active`/`error` on the live input, so neither leaks across queries.
+	const emptyContent: ReactNode = remote.active
+		? searchingMessage
+		: remote.error
+			? searchErrorMessage
+			: nothingFoundMessage;
 
 	return (
 		<Spotlight.Root
@@ -297,7 +321,25 @@ export function CommandPalette({
 		>
 			<Spotlight.Search
 				placeholder={placeholder}
-				rightSection={remote.stalled ? <Loader size="xs" /> : undefined}
+				rightSection={
+					remote.stalled ? (
+						<Loader size="xs" />
+					) : remote.error ? (
+						// Keeps a failed backend search visible even when local rows
+						// match and the Empty slot never renders.
+						<IconAlertTriangle
+							size={16}
+							stroke={1.5}
+							color="var(--mantine-color-red-6)"
+							role="img"
+							aria-label={
+								typeof searchErrorMessage === "string"
+									? searchErrorMessage
+									: "Search failed"
+							}
+						/>
+					) : undefined
+				}
 			/>
 			<Spotlight.ActionsList>
 				{groups.length > 0 ? (
