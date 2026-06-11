@@ -6,9 +6,10 @@
 [![Coverage](https://img.shields.io/endpoint?url=https://ethanhann.github.io/mantine-nav/coverage-badge.json)](https://ethanhann.github.io/mantine-nav/)
 [![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/nav/)
 
-A React navigation component library built on [Mantine v9](https://mantine.dev). Provides a responsive app shell,
-sidebar, header, and nav-tree components with multi-level nesting, keyboard navigation, and SaaS-oriented building
-blocks (workspace switcher, user menu, plan badge, notification indicator).
+A React navigation component library built on [Mantine v9](https://mantine.dev).
+
+Provides a responsive app shell, sidebar, header, and nav-tree components with multi-level nesting, keyboard navigation,
+and SaaS-oriented building blocks (workspace switcher, user menu, plan badge, notification indicator).
 
 ## Installation
 
