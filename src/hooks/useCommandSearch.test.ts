@@ -105,4 +105,119 @@ describe("useCommandSearch", () => {
 		expect(result.current.results.map((r) => r.id)).toEqual(["bb"]);
 		expect(deferreds[0].isAborted()).toBe(true);
 	});
+
+	it("resets `stalled` when a stalled request is superseded", async () => {
+		const resolvers: Array<(v: CommandSearchResult[]) => void> = [];
+		const search = vi.fn(
+			() =>
+				new Promise<CommandSearchResult[]>((resolve) => {
+					resolvers.push(resolve);
+				}),
+		);
+		const { result, rerender } = renderHook(
+			({ q }) =>
+				useCommandSearch(q, search, {
+					debounce: 5,
+					minLength: 1,
+					// Long enough that the SECOND request can't legitimately stall
+					// before the assertion below runs.
+					stallThreshold: 500,
+				}),
+			{ initialProps: { q: "" } },
+		);
+
+		rerender({ q: "ab" });
+		await waitFor(() => expect(result.current.stalled).toBe(true), {
+			timeout: 2000,
+		});
+
+		// Supersede the stalled request: the new one must start un-stalled.
+		rerender({ q: "abc" });
+		await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
+		expect(result.current.stalled).toBe(false);
+		resolvers.forEach((r) => r([]));
+	});
+
+	it("refetches when the search function identity changes", async () => {
+		const searchA = vi.fn(
+			async (): Promise<CommandSearchResult[]> => [
+				{ id: "a", label: "from A", href: "/a" },
+			],
+		);
+		const searchB = vi.fn(
+			async (): Promise<CommandSearchResult[]> => [
+				{ id: "b", label: "from B", href: "/b" },
+			],
+		);
+		const { result, rerender } = renderHook(
+			({ q, fn }) => useCommandSearch(q, fn, { debounce: 5, minLength: 2 }),
+			{ initialProps: { q: "ab", fn: searchA } },
+		);
+
+		await waitFor(() =>
+			expect(result.current.results.map((r) => r.id)).toEqual(["a"]),
+		);
+
+		// Same query, new function (e.g. scoped to a different workspace).
+		rerender({ q: "ab", fn: searchB });
+		await waitFor(() =>
+			expect(result.current.results.map((r) => r.id)).toEqual(["b"]),
+		);
+		expect(searchB).toHaveBeenCalledWith("ab", expect.any(AbortSignal));
+	});
+
+	it("routes a synchronously-throwing search fn into the error state", async () => {
+		const search = vi.fn((): Promise<CommandSearchResult[]> => {
+			throw new Error("sync boom");
+		});
+		const { result, rerender } = renderHook(
+			({ q }) => useCommandSearch(q, search, { debounce: 5, minLength: 2 }),
+			{ initialProps: { q: "" } },
+		);
+
+		rerender({ q: "ab" });
+		await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+		expect(result.current.loading).toBe(false);
+		expect(result.current.stalled).toBe(false);
+	});
+
+	it("keeps previous results when a refresh fails", async () => {
+		let fail = false;
+		const search = vi.fn(async (): Promise<CommandSearchResult[]> => {
+			if (fail) throw new Error("flaky");
+			return [{ id: "ok", label: "ok", href: "/ok" }];
+		});
+		const { result, rerender } = renderHook(
+			({ q }) => useCommandSearch(q, search, { debounce: 5, minLength: 2 }),
+			{ initialProps: { q: "ab" } },
+		);
+
+		await waitFor(() => expect(result.current.results).toHaveLength(1));
+
+		fail = true;
+		rerender({ q: "abc" });
+		await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+		// Stale-while-revalidate applies to failures too.
+		expect(result.current.results.map((r) => r.id)).toEqual(["ok"]);
+	});
+
+	it("clears results and error as soon as the live query stops qualifying", async () => {
+		const search = vi.fn(
+			async (): Promise<CommandSearchResult[]> => [
+				{ id: "1", label: "hit", href: "/h" },
+			],
+		);
+		const { result, rerender } = renderHook(
+			({ q }) => useCommandSearch(q, search, { debounce: 50, minLength: 2 }),
+			{ initialProps: { q: "ab" } },
+		);
+
+		await waitFor(() => expect(result.current.results).toHaveLength(1));
+
+		// Drop below minLength: gated immediately, not after the debounce.
+		rerender({ q: "a" });
+		expect(result.current.results).toEqual([]);
+		expect(result.current.error).toBeNull();
+		expect(result.current.active).toBe(false);
+	});
 });

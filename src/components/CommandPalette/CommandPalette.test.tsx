@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CommandSearchResult } from "../../hooks";
 import { commandPaletteControls, useCommandPalette } from "../../hooks";
 import type { NavItemType } from "../../types";
-import { NavShell } from "../NavShell";
+import { NavShell, useNavShell } from "../NavShell";
 import { CommandPalette, type CommandPaletteProps } from "./CommandPalette";
 
 const items: NavItemType[] = [
@@ -321,11 +321,24 @@ describe("CommandPalette", () => {
 		})) as unknown as typeof window.matchMedia;
 
 		try {
+			function DrawerProbe() {
+				const shell = useNavShell();
+				return (
+					<>
+						<button type="button" onClick={shell.openMobile}>
+							open-drawer
+						</button>
+						<span data-testid="drawer-open">{String(shell.mobileOpened)}</span>
+					</>
+				);
+			}
+
 			function MobileHarness() {
 				const { open } = useCommandPalette();
 				return (
 					<MantineProvider>
 						<NavShell>
+							<DrawerProbe />
 							<button type="button" onClick={open}>
 								open-palette
 							</button>
@@ -336,22 +349,138 @@ describe("CommandPalette", () => {
 			}
 
 			render(<MobileHarness />);
-			const user = await openPalette();
+			const user = userEvent.setup();
+			await user.click(screen.getByText("open-drawer"));
+			expect(screen.getByTestId("drawer-open")).toHaveTextContent("true");
 
+			await user.click(screen.getByText("open-palette"));
+			await screen.findByPlaceholderText("Search…");
 			await user.type(screen.getByPlaceholderText("Search…"), "inv");
 			await user.click(screen.getByText("Inventory"));
 
-			// The selection completed (recorded) without throwing on the mobile path.
-			await waitFor(() => {
-				const stored = JSON.parse(
-					localStorage.getItem("nav-recently-viewed") ?? "[]",
-				);
-				expect(stored.some((i: { id: string }) => i.id === "inventory")).toBe(
-					true,
-				);
-			});
+			await waitFor(() =>
+				expect(screen.getByTestId("drawer-open")).toHaveTextContent("false"),
+			);
 		} finally {
 			window.matchMedia = original;
 		}
+	});
+
+	it("shows a backend hit whose href exists in the nav tree when the local item didn't match the query", async () => {
+		// "rep" doesn't fuzzy-match "Inventory", but the backend content-matches
+		// that page — the hit must not be deduped against undisplayed nav items.
+		const search = async () => [
+			{
+				id: "content-hit",
+				label: "Inventory report (docs)",
+				href: "/products/inventory",
+			},
+		];
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "rep");
+		expect(
+			await screen.findByText("Inventory report (docs)"),
+		).toBeInTheDocument();
+	});
+
+	it("caps the backend Results group at `limit`", async () => {
+		const search = async (): Promise<CommandSearchResult[]> =>
+			Array.from({ length: 6 }, (_, i) => ({
+				id: `r${i}`,
+				label: `Remote ${i}`,
+				href: `/remote/${i}`,
+			}));
+		render(
+			<Harness
+				items={items}
+				search={search}
+				limit={2}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "rem");
+		await screen.findByText("Remote 0");
+		expect(screen.getByText("Remote 1")).toBeInTheDocument();
+		expect(screen.queryByText("Remote 2")).not.toBeInTheDocument();
+	});
+
+	it("renders empty-query backend suggestions when minSearchLength is 0", async () => {
+		const search = async () => [
+			{ id: "sugg", label: "Suggested doc", href: "/docs/suggested" },
+		];
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={0}
+			/>,
+		);
+		await openPalette();
+
+		// No typing — results arrive for the empty query.
+		expect(await screen.findByText("Suggested doc")).toBeInTheDocument();
+	});
+
+	it("shows an inline error indicator when local rows match and the backend fails", async () => {
+		const search = async (): Promise<CommandSearchResult[]> => {
+			throw new Error("backend down");
+		};
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		// "inv" matches the local Inventory row, so the Empty slot never renders;
+		// the failure must surface in the search input instead.
+		await user.type(screen.getByPlaceholderText("Search…"), "inv");
+		expect(screen.getByText("Inventory")).toBeInTheDocument();
+		// Re-query inside waitFor: with searchDebounce 0 each keystroke's request
+		// rejects and the next one transiently clears the error, so a found node
+		// can be replaced before a detached-element assertion runs.
+		await waitFor(() =>
+			expect(screen.getByLabelText("Search failed")).toBeInTheDocument(),
+		);
+	});
+
+	it("clears a stale search error as soon as the query is cleared", async () => {
+		const search = async (): Promise<CommandSearchResult[]> => {
+			throw new Error("nope");
+		};
+		render(
+			<Harness
+				items={[]}
+				search={search}
+				searchDebounce={50}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		const input = screen.getByPlaceholderText("Search…");
+		await user.type(input, "zzzz");
+		expect(await screen.findByText("Search failed")).toBeInTheDocument();
+
+		// Clearing must hide the error immediately — not after the debounce.
+		await user.clear(input);
+		expect(screen.queryByText("Search failed")).not.toBeInTheDocument();
+		expect(screen.getByText("Nothing found")).toBeInTheDocument();
 	});
 });
