@@ -52,6 +52,67 @@ describe("Spec 004: usePinnedItems", () => {
 		expect(result.current.pinnedItems.length).toBe(2);
 	});
 
+	it("does not pin a duplicate item", () => {
+		const { result } = renderHook(() => usePinnedItems(items));
+
+		act(() => result.current.pin(items[0]!));
+		act(() => result.current.pin(items[0]!));
+		expect(result.current.pinnedItems.length).toBe(1);
+	});
+
+	it("persists to localStorage when storageKey is provided", () => {
+		const key = "test-pinned-persist";
+		localStorage.removeItem(key);
+
+		const { result } = renderHook(() =>
+			usePinnedItems(items, { storageKey: key }),
+		);
+
+		act(() => result.current.pin(items[0]!));
+		const stored = JSON.parse(localStorage.getItem(key) || "[]");
+		expect(stored).toEqual(["home"]);
+	});
+
+	it("loads initial state from localStorage", () => {
+		const key = "test-pinned-load";
+		localStorage.setItem(key, JSON.stringify(["settings"]));
+
+		const { result } = renderHook(() =>
+			usePinnedItems(items, { storageKey: key }),
+		);
+
+		expect(result.current.isPinned("settings")).toBe(true);
+		expect(result.current.pinnedItems.length).toBe(1);
+
+		localStorage.removeItem(key);
+	});
+
+	it("handles invalid localStorage data gracefully", () => {
+		const key = "test-pinned-corrupt";
+		localStorage.setItem(key, "not-json!!!");
+
+		const { result } = renderHook(() =>
+			usePinnedItems(items, { storageKey: key }),
+		);
+
+		expect(result.current.pinnedItems.length).toBe(0);
+
+		localStorage.removeItem(key);
+	});
+
+	it("handles non-array localStorage data gracefully", () => {
+		const key = "test-pinned-object";
+		localStorage.setItem(key, JSON.stringify({ foo: "bar" }));
+
+		const { result } = renderHook(() =>
+			usePinnedItems(items, { storageKey: key }),
+		);
+
+		expect(result.current.pinnedItems.length).toBe(0);
+
+		localStorage.removeItem(key);
+	});
+
 	it("reorderPinned works", () => {
 		const { result } = renderHook(() => usePinnedItems(items));
 

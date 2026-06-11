@@ -31,6 +31,7 @@ export default defineConfig({
 				"react/jsx-runtime",
 				"@mantine/core",
 				"@mantine/hooks",
+				"@mantine/spotlight",
 				"@tabler/icons-react",
 			],
 			output: {
@@ -39,6 +40,7 @@ export default defineConfig({
 					"react-dom": "ReactDOM",
 					"@mantine/core": "MantineCore",
 					"@mantine/hooks": "MantineHooks",
+					"@mantine/spotlight": "MantineSpotlight",
 					"@tabler/icons-react": "TablerIcons",
 				},
 			},

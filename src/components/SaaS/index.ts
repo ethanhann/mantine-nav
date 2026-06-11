@@ -1,5 +1,3 @@
-export type { ColorSchemeToggleProps } from "./ColorSchemeToggle";
-export { ColorSchemeToggle } from "./ColorSchemeToggle";
 export type {
 	NotificationIndicatorProps,
 	NotificationItem,

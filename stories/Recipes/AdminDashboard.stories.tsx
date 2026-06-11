@@ -1,18 +1,32 @@
-import { Badge, Card, Group, SimpleGrid, Text, Title } from "@mantine/core";
+import {
+	Badge,
+	Button,
+	Card,
+	Group,
+	Kbd,
+	SimpleGrid,
+	Text,
+	Title,
+} from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconChartBar,
 	IconDatabase,
 	IconFileText,
+	IconHistory,
 	IconHome,
+	IconSearch,
 	IconServer,
 	IconSettings,
 	IconShield,
+	IconTool,
+	IconUserPlus,
 	IconUsers,
 } from "@tabler/icons-react";
 
-import type { NavItemType } from "../../src";
+import type { CommandPaletteProps, NavItemType } from "../../src";
 import {
+	CommandPalette,
 	NavGroup,
 	NavHeader,
 	NavShell,
@@ -20,6 +34,7 @@ import {
 	NotificationIndicator,
 	PlanBadge,
 	UserMenu,
+	useCommandPalette,
 	WorkspaceSwitcher,
 } from "../../src";
 import {
@@ -110,7 +125,32 @@ const adminItems: NavItemType[] = [
 	},
 ];
 
-/** Full admin dashboard layout combining NavShell, WorkspaceSwitcher, UserMenu, PlanBadge, and NotificationIndicator. */
+// Non-navigation commands surfaced in the palette alongside the admin nav.
+const adminActions: CommandPaletteProps["actions"] = [
+	{
+		id: "invite-user",
+		label: "Invite user",
+		description: "Send a workspace invitation",
+		icon: <IconUserPlus size={18} stroke={1.5} />,
+		keywords: ["add", "member", "team"],
+		onSelect: () => console.log("invite user"),
+	},
+	{
+		id: "audit-log",
+		label: "View audit log",
+		icon: <IconHistory size={18} stroke={1.5} />,
+		keywords: ["history", "activity"],
+		onSelect: () => console.log("audit log"),
+	},
+	{
+		id: "maintenance",
+		label: "Toggle maintenance mode",
+		icon: <IconTool size={18} stroke={1.5} />,
+		onSelect: () => console.log("maintenance mode"),
+	},
+];
+
+/** Full admin dashboard layout combining NavShell, WorkspaceSwitcher, UserMenu, PlanBadge, NotificationIndicator, and a ⌘K command palette. */
 const meta: Meta = {
 	title: "Recipes/AdminDashboard",
 	component: NavShell,
@@ -123,9 +163,26 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-/** Enterprise admin panel with workspace switching, notifications, and sectioned navigation. */
-export const Default: Story = {
-	render: () => (
+/** A header search trigger that opens the shared command palette. */
+function PaletteTrigger() {
+	const { open } = useCommandPalette();
+	return (
+		<Button
+			variant="default"
+			size="xs"
+			color="gray"
+			leftSection={<IconSearch size={14} />}
+			rightSection={<Kbd>⌘K</Kbd>}
+			onClick={open}
+		>
+			Search…
+		</Button>
+	);
+}
+
+/** The dashboard shell, wired with a command palette over the admin nav + actions. */
+function AdminDashboard() {
+	return (
 		<NavShell
 			header={
 				<NavHeader
@@ -137,6 +194,7 @@ export const Default: Story = {
 					environment={{ label: "Production", color: "green" }}
 					rightSection={
 						<Group gap="xs">
+							<PaletteTrigger />
 							<PlanBadge plan="Enterprise" color="teal" />
 							<NotificationIndicator
 								count={3}
@@ -191,6 +249,17 @@ export const Default: Story = {
 					</Text>
 				</Card>
 			</SimpleGrid>
+
+			<CommandPalette
+				items={adminItems}
+				actions={adminActions}
+				onNavigate={(command) => console.log("navigate:", command.href)}
+			/>
 		</NavShell>
-	),
+	);
+}
+
+/** Enterprise admin panel with workspace switching, notifications, sectioned navigation, and a ⌘K command palette (click "Search…" in the header or press ⌘K). */
+export const Default: Story = {
+	render: () => <AdminDashboard />,
 };

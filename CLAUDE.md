@@ -24,7 +24,7 @@ A React navigation component library (`@ethanhann/mantine-nav`) built on Mantine
 - **NavGroup** — Renders hierarchical navigation item trees. Supports accordion mode, keyboard navigation with type-ahead search, active item matching, and recursive group nesting up to `maxDepth`. Uses an internal `NavItemRenderer` function.
 - **NavHeader** — Header bar with logo, center content, right section, and optional environment badge.
 - **NavSidebar** — Sidebar wrapper with header/body/footer sections and collapse toggle. Hides header/footer when collapsed.
-- **SaaS components** (`src/components/SaaS/`) — WorkspaceSwitcher, UserMenu, PlanBadge, NotificationIndicator, ColorSchemeToggle.
+- **SaaS components** (`src/components/SaaS/`) — WorkspaceSwitcher, UserMenu, PlanBadge, NotificationIndicator.
 
 ### Type System
 

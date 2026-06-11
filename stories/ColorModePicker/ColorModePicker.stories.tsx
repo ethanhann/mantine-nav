@@ -7,8 +7,8 @@ import {
 	IconSun,
 } from "@tabler/icons-react";
 import { useState } from "react";
-import { ColorModePicker } from "../../src";
 import type { ColorMode } from "../../src";
+import { ColorModePicker } from "../../src";
 
 /** Color mode picker with three variants: a cycling toggle button (default), a segmented control, or a dropdown menu. Supports system, light, and dark modes out of the box, and is extensible with custom modes. */
 const meta: Meta<typeof ColorModePicker> = {

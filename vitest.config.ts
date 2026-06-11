@@ -21,6 +21,7 @@ export default defineConfig({
 				"src/**/*.stories.tsx",
 				"src/test-setup.ts",
 				"src/env.d.ts",
+				"src/types/**",
 			],
 		},
 	},
