@@ -36,6 +36,14 @@ describe("fuzzyMatch", () => {
 		const mid = fuzzyMatch("us", "Status")?.score ?? 0;
 		expect(boundary).toBeGreaterThan(mid);
 	});
+
+	it("treats camelCase humps as word boundaries", () => {
+		// "a" matches the capitalized hump in "myAccount" (a word boundary)...
+		const camel = fuzzyMatch("a", "myAccount")?.score ?? 0;
+		// ...which should outscore a plain mid-word "a" in "salary".
+		const mid = fuzzyMatch("a", "salary")?.score ?? 0;
+		expect(camel).toBeGreaterThan(mid);
+	});
 });
 
 describe("rankCommands", () => {
