@@ -69,10 +69,7 @@ export function ColorModePicker({
 			mode.onActivate();
 		}
 
-		if (
-			BUILTIN_VALUES.has(newValue) &&
-			controlledValue === undefined
-		) {
+		if (BUILTIN_VALUES.has(newValue) && controlledValue === undefined) {
 			setColorScheme(newValue as "light" | "dark" | "auto");
 		}
 	}
@@ -80,7 +77,8 @@ export function ColorModePicker({
 	if (variant === "toggle") {
 		const currentIndex = modes.findIndex((m) => m.value === activeValue);
 		const activeMode = currentIndex !== -1 ? modes[currentIndex] : modes[0];
-		const nextIndex = (currentIndex !== -1 ? currentIndex + 1 : 1) % modes.length;
+		const nextIndex =
+			(currentIndex !== -1 ? currentIndex + 1 : 1) % modes.length;
 		const nextMode = modes[nextIndex];
 
 		return (
@@ -122,9 +120,7 @@ export function ColorModePicker({
 							leftSection={mode.icon}
 							onClick={() => handleChange(mode.value)}
 							style={
-								mode.value === activeValue
-									? { fontWeight: 600 }
-									: undefined
+								mode.value === activeValue ? { fontWeight: 600 } : undefined
 							}
 						>
 							{mode.label}
@@ -138,10 +134,7 @@ export function ColorModePicker({
 	const segmentData = modes.map((mode) => ({
 		value: mode.value,
 		label: (
-			<Center
-				style={{ gap: 6 }}
-				aria-label={mode.label}
-			>
+			<Center style={{ gap: 6 }} aria-label={mode.label}>
 				{mode.icon}
 				{showLabels && <span>{mode.label}</span>}
 			</Center>

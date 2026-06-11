@@ -1,7 +1,7 @@
 import { MantineProvider } from "@mantine/core";
+import { IconSun } from "@tabler/icons-react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { IconSun } from "@tabler/icons-react";
 import { describe, expect, it, vi } from "vitest";
 import { ColorModePicker } from "../ColorModePicker";
 import { NotificationIndicator } from "./NotificationIndicator";
@@ -73,13 +73,9 @@ describe("SaaS Components (Mantine v2)", () => {
 		const notifications = [
 			{ id: "1", title: "New message", timestamp: "2 hours ago" },
 		];
-		render(
-			<NotificationIndicator
-				count={1}
-				notifications={notifications}
-			/>,
-			{ wrapper: Wrapper },
-		);
+		render(<NotificationIndicator count={1} notifications={notifications} />, {
+			wrapper: Wrapper,
+		});
 
 		const trigger = screen.getByLabelText("Notifications (1 unread)");
 		await user.click(trigger);
@@ -91,20 +87,16 @@ describe("SaaS Components (Mantine v2)", () => {
 		const notifications = [
 			{ id: "1", title: "New message", description: "Hello" },
 		];
-		render(
-			<NotificationIndicator
-				count={1}
-				notifications={notifications}
-			/>,
-			{ wrapper: Wrapper },
-		);
+		render(<NotificationIndicator count={1} notifications={notifications} />, {
+			wrapper: Wrapper,
+		});
 
 		expect(
 			screen.getByLabelText("Notifications (1 unread)"),
 		).toBeInTheDocument();
 	});
 
-it("NotificationIndicator caps at maxCount", () => {
+	it("NotificationIndicator caps at maxCount", () => {
 		render(<NotificationIndicator count={150} maxCount={99} />, {
 			wrapper: Wrapper,
 		});
@@ -204,9 +196,7 @@ it("NotificationIndicator caps at maxCount", () => {
 	it("NotificationIndicator shows mark-all-as-read when unread exist", async () => {
 		const user = userEvent.setup();
 		const onReadAll = vi.fn();
-		const notifications = [
-			{ id: "n1", title: "Unread alert", read: false },
-		];
+		const notifications = [{ id: "n1", title: "Unread alert", read: false }];
 		render(
 			<NotificationIndicator
 				count={1}
@@ -226,7 +216,11 @@ it("NotificationIndicator caps at maxCount", () => {
 		const user = userEvent.setup();
 		const onClick = vi.fn();
 		render(
-			<NotificationIndicator count={3} showDropdown={false} onClick={onClick} />,
+			<NotificationIndicator
+				count={3}
+				showDropdown={false}
+				onClick={onClick}
+			/>,
 			{ wrapper: Wrapper },
 		);
 
@@ -244,10 +238,9 @@ it("NotificationIndicator caps at maxCount", () => {
 	it("ColorModePicker toggle variant cycles to next mode on click", async () => {
 		const user = userEvent.setup();
 		const onChange = vi.fn();
-		render(
-			<ColorModePicker value="auto" onChange={onChange} />,
-			{ wrapper: Wrapper },
-		);
+		render(<ColorModePicker value="auto" onChange={onChange} />, {
+			wrapper: Wrapper,
+		});
 
 		await user.click(screen.getByRole("button"));
 		expect(onChange).toHaveBeenCalledWith("light");
@@ -283,10 +276,9 @@ it("NotificationIndicator caps at maxCount", () => {
 	});
 
 	it("ColorModePicker segmented without labels renders icons only", () => {
-		render(
-			<ColorModePicker variant="segmented" showLabels={false} />,
-			{ wrapper: Wrapper },
-		);
+		render(<ColorModePicker variant="segmented" showLabels={false} />, {
+			wrapper: Wrapper,
+		});
 		expect(screen.queryByText("System")).not.toBeInTheDocument();
 		expect(screen.queryByText("Light")).not.toBeInTheDocument();
 		expect(screen.queryByText("Dark")).not.toBeInTheDocument();
@@ -294,7 +286,9 @@ it("NotificationIndicator caps at maxCount", () => {
 
 	it("ColorModePicker menu variant renders trigger button", () => {
 		render(<ColorModePicker variant="menu" />, { wrapper: Wrapper });
-		expect(screen.getByRole("button", { name: "Color mode" })).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Color mode" }),
+		).toBeInTheDocument();
 	});
 
 	it("ColorModePicker custom mode calls onActivate", async () => {
@@ -303,10 +297,20 @@ it("NotificationIndicator caps at maxCount", () => {
 		const onChange = vi.fn();
 		const modes = [
 			{ value: "light", label: "Light", icon: <IconSun size={16} /> },
-			{ value: "hc", label: "High Contrast", icon: <IconSun size={16} />, onActivate },
+			{
+				value: "hc",
+				label: "High Contrast",
+				icon: <IconSun size={16} />,
+				onActivate,
+			},
 		];
 		render(
-			<ColorModePicker variant="segmented" modes={modes} value="light" onChange={onChange} />,
+			<ColorModePicker
+				variant="segmented"
+				modes={modes}
+				value="light"
+				onChange={onChange}
+			/>,
 			{ wrapper: Wrapper },
 		);
 

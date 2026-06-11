@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { useRecentlyViewed } from "./useRecentlyViewed";
 
 describe("Spec 030: useRecentlyViewed", () => {
@@ -54,12 +54,8 @@ describe("Spec 030: useRecentlyViewed", () => {
 		const { result } = renderHook(() =>
 			useRecentlyViewed({ storageKey: "test-recent-remove" }),
 		);
-		act(() =>
-			result.current.addItem({ id: "1", label: "P1", href: "/1" }),
-		);
-		act(() =>
-			result.current.addItem({ id: "2", label: "P2", href: "/2" }),
-		);
+		act(() => result.current.addItem({ id: "1", label: "P1", href: "/1" }));
+		act(() => result.current.addItem({ id: "2", label: "P2", href: "/2" }));
 		act(() => result.current.removeItem("1"));
 		expect(result.current.items.length).toBe(1);
 		expect(result.current.items[0]!.id).toBe("2");
@@ -69,12 +65,8 @@ describe("Spec 030: useRecentlyViewed", () => {
 		const key = "test-recent-persist";
 		localStorage.removeItem(key);
 
-		const { result } = renderHook(() =>
-			useRecentlyViewed({ storageKey: key }),
-		);
-		act(() =>
-			result.current.addItem({ id: "1", label: "P1", href: "/1" }),
-		);
+		const { result } = renderHook(() => useRecentlyViewed({ storageKey: key }));
+		act(() => result.current.addItem({ id: "1", label: "P1", href: "/1" }));
 		const stored = JSON.parse(localStorage.getItem(key) || "[]");
 		expect(stored.length).toBe(1);
 		expect(stored[0].id).toBe("1");
@@ -87,9 +79,7 @@ describe("Spec 030: useRecentlyViewed", () => {
 		const data = [{ id: "x", label: "X", href: "/x", timestamp: 1000 }];
 		localStorage.setItem(key, JSON.stringify(data));
 
-		const { result } = renderHook(() =>
-			useRecentlyViewed({ storageKey: key }),
-		);
+		const { result } = renderHook(() => useRecentlyViewed({ storageKey: key }));
 		expect(result.current.items.length).toBe(1);
 		expect(result.current.items[0]!.id).toBe("x");
 
@@ -100,9 +90,7 @@ describe("Spec 030: useRecentlyViewed", () => {
 		const key = "test-recent-corrupt";
 		localStorage.setItem(key, "not-valid-json");
 
-		const { result } = renderHook(() =>
-			useRecentlyViewed({ storageKey: key }),
-		);
+		const { result } = renderHook(() => useRecentlyViewed({ storageKey: key }));
 		expect(result.current.items.length).toBe(0);
 
 		localStorage.removeItem(key);
