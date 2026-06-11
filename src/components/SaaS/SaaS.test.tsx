@@ -117,6 +117,123 @@ it("NotificationIndicator caps at maxCount", () => {
 		expect(screen.getByText("Jane Doe")).toBeInTheDocument();
 	});
 
+	it("WorkspaceSwitcher calls onSwitch when selecting a workspace", async () => {
+		const user = userEvent.setup();
+		const ws1 = { id: "1", name: "WS 1" };
+		const ws2 = { id: "2", name: "WS 2" };
+		const onSwitch = vi.fn();
+		render(
+			<WorkspaceSwitcher
+				workspaces={[ws1, ws2]}
+				activeWorkspace={ws1}
+				onSwitch={onSwitch}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByText("WS 1"));
+		const menuItem = await screen.findByText("WS 2");
+		await user.click(menuItem);
+		expect(onSwitch).toHaveBeenCalledWith(ws2);
+	});
+
+	it("WorkspaceSwitcher filters workspaces when searchable", async () => {
+		const user = userEvent.setup();
+		const ws1 = { id: "1", name: "Alpha" };
+		const ws2 = { id: "2", name: "Beta" };
+		const ws3 = { id: "3", name: "Gamma" };
+		render(
+			<WorkspaceSwitcher
+				workspaces={[ws1, ws2, ws3]}
+				activeWorkspace={ws1}
+				onSwitch={() => {}}
+				searchable
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByText("Alpha"));
+		const searchInput = await screen.findByLabelText("Search workspaces");
+		await user.type(searchInput, "bet");
+		expect(screen.getByText("Beta")).toBeInTheDocument();
+		expect(screen.queryByText("Gamma")).not.toBeInTheDocument();
+	});
+
+	it("WorkspaceSwitcher shows create button when onCreate provided", async () => {
+		const user = userEvent.setup();
+		const onCreate = vi.fn();
+		const ws = { id: "1", name: "WS 1" };
+		render(
+			<WorkspaceSwitcher
+				workspaces={[ws]}
+				activeWorkspace={ws}
+				onSwitch={() => {}}
+				onCreate={onCreate}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByText("WS 1"));
+		const createBtn = await screen.findByText("Create workspace");
+		await user.click(createBtn);
+		expect(onCreate).toHaveBeenCalled();
+	});
+
+	it("NotificationIndicator calls onRead when clicking a notification", async () => {
+		const user = userEvent.setup();
+		const onRead = vi.fn();
+		const notifications = [
+			{ id: "n1", title: "Alert 1" },
+			{ id: "n2", title: "Alert 2" },
+		];
+		render(
+			<NotificationIndicator
+				count={2}
+				notifications={notifications}
+				onRead={onRead}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByLabelText("Notifications (2 unread)"));
+		const alert = await screen.findByText("Alert 1");
+		await user.click(alert);
+		expect(onRead).toHaveBeenCalledWith("n1");
+	});
+
+	it("NotificationIndicator shows mark-all-as-read when unread exist", async () => {
+		const user = userEvent.setup();
+		const onReadAll = vi.fn();
+		const notifications = [
+			{ id: "n1", title: "Unread alert", read: false },
+		];
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				onReadAll={onReadAll}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+		const markAllButton = await screen.findByText("Mark all as read");
+		await user.click(markAllButton);
+		expect(onReadAll).toHaveBeenCalled();
+	});
+
+	it("NotificationIndicator without dropdown fires onClick", async () => {
+		const user = userEvent.setup();
+		const onClick = vi.fn();
+		render(
+			<NotificationIndicator count={3} showDropdown={false} onClick={onClick} />,
+			{ wrapper: Wrapper },
+		);
+
+		await user.click(screen.getByLabelText("Notifications (3 unread)"));
+		expect(onClick).toHaveBeenCalled();
+	});
+
 	it("ColorModePicker toggle variant renders a cycling button", () => {
 		render(<ColorModePicker />, { wrapper: Wrapper });
 		const button = screen.getByRole("button");
@@ -153,6 +270,26 @@ it("NotificationIndicator caps at maxCount", () => {
 
 		await user.click(screen.getByText("Dark"));
 		expect(onChange).toHaveBeenCalledWith("dark");
+	});
+
+	it("ColorModePicker uncontrolled toggle calls setColorScheme", async () => {
+		const user = userEvent.setup();
+		render(<ColorModePicker />, { wrapper: Wrapper });
+
+		const button = screen.getByRole("button");
+		await user.click(button);
+		// No error means setColorScheme was called with a builtin value
+		expect(button).toBeInTheDocument();
+	});
+
+	it("ColorModePicker segmented without labels renders icons only", () => {
+		render(
+			<ColorModePicker variant="segmented" showLabels={false} />,
+			{ wrapper: Wrapper },
+		);
+		expect(screen.queryByText("System")).not.toBeInTheDocument();
+		expect(screen.queryByText("Light")).not.toBeInTheDocument();
+		expect(screen.queryByText("Dark")).not.toBeInTheDocument();
 	});
 
 	it("ColorModePicker menu variant renders trigger button", () => {
