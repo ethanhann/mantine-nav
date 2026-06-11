@@ -3,11 +3,11 @@ import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
+import { ColorModePicker } from "../components/ColorModePicker";
 import { NavGroup } from "../components/NavGroup";
 import { NavHeader } from "../components/NavHeader";
 import { NavShell } from "../components/NavShell";
 import { NavSidebar } from "../components/NavSidebar";
-import { ColorSchemeToggle } from "../components/SaaS/ColorSchemeToggle";
 import { UserMenu } from "../components/SaaS/UserMenu";
 import { WorkspaceSwitcher } from "../components/SaaS/WorkspaceSwitcher";
 import type { NavItemType } from "../types";
@@ -154,9 +154,9 @@ describe("Accessibility (axe-core)", () => {
 		expect(results).toHaveNoViolations();
 	});
 
-	it("sidebar with color scheme toggle has no a11y violations", async () => {
+	it("sidebar with color mode picker has no a11y violations", async () => {
 		const { container } = renderApp({
-			sidebarFooter: <ColorSchemeToggle />,
+			sidebarFooter: <ColorModePicker />,
 		});
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();

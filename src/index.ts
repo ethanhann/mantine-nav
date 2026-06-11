@@ -12,6 +12,15 @@ export type {
 	CommandPaletteProps,
 } from "./components/CommandPalette";
 export { CommandPalette } from "./components/CommandPalette";
+// Generic context switcher (WorkspaceSwitcher is a preset over it)
+export type {
+	ContextItem,
+	ContextSwitcherAction,
+	ContextSwitcherItemState,
+	ContextSwitcherProps,
+	ContextSwitcherTargetState,
+} from "./components/ContextSwitcher";
+export { ContextSwitcher } from "./components/ContextSwitcher";
 export type { NavGroupProps } from "./components/NavGroup";
 // Navigation
 export { NavGroup } from "./components/NavGroup";
@@ -30,7 +39,6 @@ export {
 export type { NavSidebarProps } from "./components/NavSidebar";
 export { NavSidebar } from "./components/NavSidebar";
 export type {
-	ColorSchemeToggleProps,
 	NotificationIndicatorProps,
 	NotificationItem,
 	PlanBadgeProps,
@@ -41,7 +49,6 @@ export type {
 
 // SaaS Components
 export {
-	ColorSchemeToggle,
 	NotificationIndicator,
 	PlanBadge,
 	UserMenu,

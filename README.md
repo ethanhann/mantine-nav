@@ -188,7 +188,7 @@ Individual items can override the strategy via `activeMatch`.
   rightSection={
     <Group gap="xs">
       <NotificationIndicator count={3} />
-      <ColorSchemeToggle />
+      <ColorModePicker />
       <UserMenu user={user} menuItems={menuItems} />
     </Group>
   }
@@ -233,7 +233,7 @@ import {
   UserMenu,
   PlanBadge,
   NotificationIndicator,
-  ColorSchemeToggle,
+  ColorModePicker,
 } from '@ethanhann/mantine-nav';
 
 <NavSidebar
@@ -268,6 +268,60 @@ import {
   <NavGroup items={items} />
 </NavSidebar>
 ```
+
+> **Note:** `ColorSchemeToggle` was removed in v0.4.0, replaced by `ColorModePicker`. The migration is a drop-in swap (`<ColorSchemeToggle />` → `<ColorModePicker />`); the default `toggle` variant cycles System → Light → Dark instead of flipping light/dark, preserving the user's system preference. To restore the old binary behavior, pass only light and dark `modes`.
+
+### ContextSwitcher
+
+`ContextSwitcher` is a generic dropdown for switching the user's acting context — personas, tenants, environments, or anything else with a "you are acting as X" semantic. `WorkspaceSwitcher` is a thin preset over it.
+
+Items carry a primary `label`, optional `description` (secondary line), `icon`, `badge`, `disabled`, a `section` for grouped lists, and a `data` payload that is passed back to `onSelect` — no lookup by id needed. `active` is nullable: when no context is chosen yet, the trigger renders a `placeholder` prompt. The active item shows a check mark and is not selectable.
+
+Async selection is built in: when `onSelect` returns a promise, the clicked item shows a loader, other items are disabled, and the menu closes only once the promise resolves (it stays open on rejection, and the new item is never optimistically marked active — update `active` from your own state when the mutation lands).
+
+A persona switcher for an account that holds multiple roles:
+
+```tsx
+import { ContextSwitcher } from '@ethanhann/mantine-nav';
+
+<ContextSwitcher
+  items={me.personas.map((p) => ({
+    id: `${p.type}:${p.id}`,
+    label: p.label,                                                  // "Admin"
+    description: p.organization?.name,                               // "Acme Corp"
+    section: p.type === 'personal' ? 'Personal' : 'Organization roles',
+    data: p,
+  }))}
+  active={me.actingPersona && `${me.actingPersona.type}:${me.actingPersona.id}`}
+  placeholder="Choose a persona"
+  onSelect={(item) =>
+    // Async: the switcher shows pending state until this resolves,
+    // then your refetched `me.actingPersona` drives `active`.
+    switchPersona.mutateAsync({
+      data: { personaType: item.data.type, personaId: item.data.id },
+    })
+  }
+/>
+```
+
+Footer affordances: `actions` renders typed action items below a divider (e.g. `{ id: 'manage', label: 'Manage workspaces', onClick }`), and `footer` accepts arbitrary content. `searchable` filters on label + description; `maxVisible` caps list height before scrolling.
+
+Rendering escape hatches: `renderItem(item, { active, pending })` replaces item content (the accessible `Menu.Item` wrapper is kept), and `renderTarget(active, opened, { pending })` replaces the trigger entirely — return any ref-forwarding element:
+
+```tsx
+<ContextSwitcher
+  items={items}
+  active={activeId}
+  onSelect={switchContext}
+  renderTarget={(active, opened, { pending }) => (
+    <Button variant="subtle" loading={pending}>
+      {active?.label ?? 'Choose context'}
+    </Button>
+  )}
+/>
+```
+
+Stable `data-testid` hooks for end-to-end tests: `context-switcher-target`, `context-switcher-dropdown`, `context-switcher-search`, `context-switcher-item-<id>`, `context-switcher-action-<id>`, `context-switcher-empty`. The pending item and the dropdown carry `data-pending` while a switch is in flight.
 
 ## Command Palette
 
@@ -413,6 +467,7 @@ Stories are organized by area:
 | **Shell** | `NavShell` variants, responsive collapse, router `linkComponent` integration |
 | **NavGroup** | Core tree, external links / onClick items, weight-based ordering |
 | **SaaS** | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator` |
+| **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
 | **Hooks** | `useNavRegistry`, `useRemoteNavItems` |
 | **Recipes** | Full-page layouts — admin dashboard, SaaS platform, documentation site |
 
