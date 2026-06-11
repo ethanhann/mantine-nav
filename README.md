@@ -273,7 +273,7 @@ import {
 
 `CommandPalette` is a ⌘K command palette built on [`@mantine/spotlight`](https://mantine.dev/x/spotlight/). It auto-flattens your nav-item tree into searchable destinations, accepts extra non-navigation `actions`, ranks results with a lightweight fuzzy matcher, and shows Recently Viewed / Starred sections when the search box is empty.
 
-`@mantine/spotlight` is a peer dependency — install it and import its stylesheet once in your app:
+`@mantine/spotlight` is a peer dependency, install it and import its stylesheet once in your app:
 
 ```bash
 npm install @mantine/spotlight
@@ -306,6 +306,24 @@ function App() {
 ```
 
 The palette opens on ⌘K / Ctrl+K by default (configurable via `shortcut`, or `null` to disable) and shares a single instance with `useCommandPalette()` so a trigger button and the shortcut drive the same palette.
+
+### Backend search source
+
+Pass an async `search` function to surface results from a backend (docs, records, etc.) alongside the local matches. Local nav/actions match instantly; backend results stream into a **Results** group appended below them:
+
+```tsx
+<CommandPalette
+  items={items}
+  search={async (query, signal) => {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal });
+    const hits = await res.json();
+    return hits.map((h) => ({ id: h.id, label: h.title, href: h.url, description: h.section }));
+  }}
+  onNavigate={(command) => router.push(command.href)}
+/>
+```
+
+The `search` function receives an `AbortSignal`, forward it to `fetch` so superseded requests are cancelled. Behavior follows established search-UX conventions out of the box: the query is **debounced 200ms** ([Algolia's recommended delay](https://www.algolia.com/doc/ui-libraries/autocomplete/guides/debouncing-sources)), fires only once the query reaches `minSearchLength` (default 2), keeps previous results visible while the next request loads (stale-while-revalidate), shows a spinner only once a request stalls (so fast responses don't flicker one), dedups backend hits that share an `href` with a local item, and shows "Searching…" rather than flashing "Nothing found" while a request is in flight. Memoize the `search` function (e.g. `useCallback`) to avoid re-creating it each render.
 
 ## Hooks
 

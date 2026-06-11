@@ -49,6 +49,8 @@ export {
 } from "./components/SaaS";
 // Hooks
 export type {
+	CommandSearchFn,
+	CommandSearchResult,
 	NavItemResolvers,
 	NavRegistryEntry,
 	RecentItem,
@@ -57,6 +59,8 @@ export type {
 	UseActiveNavItemOptions,
 	UseActiveNavItemReturn,
 	UseCommandPaletteReturn,
+	UseCommandSearchOptions,
+	UseCommandSearchReturn,
 	UseHeadlessSidebarOptions,
 	UseHeadlessSidebarReturn,
 	UseNavAnimationReturn,
@@ -88,6 +92,7 @@ export {
 	commandPaletteStore,
 	useActiveNavItem,
 	useCommandPalette,
+	useCommandSearch,
 	useCurrentPath,
 	useHeadlessSidebar,
 	useHydrated,

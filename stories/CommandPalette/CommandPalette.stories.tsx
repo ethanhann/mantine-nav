@@ -90,6 +90,60 @@ export const NavItemsOnly: Story = {
 	},
 };
 
+// A fake backend: returns docs-style hits matching the query after a delay.
+const FAKE_DOCS = [
+	{ id: "d1", label: "Refunds & returns policy", href: "/docs/refunds" },
+	{ id: "d2", label: "API: create an order", href: "/docs/api/orders" },
+	{ id: "d3", label: "Webhooks reference", href: "/docs/webhooks" },
+	{ id: "d4", label: "Rate limits", href: "/docs/rate-limits" },
+	{ id: "d5", label: "Bulk inventory import", href: "/docs/inventory-import" },
+];
+
+const fakeSearch = (query: string, signal: AbortSignal) =>
+	new Promise<typeof FAKE_DOCS>((resolve, reject) => {
+		const timer = setTimeout(() => {
+			const q = query.toLowerCase();
+			resolve(FAKE_DOCS.filter((d) => d.label.toLowerCase().includes(q)));
+		}, 400); // simulate network latency
+		signal.addEventListener("abort", () => {
+			clearTimeout(timer);
+			reject(new DOMException("Aborted", "AbortError"));
+		});
+	});
+
+/**
+ * Backend search source. Local nav/actions match instantly; the async
+ * `search` results stream into a "Results" group below them (debounced,
+ * abortable, with a spinner once the request stalls). Try typing "order",
+ * "inventory", or "rate".
+ */
+export const WithBackendSearch: Story = {
+	render: (args) => <Demo {...args} />,
+	args: {
+		items: sampleItems,
+		actions,
+		search: fakeSearch,
+		onNavigate: (command) => console.log("navigate:", command.href),
+	},
+};
+
+/**
+ * Backend search only — no local nav items or actions. The palette is a thin
+ * shell over the async source: an empty query shows nothing, and every result
+ * comes from `search`. Quick-access sections are turned off. Try "order" or
+ * "rate".
+ */
+export const BackendSearchOnly: Story = {
+	render: (args) => <Demo {...args} />,
+	args: {
+		search: fakeSearch,
+		showRecent: false,
+		showStarred: false,
+		placeholder: "Search the knowledge base…",
+		onNavigate: (command) => console.log("navigate:", command.href),
+	},
+};
+
 /** Custom actions only — no nav items. Useful as a pure "command runner". */
 export const ActionsOnly: Story = {
 	render: (args) => <Demo {...args} />,

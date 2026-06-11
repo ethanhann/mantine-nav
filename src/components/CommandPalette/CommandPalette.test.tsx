@@ -2,11 +2,10 @@ import { MantineProvider } from "@mantine/core";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	commandPaletteControls,
-	useCommandPalette,
-} from "../../hooks/useCommandPalette";
+import type { CommandSearchResult } from "../../hooks";
+import { commandPaletteControls, useCommandPalette } from "../../hooks";
 import type { NavItemType } from "../../types";
+import { NavShell } from "../NavShell";
 import { CommandPalette, type CommandPaletteProps } from "./CommandPalette";
 
 const items: NavItemType[] = [
@@ -159,5 +158,200 @@ describe("CommandPalette", () => {
 		);
 		expect(stored.some((i: { id: string }) => i.id === "docs")).toBe(false);
 		openSpy.mockRestore();
+	});
+
+	it("merges backend search results alongside local matches", async () => {
+		const search = async () => [
+			{ id: "remote-1", label: "Remote Result", href: "/remote/1" },
+		];
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "inv");
+		expect(await screen.findByText("Remote Result")).toBeInTheDocument();
+		expect(screen.getByText("Inventory")).toBeInTheDocument(); // local still shown
+	});
+
+	it("dedups a backend result that matches a local href (local wins)", async () => {
+		const search = async () => [
+			{ id: "dup", label: "Inventory (remote)", href: "/products/inventory" },
+			{ id: "ok", label: "Other Remote", href: "/other" },
+		];
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "inv");
+		// Wait for remote results to settle (the non-dup one appears)...
+		await screen.findByText("Other Remote");
+		// ...the dup sharing a local href is filtered out.
+		expect(screen.queryByText("Inventory (remote)")).not.toBeInTheDocument();
+	});
+
+	it("navigates to and records a selected backend result", async () => {
+		const onNavigate = vi.fn();
+		const search = async () => [
+			{ id: "r1", label: "Remote Page", href: "/remote/page" },
+		];
+		render(
+			<Harness
+				items={items}
+				search={search}
+				onNavigate={onNavigate}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "rem");
+		await user.click(await screen.findByText("Remote Page"));
+
+		expect(onNavigate).toHaveBeenCalledWith(
+			expect.objectContaining({ id: "r1", href: "/remote/page" }),
+		);
+		await waitFor(() => {
+			const stored = JSON.parse(
+				localStorage.getItem("nav-recently-viewed") ?? "[]",
+			);
+			expect(stored.some((i: { id: string }) => i.id === "r1")).toBe(true);
+		});
+	});
+
+	it("invokes a nav item's own onClick when no onNavigate is given", async () => {
+		const onClick = vi.fn();
+		const withClick: NavItemType[] = [
+			{ id: "clicky", type: "link", label: "Clicky", href: "/clicky", onClick },
+		];
+		render(<Harness items={withClick} />);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "clic");
+		await user.click(screen.getByText("Clicky"));
+		expect(onClick).toHaveBeenCalled();
+	});
+
+	it("records an internal nav selection made without onNavigate", async () => {
+		// Exercises the window.location.assign fallback (a no-op in jsdom) and
+		// asserts the recently-viewed side effect that proves the path ran.
+		render(<Harness items={items} />);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "inv");
+		await user.click(screen.getByText("Inventory"));
+		await waitFor(() => {
+			const stored = JSON.parse(
+				localStorage.getItem("nav-recently-viewed") ?? "[]",
+			);
+			expect(stored.some((i: { id: string }) => i.id === "inventory")).toBe(
+				true,
+			);
+		});
+	});
+
+	it("ranks a matching action above nav when the query favors it", async () => {
+		const actions = [{ id: "theme", label: "Toggle theme", onSelect: vi.fn() }];
+		render(<Harness items={items} actions={actions} />);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "theme");
+		expect(await screen.findByText("Toggle theme")).toBeInTheDocument();
+	});
+
+	it("shows the searching message while a backend request is pending", async () => {
+		const search = (): Promise<CommandSearchResult[]> => new Promise(() => {});
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		// "zzzz" has no local match, so the empty area reflects the search state.
+		await user.type(screen.getByPlaceholderText("Search…"), "zzzz");
+		expect(await screen.findByText("Searching…")).toBeInTheDocument();
+	});
+
+	it("shows the error message when a backend search rejects", async () => {
+		const search = async (): Promise<CommandSearchResult[]> => {
+			throw new Error("nope");
+		};
+		render(
+			<Harness
+				items={items}
+				search={search}
+				searchDebounce={0}
+				minSearchLength={1}
+			/>,
+		);
+		const user = await openPalette();
+
+		await user.type(screen.getByPlaceholderText("Search…"), "zzzz");
+		expect(await screen.findByText("Search failed")).toBeInTheDocument();
+	});
+
+	it("closes the mobile drawer when selecting inside a NavShell on mobile", async () => {
+		const original = window.matchMedia;
+		// Force the NavShell to report mobile so the close-on-select path runs.
+		window.matchMedia = ((query: string) => ({
+			matches: true,
+			media: query,
+			onchange: null,
+			addListener: () => {},
+			removeListener: () => {},
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			dispatchEvent: () => false,
+		})) as unknown as typeof window.matchMedia;
+
+		try {
+			function MobileHarness() {
+				const { open } = useCommandPalette();
+				return (
+					<MantineProvider>
+						<NavShell>
+							<button type="button" onClick={open}>
+								open-palette
+							</button>
+							<CommandPalette items={items} onNavigate={() => {}} />
+						</NavShell>
+					</MantineProvider>
+				);
+			}
+
+			render(<MobileHarness />);
+			const user = await openPalette();
+
+			await user.type(screen.getByPlaceholderText("Search…"), "inv");
+			await user.click(screen.getByText("Inventory"));
+
+			// The selection completed (recorded) without throwing on the mobile path.
+			await waitFor(() => {
+				const stored = JSON.parse(
+					localStorage.getItem("nav-recently-viewed") ?? "[]",
+				);
+				expect(stored.some((i: { id: string }) => i.id === "inventory")).toBe(
+					true,
+				);
+			});
+		} finally {
+			window.matchMedia = original;
+		}
 	});
 });

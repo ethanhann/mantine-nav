@@ -9,6 +9,13 @@ export {
 	commandPaletteStore,
 	useCommandPalette,
 } from "./useCommandPalette";
+export type {
+	CommandSearchFn,
+	CommandSearchResult,
+	UseCommandSearchOptions,
+	UseCommandSearchReturn,
+} from "./useCommandSearch";
+export { useCommandSearch } from "./useCommandSearch";
 export { useCurrentPath } from "./useCurrentPath";
 export type {
 	UseHeadlessSidebarOptions,

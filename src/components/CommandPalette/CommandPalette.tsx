@@ -1,8 +1,14 @@
 "use client";
 
+import { Loader } from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
 import { type ReactNode, useMemo, useState } from "react";
 import { commandPaletteStore } from "../../hooks/useCommandPalette";
+import {
+	type CommandSearchFn,
+	type CommandSearchResult,
+	useCommandSearch,
+} from "../../hooks/useCommandSearch";
 import { useRecentlyViewed } from "../../hooks/useRecentlyViewed";
 import { useStarredPages } from "../../hooks/useStarredPages";
 import type { NavItemType } from "../../types";
@@ -31,6 +37,8 @@ export interface CommandPaletteGroupLabels {
 	starred?: string;
 	pages?: string;
 	actions?: string;
+	/** Heading for the backend `search` results group. @default "Results" */
+	results?: string;
 }
 
 export interface CommandPaletteProps {
@@ -55,8 +63,19 @@ export interface CommandPaletteProps {
 	onNavigate?: (command: NavCommand) => void;
 	/** Max results shown per group while searching. @default 7 */
 	limit?: number;
+	/** Async backend search source. Called (debounced) as the user types; its
+	 * results are appended below the local matches in a "Results" group. */
+	search?: CommandSearchFn;
+	/** Don't hit the backend until the query reaches this length. @default 2 */
+	minSearchLength?: number;
+	/** Debounce before firing `search`, in ms. @default 200 */
+	searchDebounce?: number;
 	placeholder?: string;
 	nothingFoundMessage?: ReactNode;
+	/** Shown while a backend search is pending/running. @default "Searching…" */
+	searchingMessage?: ReactNode;
+	/** Shown when a backend search rejects. @default "Search failed" */
+	searchErrorMessage?: ReactNode;
 	/** Content max-height when scrollable. @default 400 */
 	maxHeight?: number;
 	/** Override group heading labels (for i18n). */
@@ -68,6 +87,7 @@ const DEFAULT_LABELS: Required<CommandPaletteGroupLabels> = {
 	starred: "Starred",
 	pages: "Pages",
 	actions: "Actions",
+	results: "Results",
 };
 
 export function CommandPalette({
@@ -81,8 +101,13 @@ export function CommandPalette({
 	recordRecent = true,
 	onNavigate,
 	limit = 7,
+	search,
+	minSearchLength = 2,
+	searchDebounce = 200,
 	placeholder = "Search…",
 	nothingFoundMessage = "Nothing found",
+	searchingMessage = "Searching…",
+	searchErrorMessage = "Search failed",
 	maxHeight = 400,
 	labels,
 }: CommandPaletteProps) {
@@ -90,6 +115,10 @@ export function CommandPalette({
 	const shell = useOptionalNavShell();
 	const recent = useRecentlyViewed({ storageKey: storageKeys?.recent });
 	const starred = useStarredPages({ storageKey: storageKeys?.starred });
+	const remote = useCommandSearch(query, search, {
+		minLength: minSearchLength,
+		debounce: searchDebounce,
+	});
 
 	const navCommands = useMemo(() => flattenNavCommands(items), [items]);
 	const groupLabels = { ...DEFAULT_LABELS, ...labels };
@@ -138,6 +167,27 @@ export function CommandPalette({
 			keywords={action.keywords}
 			closeSpotlightOnTrigger={action.closeOnSelect}
 			onClick={() => action.onSelect()}
+		/>
+	);
+
+	const renderSearchResult = (result: CommandSearchResult) => (
+		<Spotlight.Action
+			key={`result-${result.id}`}
+			label={result.label}
+			description={result.description}
+			leftSection={result.icon}
+			onClick={(event) =>
+				handleNavSelect(
+					{
+						id: result.id,
+						label: result.label,
+						href: result.href,
+						external: result.external,
+						path: [],
+					},
+					event,
+				)
+			}
 		/>
 	);
 
@@ -208,9 +258,31 @@ export function CommandPalette({
 			? actionsGroupElement(rankedActions.map((r) => r.item))
 			: null;
 
-		// Lead with whichever group has the strongest top match.
+		// Lead with whichever local group has the strongest top match.
 		const ordered = actTop > navTop ? [actEl, navEl] : [navEl, actEl];
 		for (const el of ordered) if (el) groups.push(el);
+
+		// Backend results are appended *below* local matches (stable position —
+		// the selection stays anchored on the first local row when they arrive).
+		// Dedup by href so a backend hit doesn't repeat a local destination.
+		const localHrefs = new Set(navCommands.map((c) => c.href));
+		const remoteResults = remote.results.filter((r) => !localHrefs.has(r.href));
+		if (remoteResults.length > 0) {
+			groups.push(
+				<Spotlight.ActionsGroup key="results" label={groupLabels.results}>
+					{remoteResults.map(renderSearchResult)}
+				</Spotlight.ActionsGroup>,
+			);
+		}
+	}
+
+	// When nothing is shown, prefer "Searching…" over "Nothing found" while a
+	// backend request is pending, and surface a failed search.
+	let emptyContent: ReactNode = nothingFoundMessage;
+	if (trimmed !== "" && remote.active) {
+		emptyContent = searchingMessage;
+	} else if (remote.error) {
+		emptyContent = searchErrorMessage;
 	}
 
 	return (
@@ -223,12 +295,15 @@ export function CommandPalette({
 			scrollable
 			maxHeight={maxHeight}
 		>
-			<Spotlight.Search placeholder={placeholder} />
+			<Spotlight.Search
+				placeholder={placeholder}
+				rightSection={remote.stalled ? <Loader size="xs" /> : undefined}
+			/>
 			<Spotlight.ActionsList>
 				{groups.length > 0 ? (
 					groups
 				) : (
-					<Spotlight.Empty>{nothingFoundMessage}</Spotlight.Empty>
+					<Spotlight.Empty>{emptyContent}</Spotlight.Empty>
 				)}
 			</Spotlight.ActionsList>
 		</Spotlight.Root>
