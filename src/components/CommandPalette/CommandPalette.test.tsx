@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CommandSearchResult } from "../../hooks";
@@ -51,8 +51,8 @@ beforeEach(() => {
 	localStorage.setItem("nav-starred-pages", "[]");
 });
 
-afterEach(() => {
-	commandPaletteControls.close();
+afterEach(async () => {
+	await act(() => { commandPaletteControls.close(); });
 });
 
 describe("CommandPalette", () => {

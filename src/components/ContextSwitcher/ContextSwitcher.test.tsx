@@ -1,5 +1,5 @@
 import { Button, MantineProvider } from "@mantine/core";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { type ContextItem, ContextSwitcher } from "./ContextSwitcher";
@@ -201,7 +201,7 @@ describe("ContextSwitcher", () => {
 			);
 			await user.click(screen.getByTestId("context-switcher-item-admin:1"));
 			expect(onSelect).toHaveBeenCalledTimes(1);
-			resolve();
+			await act(async () => { resolve(); });
 		});
 
 		it("clears pending and keeps the menu open when onSelect rejects", async () => {

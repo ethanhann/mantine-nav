@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { type CommandSearchResult, useCommandSearch } from "./useCommandSearch";
 
@@ -29,7 +29,7 @@ describe("useCommandSearch", () => {
 		);
 
 		rerender({ q: "ab" });
-		await delay(40);
+		await act(async () => { await delay(40); });
 		expect(search).not.toHaveBeenCalled();
 		expect(result.current.results).toEqual([]);
 	});
@@ -135,7 +135,7 @@ describe("useCommandSearch", () => {
 		rerender({ q: "abc" });
 		await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
 		expect(result.current.stalled).toBe(false);
-		for (const resolve of resolvers) resolve([]);
+		await act(async () => { for (const resolve of resolvers) resolve([]); });
 	});
 
 	it("refetches when the search function identity changes", async () => {

@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
@@ -51,6 +51,9 @@ function renderApp(
 describe("Accessibility (axe-core)", () => {
 	it("full nav shell has no a11y violations", async () => {
 		const { container } = renderApp({ currentPath: "/" });
+		await act(async () => {
+			await new Promise((r) => setTimeout(r, 0));
+		});
 		const results = await axe(container);
 		expect(results).toHaveNoViolations();
 	});
