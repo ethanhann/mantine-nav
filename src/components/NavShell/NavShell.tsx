@@ -34,6 +34,15 @@ export interface NavShellContextValue {
 	hrefProp?: string;
 }
 
+/** Mantine's default breakpoint values, in em, for media-query mapping. */
+const BREAKPOINT_EM: Record<MantineBreakpoint, string> = {
+	xs: "36em",
+	sm: "48em",
+	md: "62em",
+	lg: "75em",
+	xl: "88em",
+};
+
 const NavShellContext = createContext<NavShellContextValue | null>(null);
 
 /**
@@ -132,9 +141,7 @@ export function NavShell({
 
 	const desktopCollapsed = sidebarCollapsible ? !desktopExpanded : false;
 	const isMobile =
-		useMediaQuery(
-			`(max-width: ${sidebarBreakpoint === "sm" ? "48em" : sidebarBreakpoint === "md" ? "62em" : sidebarBreakpoint === "lg" ? "75em" : "48em"})`,
-		) ?? false;
+		useMediaQuery(`(max-width: ${BREAKPOINT_EM[sidebarBreakpoint]})`) ?? false;
 
 	const toggleDesktop = toggleDesktopExpanded;
 	const collapseDesktop = collapseDesktopInner;

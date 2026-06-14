@@ -6,7 +6,7 @@ import { filterVisibleItems } from "./visibility";
  * A navigable destination derived from a nav-item tree, suitable for searching
  * in a command palette. Produced by {@link flattenNavCommands}.
  */
-export interface NavCommand {
+export interface NavCommand<TData = unknown> {
 	id: string;
 	label: string;
 	href: string;
@@ -14,6 +14,8 @@ export interface NavCommand {
 	external?: boolean;
 	disabled?: boolean;
 	onClick?: (event: React.MouseEvent) => void;
+	/** Consumer payload carried over from the source nav item's `data`. */
+	data?: TData;
 	/** Breadcrumb of ancestor group labels, e.g. `["Products"]`. */
 	path: string[];
 }
@@ -30,8 +32,8 @@ export interface NavCommand {
  */
 export function flattenNavCommands<TData = unknown>(
 	items: NavItemType<TData>[],
-): NavCommand[] {
-	const commands: NavCommand[] = [];
+): NavCommand<TData>[] {
+	const commands: NavCommand<TData>[] = [];
 	const seen = new Set<string>();
 
 	const walk = (nodes: NavItemType<TData>[], path: string[]) => {
@@ -47,6 +49,7 @@ export function flattenNavCommands<TData = unknown>(
 					external: node.external,
 					disabled: node.disabled,
 					onClick: node.onClick,
+					data: node.data,
 					path,
 				});
 			} else if (node.type === "group") {
@@ -58,6 +61,7 @@ export function flattenNavCommands<TData = unknown>(
 						href: node.href,
 						icon: node.icon,
 						disabled: node.disabled,
+						data: node.data,
 						path,
 					});
 				}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import type { NavItemType } from "../types";
+import { usePersistedList } from "./usePersistedList";
 
 export interface UsePinnedItemsOptions {
 	maxPinned?: number;
@@ -19,29 +20,10 @@ export interface UsePinnedItemsReturn<TData = unknown> {
 	reorderPinned: (fromIndex: number, toIndex: number) => void;
 }
 
-function loadFromStorage(key: string): string[] {
-	if (typeof window === "undefined") return [];
-	try {
-		const stored = localStorage.getItem(key);
-		if (!stored) return [];
-		const data = JSON.parse(stored);
-		if (!Array.isArray(data)) return [];
-		return data.filter(
-			(item: unknown): item is string => typeof item === "string",
-		);
-	} catch {
-		return [];
-	}
-}
-
-function saveToStorage(key: string, ids: string[]) {
-	if (typeof window === "undefined") return;
-	try {
-		localStorage.setItem(key, JSON.stringify(ids));
-	} catch {
-		// ignore quota errors
-	}
-}
+const parseIds = (raw: unknown): string[] =>
+	Array.isArray(raw)
+		? raw.filter((item): item is string => typeof item === "string")
+		: [];
 
 export function usePinnedItems<TData = unknown>(
 	allItems: NavItemType<TData>[],
@@ -49,12 +31,21 @@ export function usePinnedItems<TData = unknown>(
 ): UsePinnedItemsReturn<TData> {
 	const { maxPinned = 10, storageKey } = options;
 
-	const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
-		if (storageKey) return loadFromStorage(storageKey);
-		return [];
+	const {
+		items: pinnedIdList,
+		ids: pinnedSet,
+		has: isPinned,
+		add,
+		remove: unpin,
+		toggle,
+		reorder: reorderPinned,
+		canAdd: canPin,
+	} = usePersistedList<string>({
+		getId: (id) => id,
+		storageKey,
+		maxItems: maxPinned,
+		parse: parseIds,
 	});
-
-	const pinnedSet = useMemo(() => new Set(pinnedIds), [pinnedIds]);
 
 	// Flatten all items to find pinned ones
 	const flatItems = useMemo(() => {
@@ -71,59 +62,17 @@ export function usePinnedItems<TData = unknown>(
 
 	const pinnedItems = useMemo(
 		() =>
-			pinnedIds
+			pinnedIdList
 				.map((id) => flatItems.find((i) => i.id === id))
 				.filter((i): i is NavItemType<TData> => i !== undefined),
-		[pinnedIds, flatItems],
+		[pinnedIdList, flatItems],
 	);
 
-	const canPin = pinnedIds.length < maxPinned;
-
-	const updatePinned = useCallback(
-		(newIds: string[]) => {
-			setPinnedIds(newIds);
-			if (storageKey) saveToStorage(storageKey, newIds);
-		},
-		[storageKey],
-	);
-
-	const pin = useCallback(
-		(item: NavItemType<TData>) => {
-			if (pinnedIds.length >= maxPinned) return;
-			if (pinnedIds.includes(item.id)) return;
-			updatePinned([...pinnedIds, item.id]);
-		},
-		[pinnedIds, maxPinned, updatePinned],
-	);
-
-	const unpin = useCallback(
-		(id: string) => {
-			updatePinned(pinnedIds.filter((pid) => pid !== id));
-		},
-		[pinnedIds, updatePinned],
-	);
+	const pin = useCallback((item: NavItemType<TData>) => add(item.id), [add]);
 
 	const togglePin = useCallback(
-		(item: NavItemType<TData>) => {
-			if (pinnedIds.includes(item.id)) {
-				unpin(item.id);
-			} else {
-				pin(item);
-			}
-		},
-		[pinnedIds, pin, unpin],
-	);
-
-	const isPinned = useCallback((id: string) => pinnedSet.has(id), [pinnedSet]);
-
-	const reorderPinned = useCallback(
-		(fromIndex: number, toIndex: number) => {
-			const newIds = [...pinnedIds];
-			const [moved] = newIds.splice(fromIndex, 1);
-			if (moved) newIds.splice(toIndex, 0, moved);
-			updatePinned(newIds);
-		},
-		[pinnedIds, updatePinned],
+		(item: NavItemType<TData>) => toggle(item.id),
+		[toggle],
 	);
 
 	return {

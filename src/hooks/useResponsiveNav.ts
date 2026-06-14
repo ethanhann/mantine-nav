@@ -4,6 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 export type SidebarMode = "persistent" | "temporary" | "overlay";
 
+const PRINT_STYLE_ID = "nav-print-styles";
+// Shared across all hook instances so the single injected <style> is only
+// removed once the last printFriendly instance unmounts.
+let printStyleRefCount = 0;
+
 export interface ResponsiveBreakpointConfig {
 	sidebarMode: SidebarMode;
 	sidebarCollapsed: boolean;
@@ -56,17 +61,23 @@ export function useResponsiveNav({
 		}
 	}, [viewportWidth, sidebarBreakpoint]);
 
-	// Print styles
+	// Print styles. Reference-counted so multiple hook instances share one
+	// injected <style> element and don't remove it out from under each other.
 	useEffect(() => {
 		if (!printFriendly || typeof window === "undefined") return;
-		const style = document.createElement("style");
-		style.id = "nav-print-styles";
-		style.textContent = `@media print { [data-nav-sidebar], [data-nav-navbar] { display: none !important; } }`;
-		if (!document.getElementById("nav-print-styles")) {
+		printStyleRefCount += 1;
+		if (!document.getElementById(PRINT_STYLE_ID)) {
+			const style = document.createElement("style");
+			style.id = PRINT_STYLE_ID;
+			style.textContent = `@media print { [data-nav-sidebar], [data-nav-navbar] { display: none !important; } }`;
 			document.head.appendChild(style);
 		}
 		return () => {
-			document.getElementById("nav-print-styles")?.remove();
+			printStyleRefCount -= 1;
+			if (printStyleRefCount <= 0) {
+				printStyleRefCount = 0;
+				document.getElementById(PRINT_STYLE_ID)?.remove();
+			}
 		};
 	}, [printFriendly]);
 

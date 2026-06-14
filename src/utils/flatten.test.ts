@@ -45,6 +45,20 @@ describe("flattenNavCommands", () => {
 		expect(products?.href).toBe("/products");
 	});
 
+	it("carries the item's generic data through to the command", () => {
+		const items: NavItemType<{ score: number }>[] = [
+			{
+				id: "a",
+				type: "link",
+				label: "A",
+				href: "/a",
+				data: { score: 42 },
+			},
+		];
+		const commands = flattenNavCommands(items);
+		expect(commands[0]?.data).toEqual({ score: 42 });
+	});
+
 	it("records the ancestor group path as a breadcrumb", () => {
 		const commands = flattenNavCommands(tree);
 		const inventory = commands.find((c) => c.id === "inventory");

@@ -35,7 +35,13 @@ function matchItem(
 			return currentPath.startsWith(`${href}/`);
 		}
 		case "regex":
-			return new RegExp(href).test(currentPath);
+			try {
+				return new RegExp(href).test(currentPath);
+			} catch {
+				// Malformed regex (e.g. unescaped chars in href) — don't crash
+				// the whole nav; fall back to exact match for this item.
+				return currentPath === href;
+			}
 		default:
 			return currentPath === href;
 	}
@@ -57,6 +63,10 @@ function collectLinks<TData>(
 					label: item.label,
 					href: item.href,
 					data: item.data,
+					// Preserve the group's matching config so a group with
+					// activeExact / activeMatch matches the same way a link would.
+					activeMatch: item.activeMatch,
+					activeExact: item.activeExact,
 				} as NavLinkItem<TData>);
 			}
 			links.push(...collectLinks(item.children));
@@ -98,7 +108,16 @@ export function useActiveNavItem<TData = unknown>(
 				return matchItem(currentPath, item.href, itemMatcher);
 			}
 			if (item.type === "group") {
-				// A group is active if any child is active
+				// A group is active if its own href matches...
+				if (item.href) {
+					const groupMatcher = item.activeExact
+						? "exact"
+						: (item.activeMatch ?? defaultMatcher);
+					if (matchItem(currentPath, item.href, groupMatcher)) {
+						return true;
+					}
+				}
+				// ...or if any child is active
 				return item.children.some((child) => isActive(child));
 			}
 			return false;

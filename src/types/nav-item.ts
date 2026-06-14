@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 
 // --- Active matching ---
@@ -66,24 +64,6 @@ export type NavItemType<TData = unknown> =
 	| NavGroupItem<TData>
 	| NavSectionHeader
 	| NavDividerItem;
-
-// Legacy NavItem alias (unified form)
-export interface NavItem<TData = unknown> {
-	id: string;
-	label: string;
-	icon?: ReactNode;
-	href?: string;
-	children?: NavItem<TData>[];
-	defaultOpened?: boolean;
-	disabled?: boolean;
-	visible?: boolean | (() => boolean);
-	weight?: number;
-	badge?: ReactNode;
-	data?: TData;
-	activeMatch?: ActiveMatcher;
-	activeExact?: boolean;
-	"aria-label"?: string;
-}
 
 // --- Callbacks ---
 export interface NavCallbacks<TData = unknown> {

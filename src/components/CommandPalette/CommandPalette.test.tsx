@@ -52,7 +52,9 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-	await act(() => { commandPaletteControls.close(); });
+	await act(() => {
+		commandPaletteControls.close();
+	});
 });
 
 describe("CommandPalette", () => {

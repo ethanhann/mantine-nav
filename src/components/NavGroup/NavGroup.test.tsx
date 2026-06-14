@@ -52,6 +52,38 @@ describe("NavGroup (Mantine NavLink)", () => {
 		expect(screen.getByText("Inventory")).toBeInTheDocument();
 	});
 
+	it("expands defaultOpened groups that appear after mount", () => {
+		const initial: NavItemType[] = [
+			{ id: "home", type: "link", label: "Home", href: "/" },
+		];
+		const { rerender } = render(<NavGroup items={initial} />, {
+			wrapper: Wrapper,
+		});
+		expect(screen.queryByText("Async Child")).not.toBeInTheDocument();
+
+		const withAsyncGroup: NavItemType[] = [
+			...initial,
+			{
+				id: "async",
+				type: "group",
+				label: "Async",
+				defaultOpened: true,
+				children: [
+					{
+						id: "async-child",
+						type: "link",
+						label: "Async Child",
+						href: "/async/child",
+					},
+				],
+			},
+		];
+		rerender(<NavGroup items={withAsyncGroup} />);
+
+		const group = screen.getByText("Async").closest("[aria-expanded]");
+		expect(group).toHaveAttribute("aria-expanded", "true");
+	});
+
 	it("marks active item via currentPath", () => {
 		render(<NavGroup items={flatItems} currentPath="/about" />, {
 			wrapper: Wrapper,
@@ -191,6 +223,47 @@ describe("NavGroup (Mantine NavLink)", () => {
 		});
 	});
 
+	describe("renderItem", () => {
+		it("wraps custom items with tree-navigation attributes and routes clicks", async () => {
+			const user = userEvent.setup();
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{ id: "custom", type: "link", label: "Custom", href: "/custom" },
+			];
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/custom"
+					onItemClick={onItemClick}
+					renderItem={(item) => <span>{`R:${item.id}`}</span>}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			const wrapper = screen
+				.getByText("R:custom")
+				.closest('[data-item-id="custom"]');
+			expect(wrapper).not.toBeNull();
+			expect(wrapper).toHaveAttribute("role", "treeitem");
+			expect(wrapper).toHaveAttribute("aria-current", "page");
+
+			await user.click(screen.getByText("R:custom"));
+			expect(onItemClick).toHaveBeenCalled();
+		});
+
+		it("renders non-interactive custom items with presentation role", () => {
+			const items: NavItemType[] = [{ id: "d", type: "divider" }];
+			render(
+				<NavGroup
+					items={items}
+					renderItem={() => <span>custom-divider</span>}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			const el = screen.getByText("custom-divider").closest("[role]");
+			expect(el).toHaveAttribute("role", "presentation");
+		});
+	});
+
 	describe("external and onClick", () => {
 		it("renders external link with target and rel attributes", () => {
 			const items: NavItemType[] = [
@@ -280,6 +353,25 @@ describe("NavGroup (Mantine NavLink)", () => {
 			render(<NavGroup items={items} />, { wrapper: Wrapper });
 			await user.click(screen.getByText("Action"));
 			expect(handleClick).toHaveBeenCalled();
+		});
+
+		it("does not preventDefault for links with an href, letting consumer decide", async () => {
+			const user = userEvent.setup();
+			let prevented: boolean | undefined;
+			const items: NavItemType[] = [
+				{
+					id: "link",
+					type: "link",
+					label: "Tracked",
+					href: "/page",
+					onClick: (e) => {
+						prevented = e.defaultPrevented;
+					},
+				},
+			];
+			render(<NavGroup items={items} />, { wrapper: Wrapper });
+			await user.click(screen.getByText("Tracked"));
+			expect(prevented).toBe(false);
 		});
 
 		it("item onClick does not suppress onItemClick callback", async () => {

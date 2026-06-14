@@ -29,7 +29,9 @@ describe("useCommandSearch", () => {
 		);
 
 		rerender({ q: "ab" });
-		await act(async () => { await delay(40); });
+		await act(async () => {
+			await delay(40);
+		});
 		expect(search).not.toHaveBeenCalled();
 		expect(result.current.results).toEqual([]);
 	});
@@ -135,7 +137,9 @@ describe("useCommandSearch", () => {
 		rerender({ q: "abc" });
 		await waitFor(() => expect(search).toHaveBeenCalledTimes(2));
 		expect(result.current.stalled).toBe(false);
-		await act(async () => { for (const resolve of resolvers) resolve([]); });
+		await act(async () => {
+			for (const resolve of resolvers) resolve([]);
+		});
 	});
 
 	it("refetches when the search function identity changes", async () => {

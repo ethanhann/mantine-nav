@@ -109,6 +109,73 @@ describe("Spec 005: useActiveNavItem", () => {
 		expect(result.current.activeHref).toBeNull();
 	});
 
+	it("group with activeExact href does not prefix-match everything", () => {
+		const groupItems: NavItemType[] = [
+			{
+				type: "group",
+				id: "root",
+				label: "Root",
+				href: "/",
+				activeExact: true,
+				children: [
+					{ type: "link", id: "child", label: "Child", href: "/child" },
+				],
+			},
+		];
+		const { result } = renderHook(() =>
+			useActiveNavItem(groupItems, {
+				currentPath: "/child",
+				matcher: "prefix",
+			}),
+		);
+		// The synthesized link for the group's "/" href must respect activeExact,
+		// so it should NOT become the active item for "/child".
+		expect(result.current.activeItem?.id).not.toBe("root");
+	});
+
+	it("group is active when its own href matches", () => {
+		const groupItems: NavItemType[] = [
+			{
+				type: "group",
+				id: "settings",
+				label: "Settings",
+				href: "/settings",
+				children: [
+					{
+						type: "link",
+						id: "profile",
+						label: "Profile",
+						href: "/settings/profile",
+					},
+				],
+			},
+		];
+		const { result } = renderHook(() =>
+			useActiveNavItem(groupItems, {
+				currentPath: "/settings",
+				matcher: "prefix",
+			}),
+		);
+		expect(result.current.isActive(groupItems[0]!)).toBe(true);
+	});
+
+	it("malformed regex href does not crash the nav", () => {
+		const badItems: NavItemType[] = [
+			{
+				type: "link",
+				id: "bad",
+				label: "Bad",
+				href: "/settings?tab=1(",
+				activeMatch: "regex",
+			},
+		];
+		expect(() =>
+			renderHook(() =>
+				useActiveNavItem(badItems, { currentPath: "/settings?tab=1(" }),
+			),
+		).not.toThrow();
+	});
+
 	it("activeExact on individual item overrides default matcher", () => {
 		// Home has activeExact=true, so prefix matching should still be exact for it
 		const { result } = renderHook(() =>

@@ -6,6 +6,8 @@ import {
 	type ReactElement,
 	type ReactNode,
 	useCallback,
+	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -101,7 +103,51 @@ function NavItemRenderer<TData>({
 	hrefProp,
 }: InternalNavItemProps<TData>) {
 	if (renderItem) {
-		return <>{renderItem(item, depth)}</>;
+		const custom = renderItem(item, depth);
+
+		// Dividers and section headers are not interactive tree nodes.
+		if (item.type === "divider" || item.type === "section") {
+			return <div role="presentation">{custom}</div>;
+		}
+
+		// Wrap custom content so it still participates in keyboard navigation
+		// (data-item-id + role="treeitem"), exposes active/expanded a11y state,
+		// and routes clicks through the same callbacks as built-in items.
+		const active = isActive(item);
+		const expanded =
+			item.type === "group" ? expandedGroups.has(item.id) : undefined;
+
+		const handleCustomClick = (e: React.MouseEvent) => {
+			if (item.disabled) {
+				e.preventDefault();
+				return;
+			}
+			if (item.type === "link") {
+				if (item.onClick) {
+					if (!item.href) e.preventDefault();
+					item.onClick(e);
+				}
+				onItemClick?.(item, e);
+			} else if (item.type === "group") {
+				onToggleGroup(item.id);
+				onGroupToggle?.(item, !expanded);
+			}
+		};
+
+		return (
+			// biome-ignore lint/a11y/useKeyWithClickEvents: keyboard activation is handled at the tree container level via useNavKeyboard (roving tabindex + onKeyDown), not per treeitem.
+			<div
+				data-item-id={item.id}
+				role="treeitem"
+				aria-current={item.type === "link" && active ? "page" : undefined}
+				aria-expanded={expanded}
+				aria-disabled={item.disabled || undefined}
+				tabIndex={-1}
+				onClick={handleCustomClick}
+			>
+				{custom}
+			</div>
+		);
 	}
 
 	if (item.type === "divider") {
@@ -138,7 +184,12 @@ function NavItemRenderer<TData>({
 				return;
 			}
 			if (item.onClick) {
-				e.preventDefault();
+				// Only suppress navigation for pure action items (no href).
+				// When an href is present, let the consumer's onClick decide
+				// whether to call e.preventDefault() (e.g. analytics before nav).
+				if (!item.href) {
+					e.preventDefault();
+				}
 				item.onClick(e);
 			}
 			onItemClick?.(item, e);
@@ -453,6 +504,19 @@ function collectDefaultExpanded<TData>(
 	return defaults;
 }
 
+function collectAllGroupIds<TData>(
+	items: NavItemType<TData>[],
+	out: Set<string> = new Set(),
+): Set<string> {
+	for (const item of items) {
+		if (item.type === "group") {
+			out.add(item.id);
+			collectAllGroupIds(item.children, out);
+		}
+	}
+	return out;
+}
+
 function collectAll<TData>(items: NavItemType<TData>[], out: Set<string>) {
 	for (const item of items) {
 		if (item.type === "group") {
@@ -556,8 +620,12 @@ export function NavGroup<TData = unknown>({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const shell = useOptionalNavShell();
 
-	// Filter out invisible items and sort by weight before any other logic
-	const visibleItemTree = sortItemsByWeight(filterVisibleItems(items));
+	// Filter out invisible items and sort by weight before any other logic.
+	// Memoized so dependent memos/effects see a stable reference per items change.
+	const visibleItemTree = useMemo(
+		() => sortItemsByWeight(filterVisibleItems(items)),
+		[items],
+	);
 
 	// Detect collapsed state for icon rail mode
 	const isCollapsed = shell ? shell.desktopCollapsed && !shell.isMobile : false;
@@ -581,6 +649,38 @@ export function NavGroup<TData = unknown>({
 	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
 		collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
 	);
+
+	// Groups whose defaultOpened we've already applied. The useState initializer
+	// above only runs once, so groups added after mount (e.g. async-loaded nav
+	// items) would otherwise never honor defaultOpened. We expand each newly
+	// appearing defaultOpened group exactly once, without re-opening groups the
+	// user has since collapsed.
+	const knownGroupIds = useRef<Set<string> | null>(null);
+	useEffect(() => {
+		const allIds = collectAllGroupIds(visibleItemTree);
+		if (knownGroupIds.current === null) {
+			// First effect run: defaults already applied by the initializer.
+			knownGroupIds.current = allIds;
+			return;
+		}
+		const defaults = collectDefaultExpanded(
+			visibleItemTree,
+			accordion,
+			accordionScope,
+		);
+		const toOpen: string[] = [];
+		for (const id of defaults) {
+			if (!knownGroupIds.current.has(id)) toOpen.push(id);
+		}
+		knownGroupIds.current = allIds;
+		if (toOpen.length > 0) {
+			setExpandedGroups((prev) => {
+				const next = new Set(prev);
+				for (const id of toOpen) next.add(id);
+				return next;
+			});
+		}
+	}, [visibleItemTree, accordion, accordionScope]);
 
 	const handleToggleGroup = useCallback(
 		(key: string) => {

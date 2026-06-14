@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { NavItemType, SidebarVariant } from "../types";
+import { useExpandedKeys } from "./useExpandedKeys";
 
 export interface UseHeadlessSidebarOptions<TData = unknown> {
 	items: NavItemType<TData>[];
@@ -53,49 +54,18 @@ export function useHeadlessSidebar<TData = unknown>({
 	defaultCollapsed = false,
 	defaultVariant = "full",
 }: UseHeadlessSidebarOptions<TData>): UseHeadlessSidebarReturn<TData> {
-	const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
-		new Set(defaultExpanded),
-	);
+	const {
+		expandedKeys,
+		toggleGroup,
+		expandGroup,
+		collapseGroup,
+		expandAll,
+		collapseAll,
+	} = useExpandedKeys(items, () => defaultExpanded);
 	const [collapsed, setCollapsed] = useState(defaultCollapsed);
 	const [variant, setVariant] = useState<SidebarVariant>(defaultVariant);
 	const [activeItemId, setActiveItem] = useState<string | null>(null);
 
-	const toggleGroup = useCallback((key: string) => {
-		setExpandedKeys((prev) => {
-			const next = new Set(prev);
-			if (next.has(key)) next.delete(key);
-			else next.add(key);
-			return next;
-		});
-	}, []);
-
-	const expandGroup = useCallback((key: string) => {
-		setExpandedKeys((prev) => new Set(prev).add(key));
-	}, []);
-
-	const collapseGroup = useCallback((key: string) => {
-		setExpandedKeys((prev) => {
-			const next = new Set(prev);
-			next.delete(key);
-			return next;
-		});
-	}, []);
-
-	const expandAll = useCallback(() => {
-		const keys: string[] = [];
-		function collect(items: NavItemType<TData>[]) {
-			for (const item of items) {
-				if (item.type === "group") {
-					keys.push(item.id);
-					collect(item.children);
-				}
-			}
-		}
-		collect(items);
-		setExpandedKeys(new Set(keys));
-	}, [items]);
-
-	const collapseAll = useCallback(() => setExpandedKeys(new Set()), []);
 	const toggleCollapsed = useCallback(() => setCollapsed((v) => !v), []);
 
 	const getItemProps = useCallback(

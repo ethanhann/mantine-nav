@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { NavItemType } from "../types";
 import { sortItemsByWeight } from "../utils/sorting";
 import { filterVisibleItems } from "../utils/visibility";
+import { useExpandedKeys } from "./useExpandedKeys";
 
 export interface UseNavItemsReturn<TData = unknown> {
 	flatItems: NavItemType<TData>[];
@@ -12,17 +13,6 @@ export interface UseNavItemsReturn<TData = unknown> {
 	expandAll: () => void;
 	collapseAll: () => void;
 	isExpanded: (key: string) => boolean;
-}
-
-function collectGroupKeys<TData>(items: NavItemType<TData>[]): string[] {
-	const keys: string[] = [];
-	for (const item of items) {
-		if (item.type === "group") {
-			keys.push(item.id);
-			keys.push(...collectGroupKeys(item.children));
-		}
-	}
-	return keys;
 }
 
 function collectDefaultExpanded<TData>(items: NavItemType<TData>[]): string[] {
@@ -55,36 +45,17 @@ function flattenVisible<TData>(
 export function useNavItems<TData = unknown>(
 	items: NavItemType<TData>[],
 ): UseNavItemsReturn<TData> {
-	const visibleItemTree = sortItemsByWeight(filterVisibleItems(items));
-
-	const [expandedKeys, setExpandedKeys] = useState<Set<string>>(
-		() => new Set(collectDefaultExpanded(visibleItemTree)),
+	// Memoized so its reference is stable across renders; otherwise a fresh array
+	// every render would invalidate the downstream flatItems memo on each render.
+	const visibleItemTree = useMemo(
+		() => sortItemsByWeight(filterVisibleItems(items)),
+		[items],
 	);
 
-	const toggleGroup = useCallback((key: string) => {
-		setExpandedKeys((prev) => {
-			const next = new Set(prev);
-			if (next.has(key)) {
-				next.delete(key);
-			} else {
-				next.add(key);
-			}
-			return next;
-		});
-	}, []);
-
-	const expandAll = useCallback(() => {
-		setExpandedKeys(new Set(collectGroupKeys(visibleItemTree)));
-	}, [visibleItemTree]);
-
-	const collapseAll = useCallback(() => {
-		setExpandedKeys(new Set());
-	}, []);
-
-	const isExpanded = useCallback(
-		(key: string) => expandedKeys.has(key),
-		[expandedKeys],
-	);
+	const { expandedKeys, toggleGroup, expandAll, collapseAll, isExpanded } =
+		useExpandedKeys(visibleItemTree, () =>
+			collectDefaultExpanded(visibleItemTree),
+		);
 
 	const flatItems = useMemo(
 		() => flattenVisible(visibleItemTree, expandedKeys),

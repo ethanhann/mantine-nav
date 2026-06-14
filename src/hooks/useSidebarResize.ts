@@ -61,6 +61,11 @@ export function useSidebarResize({
 	const handleRef = useRef<HTMLDivElement>(null!);
 	const startXRef = useRef(0);
 	const startWidthRef = useRef(0);
+	// Mirror of `width` so callbacks can read the latest value without listing
+	// `width` as a dependency (which would re-subscribe drag listeners on every
+	// pointer-move).
+	const widthRef = useRef(width);
+	widthRef.current = width;
 
 	const handlePointerMove = useCallback(
 		(e: PointerEvent) => {
@@ -84,15 +89,16 @@ export function useSidebarResize({
 		setIsResizing(false);
 		document.body.style.cursor = "";
 		document.body.style.userSelect = "";
-		onResizeEnd?.(width);
+		const finalWidth = widthRef.current;
+		onResizeEnd?.(finalWidth);
 		if (persistKey) {
 			try {
-				localStorage.setItem(persistKey, String(width));
+				localStorage.setItem(persistKey, String(finalWidth));
 			} catch {
 				/* ignore */
 			}
 		}
-	}, [width, onResizeEnd, persistKey]);
+	}, [onResizeEnd, persistKey]);
 
 	useEffect(() => {
 		if (!isResizing) return;
@@ -104,18 +110,15 @@ export function useSidebarResize({
 		};
 	}, [isResizing, handlePointerMove, handlePointerUp]);
 
-	const handlePointerDown = useCallback(
-		(e: React.PointerEvent) => {
-			e.preventDefault();
-			(e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-			startXRef.current = e.clientX;
-			startWidthRef.current = width;
-			setIsResizing(true);
-			document.body.style.cursor = "col-resize";
-			document.body.style.userSelect = "none";
-		},
-		[width],
-	);
+	const handlePointerDown = useCallback((e: React.PointerEvent) => {
+		e.preventDefault();
+		(e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+		startXRef.current = e.clientX;
+		startWidthRef.current = widthRef.current;
+		setIsResizing(true);
+		document.body.style.cursor = "col-resize";
+		document.body.style.userSelect = "none";
+	}, []);
 
 	const resetWidth = useCallback(() => {
 		setWidth(defaultWidth);

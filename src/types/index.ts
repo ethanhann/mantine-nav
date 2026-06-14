@@ -11,7 +11,6 @@ export type {
 	NavDividerItem,
 	NavGroupItem,
 	// Core item types
-	NavItem,
 	NavItemType,
 	NavLinkItem,
 	NavSectionHeader,

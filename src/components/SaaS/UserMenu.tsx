@@ -9,12 +9,23 @@ import {
 	Text,
 	UnstyledButton,
 } from "@mantine/core";
-import { type CSSProperties, Fragment, type ReactElement, type ReactNode } from "react";
+import {
+	type CSSProperties,
+	Fragment,
+	type ReactElement,
+	type ReactNode,
+} from "react";
 import type { UserInfo } from "../../types";
 
-const truncateStyle: CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
+const truncateStyle: CSSProperties = {
+	overflow: "hidden",
+	textOverflow: "ellipsis",
+	whiteSpace: "nowrap",
+};
 
 export interface UserMenuItem {
+	/** Stable identity for React keys. Falls back to label + index if omitted. */
+	id?: string;
 	label: string;
 	icon?: ReactNode;
 	href?: string;
@@ -62,7 +73,11 @@ export function UserMenu({
 	const isCompact = variant === "compact";
 
 	return (
-		<Menu width={200} position={isCompact ? "bottom-end" : "top-start"} withinPortal>
+		<Menu
+			width={200}
+			position={isCompact ? "bottom-end" : "top-start"}
+			withinPortal
+		>
 			<Menu.Target>
 				{isCompact ? (
 					<UnstyledButton
@@ -114,10 +129,12 @@ export function UserMenu({
 
 			<Menu.Dropdown>
 				<Menu.Label style={truncateStyle}>{user.name}</Menu.Label>
-				{user.email && <Menu.Label style={truncateStyle}>{user.email}</Menu.Label>}
+				{user.email && (
+					<Menu.Label style={truncateStyle}>{user.email}</Menu.Label>
+				)}
 				<Menu.Divider />
-				{menuItems.map((item) => (
-					<Fragment key={item.label}>
+				{menuItems.map((item, index) => (
+					<Fragment key={item.id ?? `${item.label}-${index}`}>
 						{item.dividerBefore && <Menu.Divider />}
 						<Menu.Item
 							leftSection={item.icon}

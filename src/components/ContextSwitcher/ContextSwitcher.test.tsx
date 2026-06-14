@@ -201,7 +201,9 @@ describe("ContextSwitcher", () => {
 			);
 			await user.click(screen.getByTestId("context-switcher-item-admin:1"));
 			expect(onSelect).toHaveBeenCalledTimes(1);
-			await act(async () => { resolve(); });
+			await act(async () => {
+				resolve();
+			});
 		});
 
 		it("clears pending and keeps the menu open when onSelect rejects", async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { usePersistedList } from "./usePersistedList";
 
 export interface StarredPage {
 	id: string;
@@ -24,96 +24,35 @@ export interface UseStarredPagesReturn {
 	clearAll: () => void;
 }
 
-function loadStarred(key: string): StarredPage[] {
-	if (typeof window === "undefined") return [];
-	try {
-		const data = JSON.parse(localStorage.getItem(key) || "[]");
-		if (!Array.isArray(data)) return [];
-		return data.filter(
-			(item: unknown): item is StarredPage =>
-				typeof item === "object" &&
-				item !== null &&
-				"id" in item &&
-				"href" in item,
-		);
-	} catch {
-		return [];
-	}
-}
-
-function saveStarred(key: string, items: StarredPage[]) {
-	if (typeof window === "undefined") return;
-	try {
-		localStorage.setItem(key, JSON.stringify(items));
-	} catch {
-		/* ignore */
-	}
-}
+const parsePages = (raw: unknown): StarredPage[] =>
+	Array.isArray(raw)
+		? raw.filter(
+				(item: unknown): item is StarredPage =>
+					typeof item === "object" &&
+					item !== null &&
+					"id" in item &&
+					"href" in item,
+			)
+		: [];
 
 export function useStarredPages({
 	maxItems = 20,
 	storageKey = "nav-starred-pages",
 }: UseStarredPagesOptions = {}): UseStarredPagesReturn {
-	const [items, setItems] = useState<StarredPage[]>(() =>
-		loadStarred(storageKey),
-	);
-
-	const isStarred = useCallback(
-		(id: string) => items.some((i) => i.id === id),
-		[items],
-	);
-
-	const star = useCallback(
-		(page: StarredPage) => {
-			setItems((prev) => {
-				if (prev.some((i) => i.id === page.id)) return prev;
-				const next = [...prev, page].slice(0, maxItems);
-				saveStarred(storageKey, next);
-				return next;
-			});
-		},
-		[maxItems, storageKey],
-	);
-
-	const unstar = useCallback(
-		(id: string) => {
-			setItems((prev) => {
-				const next = prev.filter((i) => i.id !== id);
-				saveStarred(storageKey, next);
-				return next;
-			});
-		},
-		[storageKey],
-	);
-
-	const toggleStar = useCallback(
-		(page: StarredPage) => {
-			if (isStarred(page.id)) {
-				unstar(page.id);
-			} else {
-				star(page);
-			}
-		},
-		[isStarred, star, unstar],
-	);
-
-	const reorder = useCallback(
-		(fromIndex: number, toIndex: number) => {
-			setItems((prev) => {
-				const next = [...prev];
-				const [moved] = next.splice(fromIndex, 1);
-				if (moved) next.splice(toIndex, 0, moved);
-				saveStarred(storageKey, next);
-				return next;
-			});
-		},
-		[storageKey],
-	);
-
-	const clearAll = useCallback(() => {
-		setItems([]);
-		saveStarred(storageKey, []);
-	}, [storageKey]);
+	const {
+		items,
+		has: isStarred,
+		add: star,
+		remove: unstar,
+		toggle: toggleStar,
+		reorder,
+		clear: clearAll,
+	} = usePersistedList<StarredPage>({
+		getId: (page) => page.id,
+		storageKey,
+		maxItems,
+		parse: parsePages,
+	});
 
 	return { items, isStarred, star, unstar, toggleStar, reorder, clearAll };
 }

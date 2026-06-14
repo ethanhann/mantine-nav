@@ -19,6 +19,12 @@ export interface NavSidebarProps {
 	footer?: ReactNode;
 	showCollapseToggle?: boolean;
 	collapseTogglePosition?: "header" | "footer";
+	/**
+	 * Max height of the header/footer sections when expanded. Used as the
+	 * collapse-animation target, so it must be a finite value. Raise it if your
+	 * header/footer content is taller than the default. Defaults to `"500px"`.
+	 */
+	sectionMaxHeight?: number | string;
 }
 
 function CollapseToggle() {
@@ -80,6 +86,7 @@ export function NavSidebar({
 	footer,
 	showCollapseToggle = true,
 	collapseTogglePosition = "footer",
+	sectionMaxHeight = "500px",
 }: NavSidebarProps): ReactElement {
 	const shell = useOptionalNavShell();
 	const desktopCollapsed = shell?.desktopCollapsed ?? false;
@@ -95,7 +102,7 @@ export function NavSidebar({
 			}
 		: {
 				opacity: 1,
-				maxHeight: "500px",
+				maxHeight: sectionMaxHeight,
 				overflow: "hidden",
 				transition: "opacity 200ms ease, max-height 200ms ease",
 			};

@@ -17,6 +17,8 @@ export type {
 } from "./useCommandSearch";
 export { useCommandSearch } from "./useCommandSearch";
 export { useCurrentPath } from "./useCurrentPath";
+export type { UseExpandedKeysReturn } from "./useExpandedKeys";
+export { collectGroupIds, useExpandedKeys } from "./useExpandedKeys";
 export type {
 	UseHeadlessSidebarOptions,
 	UseHeadlessSidebarReturn,
@@ -38,6 +40,11 @@ export type { NavRegistryEntry, UseNavRegistryReturn } from "./useNavRegistry";
 export { useNavRegistry } from "./useNavRegistry";
 export type { UseNavVarsReturn } from "./useNavVars";
 export { useNavVars } from "./useNavVars";
+export type {
+	UsePersistedListOptions,
+	UsePersistedListReturn,
+} from "./usePersistedList";
+export { usePersistedList } from "./usePersistedList";
 export type {
 	UsePinnedItemsOptions,
 	UsePinnedItemsReturn,
