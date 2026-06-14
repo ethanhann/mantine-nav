@@ -46,3 +46,31 @@ export const WithRole: Story = {
 		showEmail: true,
 	},
 };
+
+/** Compact avatar-only trigger, suitable for header placement. */
+export const Compact: Story = {
+	args: {
+		user: sampleUser,
+		menuItems: sampleUserMenuItems,
+		variant: "compact",
+	},
+	decorators: [
+		(Story) => (
+			<div style={{ display: "flex", justifyContent: "flex-end", padding: 8 }}>
+				<Story />
+			</div>
+		),
+	],
+};
+
+/** Long email that would overflow in the dropdown. */
+export const LongEmail: Story = {
+	args: {
+		user: {
+			...sampleUser,
+			email: "extremely.long.email.address@very-long-domain-name.example.com",
+		},
+		menuItems: sampleUserMenuItems,
+		showEmail: true,
+	},
+};
