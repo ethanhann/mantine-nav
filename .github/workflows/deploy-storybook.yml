@@ -1,7 +1,12 @@
 name: Deploy Storybook
 
+# Runs after CI succeeds on main (rather than re-triggering on push), so the test
+# suite isn't run twice and a build that failed CI is never deployed. The coverage
+# badge reuses the coverage summary CI already produced.
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
 
 concurrency:
@@ -12,10 +17,13 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only deploy when the CI run that triggered this succeeded.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -29,11 +37,16 @@ jobs:
 
       - run: npm ci
 
-      - name: Run tests with coverage
-        run: npm run test:coverage
-
       - name: Build Storybook
         run: npm run storybook:build
+
+      - name: Download coverage summary from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-summary
+          path: coverage
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate coverage badge
         run: |
