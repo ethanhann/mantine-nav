@@ -103,6 +103,44 @@ descendant can read state via `useNavShell()` or `useOptionalNavShell()`.
 All items support `visible?: boolean | (() => boolean)` to hide per role/flag, and `weight?: number` to control sort
 order.
 
+### `onClick` and navigation
+
+A link's `onClick` runs for side effects (analytics, telemetry) and **does not** suppress navigation when the item has a
+real `href` — the handler fires first, then the browser (or your `linkComponent`) navigates. Call `e.preventDefault()`
+yourself if you need to stop it:
+
+```tsx
+// Track, then navigate normally:
+{ id: 'pricing', type: 'link', label: 'Pricing', href: '/pricing',
+  onClick: () => track('nav_click', { to: '/pricing' }) }
+
+// Action-only item — prevent navigation and open a modal:
+{ id: 'feedback', type: 'link', label: 'Send Feedback', href: '#',
+  onClick: (e) => { e.preventDefault(); openFeedbackModal(); } }
+```
+
+### Custom item rendering
+
+Pass `renderItem={(item, depth) => ReactNode}` to `NavGroup` to fully control how items are drawn. The library wraps your
+output so each item keeps its accessibility plumbing — `role="treeitem"`, `data-item-id`, `aria-current` /
+`aria-expanded`, roving focus for keyboard navigation, and click routing through `onItemClick`. You supply only the
+visuals:
+
+```tsx
+<NavGroup
+    items={items}
+    onItemClick={(item) => router.push(item.href)}
+    renderItem={(item) =>
+        item.type === 'link' ? (
+            <Group justify="space-between" px="sm" py={6}>
+                <Group gap="xs">{item.icon}<Text size="sm">{item.label}</Text></Group>
+                {item.data?.count ? <Badge circle>{item.data.count}</Badge> : null}
+            </Group>
+        ) : null
+    }
+/>
+```
+
 ## Example: Marketing CRM
 
 ```tsx
@@ -244,6 +282,13 @@ desktop:
 </NavSidebar>
 ```
 
+The header/footer sections animate their max-height when the sidebar collapses. If your header or footer content is taller
+than the `500px` default and gets clipped, raise it via `sectionMaxHeight` (a number of px or any CSS length):
+
+```tsx
+<NavSidebar sectionMaxHeight={800} header={...} footer={...}>...</NavSidebar>
+```
+
 ## Router Integration
 
 Pass a router-aware `linkComponent` (and optionally `hrefProp`) to `NavShell` — all link items in descendant `NavGroup`s
@@ -294,8 +339,10 @@ import {
             <UserMenu
                 user={{id: '1', name: 'Jane Doe', email: 'jane@example.com', role: 'Admin'}}
                 menuItems={[
-                    {label: 'Profile', onClick: () => navigate('/profile')},
-                    {label: 'Sign out', onClick: signOut, color: 'red', dividerBefore: true},
+                    // `id` is optional but recommended as a stable React key when
+                    // labels may repeat; it falls back to label + index otherwise.
+                    {id: 'profile', label: 'Profile', onClick: () => navigate('/profile')},
+                    {id: 'signout', label: 'Sign out', onClick: signOut, color: 'red', dividerBefore: true},
                 ]}
             />
         </>
@@ -420,6 +467,10 @@ function App() {
 The palette opens on ⌘K / Ctrl+K by default (configurable via `shortcut`, or `null` to disable) and shares a single
 instance with `useCommandPalette()` so a trigger button and the shortcut drive the same palette.
 
+Flattening preserves each item's generic `data` payload: `flattenNavCommands<TData>(items)` returns
+`NavCommand<TData>[]`, so the source item's `data` is available on every command for use in `onNavigate` and custom
+result rendering.
+
 ### Backend search source
 
 Pass an async `search` function to surface results from a backend (docs, records, etc.) alongside the local matches.
@@ -490,7 +541,7 @@ Sidebar behavior without any UI — for fully custom sidebars:
 ```tsx
 const sidebar = useHeadlessSidebar({
     items,
-    defaultExpandedKeys: ['products'],
+    defaultExpanded: ['products'],
 });
 // { expandedKeys, collapsed, toggleGroup, getItemProps, getGroupProps, ... }
 ```
@@ -501,6 +552,7 @@ const sidebar = useHeadlessSidebar({
 |----------------------------|----------------------------------------------------------|
 | `useCurrentPath`           | Reactive pathname for active matching                    |
 | `useNavItems`              | Flatten, expand/collapse, and traverse item trees        |
+| `useExpandedKeys`          | Headless expand/collapse state for a tree (toggle/expand-all/collapse-all) |
 | `useNavKeyboard`           | Arrow keys, Home/End, Enter/Space, Escape, type-ahead    |
 | `useNavAnimation`          | Transition config that respects `prefers-reduced-motion` |
 | `useNavColorScheme`        | Read and toggle light/dark color scheme                  |
@@ -514,6 +566,7 @@ const sidebar = useHeadlessSidebar({
 | `usePinnedItems`           | Pin/unpin favorites (localStorage-backed)                |
 | `useRecentlyViewed`        | Track recently visited pages (localStorage-backed)       |
 | `useStarredPages`          | Star/bookmark pages (localStorage-backed)                |
+| `usePersistedList`         | Ordered, localStorage-backed list primitive (add/remove/toggle/reorder) |
 | `useIsSSR` / `useHydrated` | SSR-safety helpers                                       |
 
 ## Utilities
@@ -539,7 +592,7 @@ Stories are organized by area:
 | Category            | What's covered                                                                      |
 |---------------------|-------------------------------------------------------------------------------------|
 | **Shell**           | `NavShell` variants, responsive collapse, router `linkComponent` integration        |
-| **NavGroup**        | Core tree, external links / onClick items, weight-based ordering                    |
+| **NavGroup**        | Core tree, external links / onClick items, custom `renderItem`, weight-based ordering |
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |
 | **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
 | **Hooks**           | `useNavRegistry`, `useRemoteNavItems`                                               |

@@ -18,7 +18,7 @@ const meta: Meta<typeof NavGroup> = {
 		docs: {
 			description: {
 				component:
-					'Link items support `external: true` to open in a new tab (with `target="_blank"` and `rel="noopener noreferrer"`) and `onClick` for action-only items (modals, dialogs) that prevent navigation.',
+					'Link items support `external: true` to open in a new tab (with `target="_blank"` and `rel="noopener noreferrer"`) and `onClick` for side effects. For links with a real `href`, navigation is NOT prevented — your `onClick` runs first (e.g. analytics) and the browser/router still navigates; call `e.preventDefault()` yourself to stop it. Action-only items (e.g. `href="#"`) use `onClick` to open modals/dialogs.',
 			},
 		},
 	},
@@ -53,6 +53,17 @@ const items: NavItemType[] = [
 		external: true,
 		badge: <IconExternalLink size={14} />,
 	},
+	{
+		id: "pricing",
+		type: "link",
+		label: "Pricing",
+		href: "/pricing",
+		icon: <IconFileText size={18} stroke={1.5} />,
+		// Real href: onClick fires for analytics, then navigation proceeds.
+		onClick: () => {
+			console.log("track: nav_click", { to: "/pricing" });
+		},
+	},
 	{ id: "div-1", type: "divider" },
 	{
 		id: "feedback",
@@ -60,7 +71,9 @@ const items: NavItemType[] = [
 		label: "Send Feedback",
 		href: "#",
 		icon: <IconMessage size={18} stroke={1.5} />,
-		onClick: () => {
+		// Action-only (href="#"): onClick opens a modal instead of navigating.
+		onClick: (e) => {
+			e.preventDefault();
 			alert("Feedback modal would open here!");
 		},
 	},
