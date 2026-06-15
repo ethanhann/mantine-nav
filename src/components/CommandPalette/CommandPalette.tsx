@@ -321,6 +321,7 @@ export function CommandPalette({
 		>
 			<Spotlight.Search
 				placeholder={placeholder}
+				data-autofocus
 				rightSection={
 					remote.stalled ? (
 						<Loader size="xs" />
