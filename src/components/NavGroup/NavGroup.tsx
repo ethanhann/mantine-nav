@@ -602,7 +602,7 @@ export function NavGroup<TData = unknown>({
 	currentPath,
 	animation,
 	transitionDuration: transitionDurationProp,
-	variant = "subtle",
+	variant = "light",
 	color,
 	onItemClick,
 	onGroupToggle,
