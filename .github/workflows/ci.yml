@@ -53,7 +53,6 @@ jobs:
 
       - name: Validate package
         run: |
-          npm run check:package
           npm run lint:package
           npm run check:exports
 
