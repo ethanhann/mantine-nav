@@ -3,10 +3,10 @@ import react from "@vitejs/plugin-react";
 import dts from "unplugin-dts/vite";
 import { defineConfig } from "vite";
 
-export default defineConfig(({ command }) => ({
+export default defineConfig({
 	plugins: [
 		react(),
-		command === "build" &&
+		!process.env.STORYBOOK &&
 			dts({
 				include: ["src"],
 				exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
