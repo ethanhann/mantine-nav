@@ -3,18 +3,19 @@ import react from "@vitejs/plugin-react";
 import dts from "unplugin-dts/vite";
 import { defineConfig } from "vite";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
 	plugins: [
 		react(),
-		dts({
-			include: ["src"],
-			exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
-			entryRoot: "src",
-			// Enforce type bundling using api-extractor
-			bundleTypes: true,
-			// Auto-generates the entry point helper file based on package.json
-			insertTypesEntry: true,
-		}),
+		command === "build" &&
+			dts({
+				include: ["src"],
+				exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
+				entryRoot: "src",
+				// Enforce type bundling using api-extractor
+				bundleTypes: true,
+				// Auto-generates the entry point helper file based on package.json
+				insertTypesEntry: true,
+			}),
 	],
 	css: {
 		modules: {
