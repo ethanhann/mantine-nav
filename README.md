@@ -48,6 +48,9 @@ const items: NavItemType[] = [
 function App() {
     return (
         <NavShell
+            mainProps={{
+                // Optionally override AppShell.main props.
+            }}
             header={<NavHeader logo={<Logo/>}/>}
             sidebar={
                 <NavSidebar>
@@ -55,7 +58,7 @@ function App() {
                 </NavSidebar>
             }
         >
-            <main>{/* page content */}</main>
+            {/* page content */}
         </NavShell>
     );
 }
@@ -215,7 +218,7 @@ function MarketingCRM() {
                 </NavSidebar>
             }
         >
-            <main>{/* page content */}</main>
+            {/* page content */}
         </NavShell>
     );
 }
