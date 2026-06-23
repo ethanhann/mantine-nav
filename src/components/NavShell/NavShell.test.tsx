@@ -79,4 +79,17 @@ describe("NavShell", () => {
 		);
 		expect(screen.getByTestId("has-link-component")).toHaveTextContent("true");
 	});
+
+	it("should pass props through to AppShell.main", () => {
+		render(
+			<NavShell
+				mainProps={{ "data-testid": "main-element" }}
+				sidebar={<span>Nav Items</span>}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+		expect(screen.getByTestId("main-element")).toBeInTheDocument();
+	});
 });

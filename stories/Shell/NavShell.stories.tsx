@@ -109,3 +109,16 @@ export const WithEnvironment: Story = {
 		</NavShell>
 	),
 };
+
+export const WithCustomizedAppShellMain: Story = {
+	render: () => (
+		<NavShell
+			mainProps={{
+				bg: "light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-9))",
+			}}
+			header={<NavHeader logo={<Text fw={700}>MyApp</Text>} />}
+		>
+			<Text>Customized main content area.</Text>
+		</NavShell>
+	),
+};
