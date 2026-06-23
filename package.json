@@ -9,9 +9,11 @@
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": "./dist/index.js"
 		}
+	},
+	"engines": {
+		"node": ">=v24"
 	},
 	"files": [
 		"dist"
