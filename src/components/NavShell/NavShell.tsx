@@ -1,7 +1,7 @@
 "use client";
-
 import {
 	AppShell,
+	type AppShellMainProps,
 	Burger,
 	Group,
 	type MantineBreakpoint,
@@ -89,6 +89,7 @@ export interface NavShellProps {
 	linkComponent?: React.ElementType;
 	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
 	hrefProp?: string;
+	mainProps?: AppShellMainProps;
 }
 
 /**
@@ -125,6 +126,7 @@ export function NavShell({
 	transitionDuration = 200,
 	linkComponent,
 	hrefProp,
+	mainProps = {},
 }: NavShellProps): ReactElement {
 	const [
 		mobileOpened,
@@ -236,7 +238,7 @@ export function NavShell({
 					/>
 				)}
 
-				<AppShell.Main>{children}</AppShell.Main>
+				<AppShell.Main {...mainProps}>{children}</AppShell.Main>
 
 				{footer && <AppShell.Footer p="md">{footer}</AppShell.Footer>}
 			</AppShell>
