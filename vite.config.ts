@@ -10,6 +10,10 @@ export default defineConfig({
 			include: ["src"],
 			exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
 			entryRoot: "src",
+			// Enforce type bundling using api-extractor
+			bundleTypes: true,
+			// Auto-generates the entry point helper file based on package.json
+			insertTypesEntry: true,
 		}),
 	],
 	css: {

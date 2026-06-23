@@ -3,8 +3,7 @@
 	"version": "0.6.0",
 	"description": "A React navigation component library built on Mantine v9",
 	"type": "module",
-	"main": "./dist/index.cjs",
-	"module": "./dist/index.js",
+	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
@@ -51,6 +50,7 @@
 		"@mantine/core": "^9.0.0",
 		"@mantine/hooks": "^9.0.0",
 		"@mantine/spotlight": "^9.3.0",
+		"@microsoft/api-extractor": "^7.58.9",
 		"@storybook/addon-a11y": "^10.4.2",
 		"@storybook/addon-docs": "^10.4.2",
 		"@storybook/react-vite": "^10.4.2",
