@@ -70,7 +70,7 @@ describe("Keyboard navigation integration", () => {
 
 		// Focus the first treeitem directly
 		const treeItems = screen.getAllByRole("treeitem");
-		treeItems[0].focus();
+		treeItems[0]!.focus();
 		expect(treeItems[0]).toHaveFocus();
 
 		// Arrow down moves to next item
@@ -84,7 +84,7 @@ describe("Keyboard navigation integration", () => {
 
 		// Start on second item
 		const treeItems = screen.getAllByRole("treeitem");
-		treeItems[1].focus();
+		treeItems[1]!.focus();
 
 		await user.keyboard("{ArrowUp}");
 		expect(treeItems[0]).toHaveFocus();

@@ -71,7 +71,7 @@ function renderFullApp(
 							header={
 								<WorkspaceSwitcher
 									workspaces={sampleWorkspaces}
-									activeWorkspace={sampleWorkspaces[0]}
+									activeWorkspace={sampleWorkspaces[0]!}
 									onSwitch={onWorkspaceSwitch}
 								/>
 							}
