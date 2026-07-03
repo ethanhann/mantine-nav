@@ -21,14 +21,19 @@ export interface WorkspaceSwitcherProps {
 }
 
 function workspaceAvatar(workspace: Workspace): ReactNode {
+	// A string logo is an image URL; any other ReactNode renders inside the
+	// avatar. The name initial is the fallback when no logo is provided.
+	const isImageUrl = typeof workspace.logo === "string";
 	return (
 		<Avatar
-			src={typeof workspace.logo === "string" ? workspace.logo : undefined}
+			src={isImageUrl ? (workspace.logo as string) : undefined}
 			size="sm"
 			radius="sm"
 			color="blue"
 		>
-			{workspace.name.charAt(0).toUpperCase()}
+			{!isImageUrl && workspace.logo != null
+				? workspace.logo
+				: workspace.name.charAt(0).toUpperCase()}
 		</Avatar>
 	);
 }

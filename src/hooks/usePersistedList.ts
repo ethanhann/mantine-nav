@@ -21,6 +21,11 @@ export interface UsePersistedListReturn<T> {
 	ids: Set<string>;
 	has: (id: string) => boolean;
 	add: (item: T) => void;
+	/**
+	 * Insert at the front, replacing any existing entry with the same id and
+	 * evicting from the end past `maxItems` (most-recently-used semantics).
+	 */
+	upsertFirst: (item: T) => void;
 	remove: (id: string) => void;
 	toggle: (item: T) => void;
 	reorder: (fromIndex: number, toIndex: number) => void;
@@ -99,6 +104,14 @@ export function usePersistedList<T>({
 		});
 	}, []);
 
+	const upsertFirst = useCallback((item: T) => {
+		setItems((prev) => {
+			const id = getIdRef.current(item);
+			const filtered = prev.filter((i) => getIdRef.current(i) !== id);
+			return [item, ...filtered].slice(0, maxItemsRef.current);
+		});
+	}, []);
+
 	const remove = useCallback((id: string) => {
 		setItems((prev) => prev.filter((i) => getIdRef.current(i) !== id));
 	}, []);
@@ -127,5 +140,16 @@ export function usePersistedList<T>({
 
 	const canAdd = items.length < maxItems;
 
-	return { items, ids, has, add, remove, toggle, reorder, clear, canAdd };
+	return {
+		items,
+		ids,
+		has,
+		add,
+		upsertFirst,
+		remove,
+		toggle,
+		reorder,
+		clear,
+		canAdd,
+	};
 }

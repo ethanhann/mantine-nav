@@ -13,7 +13,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 	return <MantineProvider>{children}</MantineProvider>;
 }
 
-describe("SaaS Components (Mantine v2)", () => {
+describe("SaaS Components", () => {
 	it("WorkspaceSwitcher renders active workspace", () => {
 		const ws = { id: "1", name: "My Workspace" };
 		render(
@@ -232,7 +232,7 @@ describe("SaaS Components (Mantine v2)", () => {
 		render(<ColorModePicker />, { wrapper: Wrapper });
 		const button = screen.getByRole("button");
 		expect(button).toBeInTheDocument();
-		expect(button.getAttribute("aria-label")).toMatch(/click for/);
+		expect(button.getAttribute("aria-label")).toMatch(/switch to/);
 	});
 
 	it("ColorModePicker toggle variant cycles to next mode on click", async () => {
@@ -317,5 +317,75 @@ describe("SaaS Components (Mantine v2)", () => {
 		await user.click(screen.getByText("High Contrast"));
 		expect(onActivate).toHaveBeenCalled();
 		expect(onChange).toHaveBeenCalledWith("hc");
+	});
+	describe("P1 defect regressions", () => {
+		it("renders a JSX logo node in the workspace avatar", () => {
+			// Arrange
+			const workspaces = [
+				{ id: "w1", name: "Acme", logo: <svg data-testid="logo-node" /> },
+			];
+
+			// Act
+			render(
+				<WorkspaceSwitcher
+					workspaces={workspaces}
+					activeWorkspace={workspaces[0]!}
+					onSwitch={() => {}}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByTestId("logo-node")).toBeInTheDocument();
+		});
+
+		it("derives the badge count from notifications when count is omitted", () => {
+			// Arrange
+			const notifications = [
+				{ id: "n1", title: "One", read: false },
+				{ id: "n2", title: "Two", read: false },
+				{ id: "n3", title: "Three", read: true },
+			];
+
+			// Act
+			render(<NotificationIndicator notifications={notifications} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("2")).toBeInTheDocument();
+			expect(
+				screen.getByLabelText("Notifications (2 unread)"),
+			).toBeInTheDocument();
+		});
+
+		it("keeps the dropdown open when marking a notification as read", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onRead = vi.fn();
+			const notifications = [{ id: "n1", title: "Hello", read: false }];
+			render(
+				<NotificationIndicator notifications={notifications} onRead={onRead} />,
+				{ wrapper: Wrapper },
+			);
+			await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+			// Act
+			await user.click(await screen.findByText("Hello"));
+
+			// Assert
+			expect(onRead).toHaveBeenCalledWith("n1");
+			expect(screen.getByText("Hello")).toBeInTheDocument();
+		});
+
+		it("renders nothing for an empty modes array instead of crashing", () => {
+			// Arrange
+
+			// Act
+			render(<ColorModePicker modes={[]} />, { wrapper: Wrapper });
+
+			// Assert
+			expect(screen.queryByRole("button")).not.toBeInTheDocument();
+		});
 	});
 });

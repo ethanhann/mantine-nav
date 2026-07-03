@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { NavItemType } from "../types";
 import { sortItemsByWeight } from "../utils/sorting";
 import { filterVisibleItems } from "../utils/visibility";
-import { useExpandedKeys } from "./useExpandedKeys";
+import { collectGroupIds, useExpandedKeys } from "./useExpandedKeys";
 
 export interface UseNavItemsReturn<TData = unknown> {
 	flatItems: NavItemType<TData>[];
@@ -52,10 +52,41 @@ export function useNavItems<TData = unknown>(
 		[items],
 	);
 
-	const { expandedKeys, toggleGroup, expandAll, collapseAll, isExpanded } =
-		useExpandedKeys(visibleItemTree, () =>
-			collectDefaultExpanded(visibleItemTree),
+	const {
+		expandedKeys,
+		toggleGroup,
+		expandAll,
+		collapseAll,
+		isExpanded,
+		setExpandedKeys,
+	} = useExpandedKeys(visibleItemTree, () =>
+		collectDefaultExpanded(visibleItemTree),
+	);
+
+	// The initializer above only runs once, so groups added after mount (e.g.
+	// async-loaded nav items) would never honor defaultOpened. Expand each
+	// newly appearing defaultOpened group exactly once, without re-opening
+	// groups the user has since collapsed.
+	const knownGroupIds = useRef<Set<string> | null>(null);
+	useEffect(() => {
+		const allIds = new Set(collectGroupIds(visibleItemTree));
+		if (knownGroupIds.current === null) {
+			knownGroupIds.current = allIds;
+			return;
+		}
+		const known = knownGroupIds.current;
+		const toOpen = collectDefaultExpanded(visibleItemTree).filter(
+			(id) => !known.has(id),
 		);
+		knownGroupIds.current = allIds;
+		if (toOpen.length > 0) {
+			setExpandedKeys((prev) => {
+				const next = new Set(prev);
+				for (const id of toOpen) next.add(id);
+				return next;
+			});
+		}
+	}, [visibleItemTree, setExpandedKeys]);
 
 	const flatItems = useMemo(
 		() => flattenVisible(visibleItemTree, expandedKeys),

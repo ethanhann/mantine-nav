@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useSidebarResize } from "./useSidebarResize";
 
 describe("Spec 009: useSidebarResize", () => {
@@ -32,6 +32,89 @@ describe("Spec 009: useSidebarResize", () => {
 		expect(props["aria-orientation"]).toBe("vertical");
 		expect(typeof props.onPointerDown).toBe("function");
 		expect(typeof props.onDoubleClick).toBe("function");
+	});
+
+	describe("drag and keyboard interactions", () => {
+		afterEach(() => {
+			localStorage.removeItem("nav-sidebar-width");
+			document.body.style.cursor = "";
+			document.body.style.userSelect = "";
+		});
+
+		function startDrag(
+			result: {
+				current: ReturnType<typeof useSidebarResize>;
+			},
+			clientX = 300,
+		) {
+			act(() => {
+				result.current.getHandleProps().onPointerDown({
+					preventDefault() {},
+					clientX,
+					pointerId: 1,
+					target: { setPointerCapture() {} },
+				} as unknown as React.PointerEvent);
+			});
+		}
+
+		it("fires onCollapse once while dragging below minWidth", () => {
+			// Arrange
+			const onCollapse = vi.fn();
+			const { result } = renderHook(() =>
+				useSidebarResize({ minWidth: 180, onCollapse }),
+			);
+			startDrag(result, 300);
+
+			// Act
+			act(() => {
+				document.dispatchEvent(new MouseEvent("pointermove", { clientX: 100 }));
+				document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+				document.dispatchEvent(new MouseEvent("pointermove", { clientX: 80 }));
+			});
+
+			// Assert
+			expect(onCollapse).toHaveBeenCalledTimes(1);
+		});
+
+		it("restores body cursor and text selection when unmounted mid-drag", () => {
+			// Arrange
+			const { result, unmount } = renderHook(() => useSidebarResize());
+			startDrag(result);
+			expect(document.body.style.cursor).toBe("col-resize");
+
+			// Act
+			unmount();
+
+			// Assert
+			expect(document.body.style.cursor).toBe("");
+			expect(document.body.style.userSelect).toBe("");
+		});
+
+		it("persists keyboard-adjusted width and fires onResizeEnd", () => {
+			// Arrange
+			const onResizeEnd = vi.fn();
+			const { result } = renderHook(() =>
+				useSidebarResize({
+					persistKey: "nav-sidebar-width",
+					defaultWidth: 260,
+					onResizeEnd,
+				}),
+			);
+
+			// Act
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "ArrowRight",
+					shiftKey: false,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(264);
+			expect(onResizeEnd).toHaveBeenCalledWith(264);
+			expect(localStorage.getItem("nav-sidebar-width")).toBe("264");
+		});
 	});
 
 	describe("persisted width validation", () => {

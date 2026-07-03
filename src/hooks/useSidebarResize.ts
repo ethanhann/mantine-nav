@@ -78,6 +78,21 @@ export function useSidebarResize({
 	// pointer-move).
 	const widthRef = useRef(width);
 	widthRef.current = width;
+	// Latched while the pointer is below the collapse threshold so onCollapse
+	// fires once per downward crossing instead of once per pointer-move.
+	const collapseLatchRef = useRef(false);
+
+	const persistWidth = useCallback(
+		(value: number) => {
+			if (!persistKey) return;
+			try {
+				localStorage.setItem(persistKey, String(value));
+			} catch {
+				/* ignore */
+			}
+		},
+		[persistKey],
+	);
 
 	const handlePointerMove = useCallback(
 		(e: PointerEvent) => {
@@ -86,9 +101,13 @@ export function useSidebarResize({
 
 			// Snap to collapse if below threshold
 			if (newWidth < minWidth && onCollapse) {
-				onCollapse();
+				if (!collapseLatchRef.current) {
+					collapseLatchRef.current = true;
+					onCollapse();
+				}
 				return;
 			}
+			collapseLatchRef.current = false;
 
 			newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
 			setWidth(newWidth);
@@ -99,26 +118,24 @@ export function useSidebarResize({
 
 	const handlePointerUp = useCallback(() => {
 		setIsResizing(false);
-		document.body.style.cursor = "";
-		document.body.style.userSelect = "";
 		const finalWidth = widthRef.current;
 		onResizeEnd?.(finalWidth);
-		if (persistKey) {
-			try {
-				localStorage.setItem(persistKey, String(finalWidth));
-			} catch {
-				/* ignore */
-			}
-		}
-	}, [onResizeEnd, persistKey]);
+		persistWidth(finalWidth);
+	}, [onResizeEnd, persistWidth]);
 
+	// Body styles are owned by this effect so an unmount mid-drag cannot leave
+	// the page stuck with a resize cursor and disabled text selection.
 	useEffect(() => {
 		if (!isResizing) return;
+		document.body.style.cursor = "col-resize";
+		document.body.style.userSelect = "none";
 		document.addEventListener("pointermove", handlePointerMove);
 		document.addEventListener("pointerup", handlePointerUp);
 		return () => {
 			document.removeEventListener("pointermove", handlePointerMove);
 			document.removeEventListener("pointerup", handlePointerUp);
+			document.body.style.cursor = "";
+			document.body.style.userSelect = "";
 		};
 	}, [isResizing, handlePointerMove, handlePointerUp]);
 
@@ -127,47 +144,38 @@ export function useSidebarResize({
 		(e.target as HTMLElement).setPointerCapture?.(e.pointerId);
 		startXRef.current = e.clientX;
 		startWidthRef.current = widthRef.current;
+		collapseLatchRef.current = false;
 		setIsResizing(true);
-		document.body.style.cursor = "col-resize";
-		document.body.style.userSelect = "none";
 	}, []);
 
 	const resetWidth = useCallback(() => {
 		setWidth(defaultWidth);
 		onResize?.(defaultWidth);
-		if (persistKey) {
-			try {
-				localStorage.setItem(persistKey, String(defaultWidth));
-			} catch {
-				/* ignore */
-			}
-		}
-	}, [defaultWidth, onResize, persistKey]);
+		persistWidth(defaultWidth);
+	}, [defaultWidth, onResize, persistWidth]);
 
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			const step = e.shiftKey ? 20 : 4;
+			let next: number | null = null;
 			if (e.key === "ArrowLeft") {
-				e.preventDefault();
-				const newWidth = Math.max(minWidth, width - step);
-				setWidth(newWidth);
-				onResize?.(newWidth);
+				next = Math.max(minWidth, width - step);
 			} else if (e.key === "ArrowRight") {
-				e.preventDefault();
-				const newWidth = Math.min(maxWidth, width + step);
-				setWidth(newWidth);
-				onResize?.(newWidth);
+				next = Math.min(maxWidth, width + step);
 			} else if (e.key === "Home") {
-				e.preventDefault();
-				setWidth(minWidth);
-				onResize?.(minWidth);
+				next = minWidth;
 			} else if (e.key === "End") {
-				e.preventDefault();
-				setWidth(maxWidth);
-				onResize?.(maxWidth);
+				next = maxWidth;
 			}
+			if (next === null) return;
+			e.preventDefault();
+			setWidth(next);
+			onResize?.(next);
+			// Each keypress is a complete resize action, so it also commits.
+			onResizeEnd?.(next);
+			persistWidth(next);
 		},
-		[width, minWidth, maxWidth, onResize],
+		[width, minWidth, maxWidth, onResize, onResizeEnd, persistWidth],
 	);
 
 	const getHandleProps = useCallback(

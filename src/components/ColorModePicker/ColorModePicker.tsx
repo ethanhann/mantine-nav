@@ -56,10 +56,12 @@ export function ColorModePicker({
 	size = "sm",
 	showLabels = true,
 	"aria-label": ariaLabel = "Color mode",
-}: ColorModePickerProps): ReactElement {
+}: ColorModePickerProps): ReactElement | null {
 	const { rawColorScheme, setColorScheme } = useNavColorScheme();
 
 	const activeValue = controlledValue ?? rawColorScheme;
+
+	if (modes.length === 0) return null;
 
 	function handleChange(newValue: string) {
 		onChange?.(newValue);
@@ -87,8 +89,10 @@ export function ColorModePicker({
 					variant="subtle"
 					size={size}
 					color="gray"
-					onClick={() => handleChange(nextMode!.value)}
-					aria-label={`${activeMode?.label} — click for ${nextMode?.label}`}
+					onClick={() => {
+						if (nextMode) handleChange(nextMode.value);
+					}}
+					aria-label={`${activeMode?.label}, switch to ${nextMode?.label}`}
 				>
 					{activeMode?.icon}
 				</ActionIcon>

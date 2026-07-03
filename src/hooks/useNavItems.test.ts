@@ -110,4 +110,33 @@ describe("useNavItems", () => {
 		const { result } = renderHook(() => useNavItems(itemsWithHiddenGroup));
 		expect(result.current.flatItems.map((i) => i.id)).toEqual(["home"]);
 	});
+	it("expands defaultOpened groups that arrive after mount", () => {
+		// Arrange
+		const initial: NavItemType[] = [
+			{ type: "link", id: "home", label: "Home", href: "/" },
+		];
+		const { result, rerender } = renderHook(
+			({ navItems }: { navItems: NavItemType[] }) => useNavItems(navItems),
+			{ initialProps: { navItems: initial } },
+		);
+		expect(result.current.isExpanded("async")).toBe(false);
+
+		// Act
+		rerender({
+			navItems: [
+				...initial,
+				{
+					type: "group",
+					id: "async",
+					label: "Async",
+					defaultOpened: true,
+					children: [{ type: "link", id: "child", label: "Child", href: "/c" }],
+				},
+			],
+		});
+
+		// Assert
+		expect(result.current.isExpanded("async")).toBe(true);
+		expect(result.current.flatItems.map((i) => i.id)).toContain("child");
+	});
 });

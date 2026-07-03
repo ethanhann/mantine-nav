@@ -25,6 +25,7 @@ export interface NotificationItem {
 
 /** Props for the notification bell indicator. */
 export interface NotificationIndicatorProps {
+	/** Badge count. Defaults to the number of unread `notifications`. */
 	count?: number;
 	maxCount?: number;
 	notifications?: NotificationItem[];
@@ -49,7 +50,7 @@ export interface NotificationIndicatorProps {
  * ```
  */
 export function NotificationIndicator({
-	count = 0,
+	count,
 	maxCount = 99,
 	notifications = [],
 	onRead,
@@ -58,9 +59,11 @@ export function NotificationIndicator({
 	showDropdown = true,
 	color = "red",
 }: NotificationIndicatorProps): ReactElement {
-	const displayCount = count > maxCount ? `${maxCount}+` : String(count);
+	const resolvedCount = count ?? notifications.filter((n) => !n.read).length;
+	const displayCount =
+		resolvedCount > maxCount ? `${maxCount}+` : String(resolvedCount);
 	const hasUnread = notifications.some((n) => !n.read);
-	const ariaLabel = `Notifications${count > 0 ? ` (${count} unread)` : ""}`;
+	const ariaLabel = `Notifications${resolvedCount > 0 ? ` (${resolvedCount} unread)` : ""}`;
 
 	const bell = (
 		<ActionIcon
@@ -76,10 +79,10 @@ export function NotificationIndicator({
 
 	return (
 		<Indicator
-			label={count > 0 ? displayCount : undefined}
+			label={resolvedCount > 0 ? displayCount : undefined}
 			size={16}
 			color={color}
-			disabled={count === 0}
+			disabled={resolvedCount === 0}
 			processing={false}
 			offset={4}
 		>
@@ -112,6 +115,7 @@ export function NotificationIndicator({
 										key={n.id}
 										leftSection={n.icon}
 										onClick={() => onRead?.(n.id)}
+										closeMenuOnClick={Boolean(n.href)}
 										opacity={n.read ? 0.6 : 1}
 										component={n.href ? "a" : undefined}
 										aria-label={`${n.title}${n.read ? "" : " (unread)"}`}
