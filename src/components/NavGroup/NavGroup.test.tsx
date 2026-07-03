@@ -396,6 +396,265 @@ describe("NavGroup (Mantine NavLink)", () => {
 		});
 	});
 
+	describe("accordion callbacks", () => {
+		it("fires onAccordionChange exactly once per toggle under StrictMode", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onAccordionChange = vi.fn();
+			render(
+				<React.StrictMode>
+					<NavGroup
+						items={nestedItems}
+						accordion
+						onAccordionChange={onAccordionChange}
+					/>
+				</React.StrictMode>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Products"));
+
+			// Assert
+			expect(onAccordionChange).toHaveBeenCalledTimes(1);
+			expect(onAccordionChange).toHaveBeenCalledWith(null);
+		});
+	});
+
+	describe("collapsed rail mode", () => {
+		const railItems: NavItemType[] = [
+			{
+				id: "products",
+				type: "group",
+				label: "Products",
+				children: [
+					{ id: "catalog", type: "link", label: "Catalog", href: "/products" },
+					{ id: "admin-section", type: "section", label: "Admin" },
+					{ id: "div-1", type: "divider" },
+					{
+						id: "sub",
+						type: "group",
+						label: "Sub Tools",
+						children: [
+							{
+								id: "inner",
+								type: "link",
+								label: "Inner Tool",
+								href: "/inner",
+							},
+						],
+					},
+				],
+			},
+		];
+
+		it("renders sections, dividers, and nested group children in the rail menu", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<NavShell
+					defaultDesktopCollapsed
+					sidebar={<NavGroup items={railItems} />}
+				>
+					<div>Main</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(
+				screen.getByRole("treeitem", { name: "Products", hidden: true }),
+			);
+
+			// Assert
+			expect(await screen.findByText("Catalog")).toBeInTheDocument();
+			expect(screen.getByText("Admin")).toBeInTheDocument();
+			expect(screen.getByText("Sub Tools")).toBeInTheDocument();
+			expect(screen.getByText("Inner Tool")).toBeInTheDocument();
+		});
+
+		it("does not preventDefault for rail menu links with an href", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			let defaultPrevented: boolean | null = null;
+			const itemOnClick = vi.fn((e: React.MouseEvent) => {
+				defaultPrevented = e.defaultPrevented;
+				e.preventDefault();
+			});
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Grp",
+					children: [
+						{
+							id: "child",
+							type: "link",
+							label: "Child",
+							href: "/child",
+							onClick: itemOnClick,
+						},
+					],
+				},
+			];
+			render(
+				<NavShell
+					defaultDesktopCollapsed
+					sidebar={<NavGroup items={items} onItemClick={onItemClick} />}
+				>
+					<div>Main</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			await user.click(
+				screen.getByRole("treeitem", { name: "Grp", hidden: true }),
+			);
+
+			// Act
+			await user.click(await screen.findByText("Child"));
+
+			// Assert
+			expect(itemOnClick).toHaveBeenCalledTimes(1);
+			expect(defaultPrevented).toBe(false);
+			expect(onItemClick).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("roving tabindex", () => {
+		it("makes only the first treeitem tabbable initially", () => {
+			// Arrange
+
+			// Act
+			render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
+
+			// Assert
+			const tree = screen.getByRole("tree");
+			expect(tree).toHaveAttribute("tabindex", "-1");
+			expect(tree.querySelector('[data-item-id="home"]')).toHaveAttribute(
+				"tabindex",
+				"0",
+			);
+			expect(tree.querySelector('[data-item-id="about"]')).toHaveAttribute(
+				"tabindex",
+				"-1",
+			);
+			expect(tree.querySelector('[data-item-id="settings"]')).toHaveAttribute(
+				"tabindex",
+				"-1",
+			);
+		});
+
+		it("makes the active item the tabbable stop", () => {
+			// Arrange
+
+			// Act
+			render(<NavGroup items={flatItems} currentPath="/about" />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			const tree = screen.getByRole("tree");
+			expect(tree.querySelector('[data-item-id="about"]')).toHaveAttribute(
+				"tabindex",
+				"0",
+			);
+			expect(tree.querySelector('[data-item-id="home"]')).toHaveAttribute(
+				"tabindex",
+				"-1",
+			);
+		});
+
+		it("moves the tabbable stop as focus moves", () => {
+			// Arrange
+			render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowDown" });
+
+			// Assert
+			expect(tree.querySelector('[data-item-id="about"]')).toHaveAttribute(
+				"tabindex",
+				"0",
+			);
+			expect(tree.querySelector('[data-item-id="home"]')).toHaveAttribute(
+				"tabindex",
+				"-1",
+			);
+			expect(document.activeElement?.getAttribute("data-item-id")).toBe(
+				"about",
+			);
+		});
+
+		it("focuses the first item on ArrowDown when nothing in the tree has focus", () => {
+			// Arrange
+			render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
+			const tree = screen.getByRole("tree");
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowDown" });
+
+			// Assert
+			expect(document.activeElement?.getAttribute("data-item-id")).toBe("home");
+		});
+
+		it("skips children of collapsed groups during arrow navigation", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{ id: "home", type: "link", label: "Home", href: "/" },
+				{
+					id: "products",
+					type: "group",
+					label: "Products",
+					defaultOpened: false,
+					children: [
+						{
+							id: "catalog",
+							type: "link",
+							label: "Catalog",
+							href: "/products",
+						},
+					],
+				},
+				{ id: "after", type: "link", label: "After", href: "/after" },
+			];
+			render(<NavGroup items={items} />, { wrapper: Wrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+			fireEvent.keyDown(tree, { key: "ArrowDown" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowDown" });
+
+			// Assert
+			expect(document.activeElement?.getAttribute("data-item-id")).toBe(
+				"after",
+			);
+		});
+
+		it("marks the active link with aria-selected", () => {
+			// Arrange
+
+			// Act
+			render(<NavGroup items={flatItems} currentPath="/about" />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			const tree = screen.getByRole("tree");
+			expect(tree.querySelector('[data-item-id="about"]')).toHaveAttribute(
+				"aria-selected",
+				"true",
+			);
+			expect(tree.querySelector('[data-item-id="home"]')).toHaveAttribute(
+				"aria-selected",
+				"false",
+			);
+		});
+	});
+
 	describe("onActiveChange", () => {
 		it("fires with the active link on mount when currentPath matches", () => {
 			// Arrange

@@ -65,6 +65,8 @@ interface InternalNavItemProps<TData = unknown> {
 	collapsed?: boolean;
 	linkComponent?: React.FunctionComponent<Record<string, unknown>>;
 	hrefProp: string;
+	/** Id of the single treeitem holding tabIndex=0 (roving tabindex). */
+	rovingItemId: string | null;
 }
 
 function CollapsedActiveIndicator() {
@@ -101,7 +103,11 @@ function NavItemRenderer<TData>({
 	collapsed,
 	linkComponent,
 	hrefProp,
+	rovingItemId,
 }: InternalNavItemProps<TData>) {
+	const itemTabIndex =
+		rovingItemId === null ? undefined : item.id === rovingItemId ? 0 : -1;
+
 	if (renderItem) {
 		const custom = renderItem(item, depth);
 
@@ -140,9 +146,10 @@ function NavItemRenderer<TData>({
 				data-item-id={item.id}
 				role="treeitem"
 				aria-current={item.type === "link" && active ? "page" : undefined}
+				aria-selected={item.type === "link" ? active : undefined}
 				aria-expanded={expanded}
 				aria-disabled={item.disabled || undefined}
-				tabIndex={-1}
+				tabIndex={itemTabIndex}
 				onClick={handleCustomClick}
 			>
 				{custom}
@@ -210,9 +217,10 @@ function NavItemRenderer<TData>({
 				disabled: item.disabled,
 				"aria-label": item.label,
 				"aria-current": active ? ("page" as const) : undefined,
+				"aria-selected": active,
 				"data-item-id": item.id,
 				role: "treeitem" as const,
-				tabIndex: -1 as const,
+				tabIndex: itemTabIndex,
 				styles: {
 					root: {
 						justifyContent: "center" as const,
@@ -263,9 +271,10 @@ function NavItemRenderer<TData>({
 			color,
 			disabled: item.disabled,
 			"aria-current": active ? ("page" as const) : undefined,
+			"aria-selected": active,
 			"data-item-id": item.id,
 			role: "treeitem" as const,
-			tabIndex: -1 as const,
+			tabIndex: itemTabIndex,
 			styles: {
 				root: {
 					borderRadius: "var(--mantine-radius-sm)",
@@ -302,17 +311,89 @@ function NavItemRenderer<TData>({
 
 	// In collapsed mode, show icon-only group with popover submenu
 	if (collapsed && depth === 0) {
+		const renderRailMenuChildren = (
+			children: NavItemType<TData>[],
+		): ReactNode[] =>
+			children.flatMap((child): ReactNode[] => {
+				if (child.type === "section") {
+					return [<Menu.Label key={child.id}>{child.label}</Menu.Label>];
+				}
+				if (child.type === "divider") {
+					return [<Menu.Divider key={child.id} />];
+				}
+				if (child.type === "group") {
+					return [
+						<Menu.Label key={child.id}>{child.label}</Menu.Label>,
+						...renderRailMenuChildren(child.children),
+					];
+				}
+
+				const useChildRouterLink = linkComponent && !child.external;
+				const menuLinkDest = child.href
+					? useChildRouterLink
+						? { [hrefProp]: child.href }
+						: { href: child.href }
+					: {};
+				const menuItemProps = {
+					leftSection: child.icon,
+					disabled: child.disabled,
+					...menuLinkDest,
+					onClick: (e: React.MouseEvent) => {
+						if (child.disabled) return;
+						if (child.onClick) {
+							// Match the expanded-mode link behavior: only suppress
+							// navigation for pure action items (no href).
+							if (!child.href) e.preventDefault();
+							child.onClick(e);
+						}
+						onItemClick?.(child, e);
+					},
+				};
+
+				if (child.external) {
+					return [
+						<Menu.Item
+							key={child.id}
+							component="a"
+							target="_blank"
+							rel="noopener noreferrer"
+							{...menuItemProps}
+						>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				if (linkComponent && child.href) {
+					return [
+						<Menu.Item
+							key={child.id}
+							component={linkComponent}
+							{...menuItemProps}
+						>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				if (child.href) {
+					return [
+						<Menu.Item key={child.id} component="a" {...menuItemProps}>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				return [
+					<Menu.Item key={child.id} {...menuItemProps}>
+						{child.label}
+					</Menu.Item>,
+				];
+			});
+
 		return (
 			<div style={{ position: "relative" }}>
 				{groupActive && <CollapsedActiveIndicator />}
 				<Menu position="right-start" withArrow offset={8} withinPortal>
 					<Menu.Target>
-						<Tooltip
-							label={groupItem.label}
-							position="right"
-							withArrow
-							disabled={groupItem.children.length > 0}
-						>
+						<Tooltip label={groupItem.label} position="right" withArrow>
 							<NavLink
 								label=""
 								leftSection={groupItem.icon}
@@ -323,7 +404,7 @@ function NavItemRenderer<TData>({
 								data-item-id={groupItem.id}
 								role="treeitem"
 								aria-label={groupItem.label}
-								tabIndex={-1}
+								tabIndex={itemTabIndex}
 								styles={{
 									root: {
 										justifyContent: "center",
@@ -340,68 +421,7 @@ function NavItemRenderer<TData>({
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Label>{groupItem.label}</Menu.Label>
-						{groupItem.children
-							.filter(
-								(child): child is NavLinkItem<TData> => child.type === "link",
-							)
-							.map((child) => {
-								const useChildRouterLink = linkComponent && !child.external;
-								const menuLinkDest = child.href
-									? useChildRouterLink
-										? { [hrefProp]: child.href }
-										: { href: child.href }
-									: {};
-								const menuItemProps = {
-									leftSection: child.icon,
-									disabled: child.disabled,
-									...menuLinkDest,
-									onClick: (e: React.MouseEvent) => {
-										if (child.disabled) return;
-										if (child.onClick) {
-											e.preventDefault();
-											child.onClick(e);
-										}
-										onItemClick?.(child, e);
-									},
-								};
-
-								if (child.external) {
-									return (
-										<Menu.Item
-											key={child.id}
-											component="a"
-											target="_blank"
-											rel="noopener noreferrer"
-											{...menuItemProps}
-										>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								if (linkComponent && child.href) {
-									return (
-										<Menu.Item
-											key={child.id}
-											component={linkComponent}
-											{...menuItemProps}
-										>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								if (child.href) {
-									return (
-										<Menu.Item key={child.id} component="a" {...menuItemProps}>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								return (
-									<Menu.Item key={child.id} {...menuItemProps}>
-										{child.label}
-									</Menu.Item>
-								);
-							})}
+						{renderRailMenuChildren(groupItem.children)}
 					</Menu.Dropdown>
 				</Menu>
 			</div>
@@ -421,7 +441,7 @@ function NavItemRenderer<TData>({
 			data-item-id={groupItem.id}
 			role="treeitem"
 			aria-expanded={isExpanded}
-			tabIndex={-1}
+			tabIndex={itemTabIndex}
 			styles={{
 				root: {
 					borderRadius: "var(--mantine-radius-sm)",
@@ -460,6 +480,7 @@ function NavItemRenderer<TData>({
 					collapsed={collapsed}
 					linkComponent={linkComponent}
 					hrefProp={hrefProp}
+					rovingItemId={rovingItemId}
 				/>
 			))}
 		</NavLink>
@@ -698,31 +719,37 @@ export function NavGroup<TData = unknown>({
 		}
 	}, [visibleItemTree, accordion, accordionScope]);
 
+	// Computed outside the setState updater so onAccordionChange cannot
+	// double-fire when React re-invokes updaters (StrictMode).
 	const handleToggleGroup = useCallback(
 		(key: string) => {
-			setExpandedGroups((prev) => {
-				const next = new Set(prev);
-				if (next.has(key)) {
-					next.delete(key);
-					if (accordion) onAccordionChange?.(null);
-				} else {
-					if (accordion) {
-						if (accordionScope === "global") {
-							next.clear();
-						} else {
-							const siblings = getSiblingGroupIds(visibleItemTree, key);
-							for (const s of siblings) {
-								if (s !== key) next.delete(s);
-							}
+			const next = new Set(expandedGroups);
+			if (next.has(key)) {
+				next.delete(key);
+				if (accordion) onAccordionChange?.(null);
+			} else {
+				if (accordion) {
+					if (accordionScope === "global") {
+						next.clear();
+					} else {
+						const siblings = getSiblingGroupIds(visibleItemTree, key);
+						for (const s of siblings) {
+							if (s !== key) next.delete(s);
 						}
-						onAccordionChange?.(key);
 					}
-					next.add(key);
+					onAccordionChange?.(key);
 				}
-				return next;
-			});
+				next.add(key);
+			}
+			setExpandedGroups(next);
 		},
-		[accordion, accordionScope, visibleItemTree, onAccordionChange],
+		[
+			expandedGroups,
+			accordion,
+			accordionScope,
+			visibleItemTree,
+			onAccordionChange,
+		],
 	);
 
 	// Active state
@@ -772,7 +799,7 @@ export function NavGroup<TData = unknown>({
 		maxDepth,
 	);
 
-	const { handleKeyDown } = useNavKeyboard({
+	const { handleKeyDown, focusedItemId } = useNavKeyboard({
 		items: flatItems,
 		treeItems: visibleItemTree,
 		expandedKeys: expandedGroups,
@@ -795,12 +822,22 @@ export function NavGroup<TData = unknown>({
 		enabled: enableKeyboardNav,
 	});
 
+	// Roving tabindex: exactly one treeitem is tabbable. The last focused item
+	// wins, then the active link, then the first visible item.
+	const rovingItemId = !enableKeyboardNav
+		? null
+		: focusedItemId && flatItems.some((item) => item.id === focusedItemId)
+			? focusedItemId
+			: (flatItems.find((item) => item.type === "link" && isActive(item))?.id ??
+				flatItems[0]?.id ??
+				null);
+
 	return (
 		<div
 			role="tree"
 			aria-label="Navigation"
 			ref={containerRef}
-			tabIndex={enableKeyboardNav ? 0 : undefined}
+			tabIndex={enableKeyboardNav ? -1 : undefined}
 			onKeyDown={
 				enableKeyboardNav
 					? (handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>)
@@ -825,6 +862,7 @@ export function NavGroup<TData = unknown>({
 					collapsed={isCollapsed}
 					linkComponent={resolvedLinkComponent}
 					hrefProp={resolvedHrefProp}
+					rovingItemId={rovingItemId}
 				/>
 			))}
 		</div>

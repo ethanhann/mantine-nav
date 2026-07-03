@@ -7,6 +7,7 @@ import {
 	type MantineBreakpoint,
 	type MantineSpacing,
 	Overlay,
+	useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import {
@@ -16,6 +17,8 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
+	useRef,
 } from "react";
 
 /** Context value provided by NavShell to descendant components. */
@@ -34,14 +37,8 @@ export interface NavShellContextValue {
 	hrefProp?: string;
 }
 
-/** Mantine's default breakpoint values, in em, for media-query mapping. */
-const BREAKPOINT_EM: Record<MantineBreakpoint, string> = {
-	xs: "36em",
-	sm: "48em",
-	md: "62em",
-	lg: "75em",
-	xl: "88em",
-};
+const FOCUSABLE_SELECTOR =
+	'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const NavShellContext = createContext<NavShellContextValue | null>(null);
 
@@ -142,8 +139,12 @@ export function NavShell({
 	] = useDisclosure(!defaultDesktopCollapsed);
 
 	const desktopCollapsed = sidebarCollapsible ? !desktopExpanded : false;
+	// Resolve the breakpoint from the active theme so a custom theme keeps
+	// isMobile in sync with AppShell's own collapse point.
+	const theme = useMantineTheme();
 	const isMobile =
-		useMediaQuery(`(max-width: ${BREAKPOINT_EM[sidebarBreakpoint]})`) ?? false;
+		useMediaQuery(`(max-width: ${theme.breakpoints[sidebarBreakpoint]})`) ??
+		false;
 
 	const toggleDesktop = toggleDesktopExpanded;
 	const collapseDesktop = collapseDesktopInner;
@@ -164,19 +165,72 @@ export function NavShell({
 		return () => document.removeEventListener("keydown", handleEscape);
 	}, [handleEscape]);
 
-	const ctx: NavShellContextValue = {
-		mobileOpened,
-		toggleMobile,
-		openMobile,
-		closeMobile,
-		desktopCollapsed,
-		toggleDesktop,
-		collapseDesktop,
-		expandDesktop,
-		isMobile,
-		linkComponent,
-		hrefProp,
-	};
+	// Mobile drawer focus management: move focus into the drawer on open and
+	// restore it to the previously focused element on close.
+	const navbarRef = useRef<HTMLDivElement>(null);
+	const returnFocusRef = useRef<HTMLElement | null>(null);
+	const drawerActive = isMobile && mobileOpened;
+
+	useEffect(() => {
+		if (!drawerActive) return;
+		returnFocusRef.current = document.activeElement as HTMLElement | null;
+		const navbar = navbarRef.current;
+		if (navbar) {
+			const first = navbar.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+			(first ?? navbar).focus();
+		}
+		return () => {
+			returnFocusRef.current?.focus();
+			returnFocusRef.current = null;
+		};
+	}, [drawerActive]);
+
+	const handleDrawerKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key !== "Tab" || !navbarRef.current) return;
+		const focusables = Array.from(
+			navbarRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+		);
+		if (focusables.length === 0) return;
+		const first = focusables[0];
+		const last = focusables[focusables.length - 1];
+		const active = document.activeElement;
+		if (e.shiftKey && (active === first || active === navbarRef.current)) {
+			e.preventDefault();
+			last?.focus();
+		} else if (!e.shiftKey && active === last) {
+			e.preventDefault();
+			first?.focus();
+		}
+	}, []);
+
+	const ctx: NavShellContextValue = useMemo(
+		() => ({
+			mobileOpened,
+			toggleMobile,
+			openMobile,
+			closeMobile,
+			desktopCollapsed,
+			toggleDesktop,
+			collapseDesktop,
+			expandDesktop,
+			isMobile,
+			linkComponent,
+			hrefProp,
+		}),
+		[
+			mobileOpened,
+			toggleMobile,
+			openMobile,
+			closeMobile,
+			desktopCollapsed,
+			toggleDesktop,
+			collapseDesktop,
+			expandDesktop,
+			isMobile,
+			linkComponent,
+			hrefProp,
+		],
+	);
 
 	return (
 		<NavShellContext.Provider value={ctx}>
@@ -222,19 +276,26 @@ export function NavShell({
 					</AppShell.Header>
 				)}
 
-				{sidebar && <AppShell.Navbar p="sm">{sidebar}</AppShell.Navbar>}
+				{sidebar && (
+					<AppShell.Navbar
+						p="sm"
+						ref={navbarRef}
+						onKeyDown={drawerActive ? handleDrawerKeyDown : undefined}
+					>
+						{sidebar}
+					</AppShell.Navbar>
+				)}
 
 				{aside && <AppShell.Aside p="md">{aside}</AppShell.Aside>}
 
-				{/* Backdrop overlay when mobile sidebar is open */}
-				{isMobile && mobileOpened && (
+				{/* Backdrop overlay when mobile sidebar is open. Click-to-close is
+				    a pointer convenience only; keyboard users close with Escape. */}
+				{drawerActive && (
 					<Overlay
 						onClick={closeMobile}
 						opacity={0.5}
 						color="var(--mantine-color-black)"
 						zIndex={"calc(var(--mantine-z-index-app) - 1)" as unknown as number}
-						role="button"
-						aria-label="Close navigation"
 					/>
 				)}
 

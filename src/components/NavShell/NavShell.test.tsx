@@ -1,6 +1,8 @@
 import { MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { mockViewport, resetViewport } from "../../__integration__/helpers";
 import { NavShell, useNavShell } from "./NavShell";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
@@ -91,5 +93,101 @@ describe("NavShell", () => {
 			{ wrapper: Wrapper },
 		);
 		expect(screen.getByTestId("main-element")).toBeInTheDocument();
+	});
+
+	describe("mobile drawer", () => {
+		beforeEach(() => {
+			mockViewport(400);
+		});
+
+		afterEach(() => {
+			resetViewport();
+		});
+
+		function renderMobileShell() {
+			return render(
+				<NavShell
+					header={<span>Logo</span>}
+					sidebar={
+						<div>
+							<a href="/one">One</a>
+							<a href="/two">Two</a>
+							<button type="button">Action</button>
+						</div>
+					}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+		}
+
+		it("moves focus into the drawer when it opens", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+
+			// Act
+			await user.click(screen.getByLabelText("Toggle navigation"));
+
+			// Assert
+			expect(screen.getByText("One")).toHaveFocus();
+		});
+
+		it("returns focus to the previously focused element when closed via Escape", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			const burger = screen.getByLabelText("Toggle navigation");
+			await user.click(burger);
+
+			// Act
+			await user.keyboard("{Escape}");
+
+			// Assert
+			expect(burger).toHaveFocus();
+		});
+
+		it("does not expose the backdrop overlay as a button", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+
+			// Act
+			await user.click(screen.getByLabelText("Toggle navigation"));
+
+			// Assert
+			expect(
+				screen.queryByRole("button", { name: "Close navigation" }),
+			).not.toBeInTheDocument();
+		});
+
+		it("wraps Tab focus within the open drawer", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			await user.click(screen.getByLabelText("Toggle navigation"));
+			screen.getByText("Action").focus();
+
+			// Act
+			await user.tab();
+
+			// Assert
+			expect(screen.getByText("One")).toHaveFocus();
+		});
+
+		it("wraps Shift+Tab focus from the first drawer element to the last", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			await user.click(screen.getByLabelText("Toggle navigation"));
+			screen.getByText("One").focus();
+
+			// Act
+			await user.tab({ shift: true });
+
+			// Assert
+			expect(screen.getByText("Action")).toHaveFocus();
+		});
 	});
 });
