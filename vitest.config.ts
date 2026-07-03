@@ -7,11 +7,6 @@ export default defineConfig({
 		environment: "jsdom",
 		globals: true,
 		setupFiles: ["./src/test-setup.ts"],
-		css: {
-			modules: {
-				classNameStrategy: "non-scoped",
-			},
-		},
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json-summary"],
