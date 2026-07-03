@@ -35,11 +35,21 @@ export interface UseSidebarResizeReturn {
 	resetWidth: () => void;
 }
 
-function loadWidth(key: string, defaultWidth: number): number {
+function loadWidth(
+	key: string,
+	defaultWidth: number,
+	minWidth: number,
+	maxWidth: number,
+): number {
 	if (typeof window === "undefined") return defaultWidth;
 	try {
 		const stored = localStorage.getItem(key);
-		return stored ? Number(stored) : defaultWidth;
+		if (!stored) return defaultWidth;
+		const parsed = Number(stored);
+		// Guard against corrupt values and widths persisted under different
+		// min/max bounds.
+		if (!Number.isFinite(parsed)) return defaultWidth;
+		return Math.max(minWidth, Math.min(maxWidth, parsed));
 	} catch {
 		return defaultWidth;
 	}
@@ -55,7 +65,9 @@ export function useSidebarResize({
 	onCollapse,
 }: UseSidebarResizeOptions = {}): UseSidebarResizeReturn {
 	const [width, setWidth] = useState(() =>
-		persistKey ? loadWidth(persistKey, defaultWidth) : defaultWidth,
+		persistKey
+			? loadWidth(persistKey, defaultWidth, minWidth, maxWidth)
+			: defaultWidth,
 	);
 	const [isResizing, setIsResizing] = useState(false);
 	const handleRef = useRef<HTMLDivElement>(null!);

@@ -1,5 +1,5 @@
 import { MantineProvider } from "@mantine/core";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -393,6 +393,269 @@ describe("NavGroup (Mantine NavLink)", () => {
 			await user.click(screen.getByText("Action"));
 			expect(itemOnClick).toHaveBeenCalled();
 			expect(groupOnItemClick).toHaveBeenCalled();
+		});
+	});
+
+	describe("onActiveChange", () => {
+		it("fires with the active link on mount when currentPath matches", () => {
+			// Arrange
+			const onActiveChange = vi.fn();
+
+			// Act
+			render(
+				<NavGroup
+					items={flatItems}
+					currentPath="/about"
+					onActiveChange={onActiveChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(onActiveChange).toHaveBeenCalledTimes(1);
+			expect(onActiveChange.mock.calls[0][0]).toMatchObject({
+				id: "about",
+				href: "/about",
+			});
+		});
+
+		it("fires with the new link when currentPath changes", () => {
+			// Arrange
+			const onActiveChange = vi.fn();
+			const { rerender } = render(
+				<NavGroup
+					items={flatItems}
+					currentPath="/about"
+					onActiveChange={onActiveChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			onActiveChange.mockClear();
+
+			// Act
+			rerender(
+				<NavGroup
+					items={flatItems}
+					currentPath="/settings"
+					onActiveChange={onActiveChange}
+				/>,
+			);
+
+			// Assert
+			expect(onActiveChange).toHaveBeenCalledTimes(1);
+			expect(onActiveChange.mock.calls[0][0]).toMatchObject({ id: "settings" });
+		});
+
+		it("fires null when no item matches the new path", () => {
+			// Arrange
+			const onActiveChange = vi.fn();
+			const { rerender } = render(
+				<NavGroup
+					items={flatItems}
+					currentPath="/about"
+					onActiveChange={onActiveChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			onActiveChange.mockClear();
+
+			// Act
+			rerender(
+				<NavGroup
+					items={flatItems}
+					currentPath="/nowhere"
+					onActiveChange={onActiveChange}
+				/>,
+			);
+
+			// Assert
+			expect(onActiveChange).toHaveBeenCalledTimes(1);
+			expect(onActiveChange).toHaveBeenCalledWith(null);
+		});
+
+		it("does not refire on re-render with an unchanged active item", () => {
+			// Arrange
+			const onActiveChange = vi.fn();
+			const { rerender } = render(
+				<NavGroup
+					items={flatItems}
+					currentPath="/about"
+					onActiveChange={onActiveChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			onActiveChange.mockClear();
+
+			// Act
+			rerender(
+				<NavGroup
+					items={flatItems}
+					currentPath="/about"
+					onActiveChange={onActiveChange}
+				/>,
+			);
+
+			// Assert
+			expect(onActiveChange).not.toHaveBeenCalled();
+		});
+
+		it("resolves the active link from the activeItem prop", () => {
+			// Arrange
+			const onActiveChange = vi.fn();
+
+			// Act
+			render(
+				<NavGroup
+					items={flatItems}
+					activeItem="settings"
+					onActiveChange={onActiveChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(onActiveChange).toHaveBeenCalledTimes(1);
+			expect(onActiveChange).toHaveBeenCalledWith(
+				expect.objectContaining({ id: "settings", href: "/settings" }),
+			);
+		});
+	});
+
+	describe("keyboard activation", () => {
+		it("fires item onClick and onItemClick when Enter is pressed on a focused link", () => {
+			// Arrange
+			let defaultPrevented: boolean | null = null;
+			const itemOnClick = vi.fn((e: React.MouseEvent) => {
+				defaultPrevented = e.defaultPrevented;
+				e.preventDefault();
+			});
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "home",
+					type: "link",
+					label: "Home",
+					href: "/home",
+					onClick: itemOnClick,
+				},
+			];
+			render(<NavGroup items={items} onItemClick={onItemClick} />, {
+				wrapper: Wrapper,
+			});
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(itemOnClick).toHaveBeenCalledTimes(1);
+			expect(defaultPrevented).toBe(false);
+			expect(onItemClick).toHaveBeenCalledTimes(1);
+			expect(onItemClick.mock.calls[0][0]).toMatchObject({ id: "home" });
+		});
+
+		it("dispatches a real click on the link element when Enter is pressed", () => {
+			// Arrange
+			render(<NavGroup items={flatItems} />, { wrapper: Wrapper });
+			const tree = screen.getByRole("tree");
+			const clickSpy = vi.fn((e: MouseEvent) => e.preventDefault());
+			tree.addEventListener("click", clickSpy);
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(clickSpy).toHaveBeenCalledTimes(1);
+			const target = clickSpy.mock.calls[0][0].target as HTMLElement;
+			expect(target.closest("a")).toHaveAttribute("href", "/");
+		});
+
+		it("activates a link via Space", () => {
+			// Arrange
+			const itemOnClick = vi.fn((e: React.MouseEvent) => e.preventDefault());
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "home",
+					type: "link",
+					label: "Home",
+					href: "/home",
+					onClick: itemOnClick,
+				},
+			];
+			render(<NavGroup items={items} onItemClick={onItemClick} />, {
+				wrapper: Wrapper,
+			});
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: " " });
+
+			// Assert
+			expect(itemOnClick).toHaveBeenCalledTimes(1);
+			expect(onItemClick).toHaveBeenCalledTimes(1);
+			expect(onItemClick.mock.calls[0][0]).toMatchObject({ id: "home" });
+		});
+
+		it("does not activate a disabled link via Enter", () => {
+			// Arrange
+			const itemOnClick = vi.fn();
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "off",
+					type: "link",
+					label: "Off",
+					href: "/off",
+					disabled: true,
+					onClick: itemOnClick,
+				},
+			];
+			render(<NavGroup items={items} onItemClick={onItemClick} />, {
+				wrapper: Wrapper,
+			});
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(itemOnClick).not.toHaveBeenCalled();
+			expect(onItemClick).not.toHaveBeenCalled();
+		});
+
+		it("does not toggle a disabled group via Enter", () => {
+			// Arrange
+			const onGroupToggle = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Grp",
+					disabled: true,
+					children: [{ id: "child", type: "link", label: "Child", href: "/c" }],
+				},
+			];
+			render(<NavGroup items={items} onGroupToggle={onGroupToggle} />, {
+				wrapper: Wrapper,
+			});
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(onGroupToggle).not.toHaveBeenCalled();
+			expect(
+				tree
+					.querySelector('[data-item-id="grp"]')
+					?.getAttribute("aria-expanded"),
+			).toBe("false");
 		});
 	});
 });

@@ -158,7 +158,7 @@ export function useNavKeyboard<TData = unknown>({
 				case "Enter":
 				case " ": {
 					event.preventDefault();
-					if (currentItem) {
+					if (currentItem && !currentItem.disabled) {
 						if (currentItem.type === "group") {
 							onToggle(currentItem.id);
 						}

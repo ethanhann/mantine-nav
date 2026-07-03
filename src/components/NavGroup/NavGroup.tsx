@@ -558,6 +558,22 @@ function findFirstDefault<TData>(
 	return false;
 }
 
+function findLinkByIdOrHref<TData>(
+	items: NavItemType<TData>[],
+	target: string,
+): NavLinkItem<TData> | null {
+	for (const item of items) {
+		if (item.type === "link" && (item.id === target || item.href === target)) {
+			return item;
+		}
+		if (item.type === "group") {
+			const found = findLinkByIdOrHref(item.children, target);
+			if (found) return found;
+		}
+	}
+	return null;
+}
+
 // Flatten visible items for keyboard navigation
 function flattenVisibleItems<TData>(
 	items: NavItemType<TData>[],
@@ -606,7 +622,7 @@ export function NavGroup<TData = unknown>({
 	color,
 	onItemClick,
 	onGroupToggle,
-	onActiveChange: _onActiveChange,
+	onActiveChange,
 	// Accordion
 	accordion = false,
 	accordionScope = "sibling",
@@ -710,10 +726,27 @@ export function NavGroup<TData = unknown>({
 	);
 
 	// Active state
-	const { isActive: isActiveByRoute } = useActiveNavItem(visibleItemTree, {
-		currentPath,
-		matcher: activeMatcher,
-	});
+	const { isActive: isActiveByRoute, activeItem: routeActiveItem } =
+		useActiveNavItem(visibleItemTree, {
+			currentPath,
+			matcher: activeMatcher,
+		});
+
+	// The activeItem prop (matched by id or href) overrides route matching.
+	const resolvedActiveLink = useMemo(() => {
+		if (activeItem !== undefined && activeItem !== null) {
+			return findLinkByIdOrHref(visibleItemTree, activeItem);
+		}
+		return routeActiveItem;
+	}, [activeItem, visibleItemTree, routeActiveItem]);
+
+	const lastActiveIdRef = useRef<string | null>(null);
+	useEffect(() => {
+		const id = resolvedActiveLink?.id ?? null;
+		if (lastActiveIdRef.current === id) return;
+		lastActiveIdRef.current = id;
+		onActiveChange?.(resolvedActiveLink ?? null);
+	}, [resolvedActiveLink, onActiveChange]);
 
 	const isActive = useCallback(
 		(item: NavItemType<TData>): boolean => {
@@ -746,10 +779,13 @@ export function NavGroup<TData = unknown>({
 		onToggle: handleToggleGroup,
 		onSelect: (item) => {
 			if (item.type === "link") {
-				const syntheticEvent = new MouseEvent("click", {
-					bubbles: true,
-				}) as unknown as React.MouseEvent;
-				wrappedOnItemClick(item, syntheticEvent);
+				// Click the real DOM node so keyboard activation follows the
+				// href natively and runs the same path as a mouse click
+				// (item.onClick, onItemClick, mobile drawer close).
+				const el = containerRef.current?.querySelector<HTMLElement>(
+					`[data-item-id="${CSS.escape(item.id)}"]`,
+				);
+				el?.click();
 			}
 		},
 		containerRef: containerRef as React.RefObject<HTMLElement>,

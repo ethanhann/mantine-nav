@@ -68,6 +68,83 @@ describe("Spec 003: useReorderableNav", () => {
 		expect(result.current.draggedId).toBeNull();
 	});
 
+	it("does not re-render infinitely when items is a new array each render", () => {
+		// Arrange
+		let renders = 0;
+		const onReorder = vi.fn();
+
+		const { result, rerender } = renderHook(() => {
+			renders++;
+			return useReorderableNav({
+				items: [
+					{ type: "link", id: "a", label: "A", href: "/a" },
+					{ type: "link", id: "b", label: "B", href: "/b" },
+				],
+				onReorder,
+			});
+		});
+
+		// Act
+		rerender();
+
+		// Assert
+		expect(renders).toBeLessThanOrEqual(3);
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual(["a", "b"]);
+	});
+
+	it("keeps the local order when the items prop is refreshed after a reorder", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result, rerender } = renderHook(
+			({ navItems }: { navItems: NavItemType[] }) =>
+				useReorderableNav({ items: navItems, onReorder }),
+			{ initialProps: { navItems: items } },
+		);
+		act(() => {
+			result.current.handleDragStart("a");
+			result.current.handleDragOver("c");
+			result.current.handleDragEnd();
+		});
+
+		// Act
+		rerender({ navItems: items.map((i) => ({ ...i })) });
+
+		// Assert
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+		]);
+	});
+
+	it("appends items added after a reorder to the end", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result, rerender } = renderHook(
+			({ navItems }: { navItems: NavItemType[] }) =>
+				useReorderableNav({ items: navItems, onReorder }),
+			{ initialProps: { navItems: items } },
+		);
+		act(() => {
+			result.current.handleDragStart("a");
+			result.current.handleDragOver("c");
+			result.current.handleDragEnd();
+		});
+
+		// Act
+		rerender({
+			navItems: [...items, { type: "link", id: "d", label: "D", href: "/d" }],
+		});
+
+		// Assert
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+			"d",
+		]);
+	});
+
 	it("getDragHandleProps returns draggable props", () => {
 		const onReorder = vi.fn();
 		const { result } = renderHook(() =>
