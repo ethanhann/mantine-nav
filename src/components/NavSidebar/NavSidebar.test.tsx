@@ -86,6 +86,63 @@ describe("NavSidebar", () => {
 		expect(screen.queryByLabelText("Collapse sidebar")).not.toBeInTheDocument();
 	});
 
+	it("applies custom labels to the collapse toggle", () => {
+		// Arrange
+
+		// Act
+		render(
+			<NavShell
+				sidebar={
+					<NavSidebar labels={{ collapseSidebar: "Seitenleiste einklappen" }}>
+						<span>Body</span>
+					</NavSidebar>
+				}
+			>
+				<div>Main</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(
+			screen.getByLabelText("Seitenleiste einklappen"),
+		).toBeInTheDocument();
+	});
+
+	it("applies classNames and styles to sidebar slots", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavShell
+				sidebar={
+					<NavSidebar
+						header={<span>Header</span>}
+						footer={<span>Footer</span>}
+						classNames={{
+							header: "custom-sh",
+							body: "custom-sb",
+							footer: "custom-sf",
+						}}
+						styles={{ body: { backgroundColor: "rgb(4, 5, 6)" } }}
+					>
+						<span>Body</span>
+					</NavSidebar>
+				}
+			>
+				<div>Main</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(container.querySelector(".custom-sh")).not.toBeNull();
+		const body = container.querySelector(".custom-sb");
+		expect(body).not.toBeNull();
+		expect(body).toHaveStyle({ backgroundColor: "rgb(4, 5, 6)" });
+		expect(container.querySelector(".custom-sf")).not.toBeNull();
+	});
+
 	it("renders standalone without a NavShell", () => {
 		// Arrange
 

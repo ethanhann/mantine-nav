@@ -15,6 +15,8 @@ export type {
 	NavItemType,
 	NavLinkItem,
 	NavSectionHeader,
+	// Styles API
+	NavSlotStyles,
 	// Variants
 	SidebarVariant,
 	UserInfo,

@@ -486,6 +486,62 @@ describe("SaaS Components", () => {
 			expect(light).not.toHaveAttribute("aria-current");
 		});
 
+		it("applies custom labels to the NotificationIndicator", () => {
+			// Arrange
+			const notifications = [{ id: "n1", title: "Hi", read: false }];
+
+			// Act
+			render(
+				<NotificationIndicator
+					notifications={notifications}
+					onReadAll={() => {}}
+					opened
+					labels={{
+						title: "Benachrichtigungen",
+						markAllAsRead: "Alle als gelesen markieren",
+						bell: (unread) => `${unread} ungelesen`,
+					}}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByText("Benachrichtigungen")).toBeInTheDocument();
+			expect(
+				screen.getByText("Alle als gelesen markieren"),
+			).toBeInTheDocument();
+			expect(screen.getByLabelText("1 ungelesen")).toBeInTheDocument();
+		});
+
+		it("applies custom labels to the WorkspaceSwitcher", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const ws = { id: "1", name: "Acme" };
+			render(
+				<WorkspaceSwitcher
+					workspaces={[ws]}
+					activeWorkspace={ws}
+					onSwitch={() => {}}
+					onCreate={() => {}}
+					searchable
+					labels={{
+						searchPlaceholder: "Arbeitsbereiche suchen...",
+						createWorkspace: "Arbeitsbereich erstellen",
+					}}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByTestId("context-switcher-target"));
+
+			// Assert
+			expect(
+				await screen.findByPlaceholderText("Arbeitsbereiche suchen..."),
+			).toBeInTheDocument();
+			expect(screen.getByText("Arbeitsbereich erstellen")).toBeInTheDocument();
+		});
+
 		it("renders nothing for an empty modes array instead of crashing", () => {
 			// Arrange
 

@@ -17,26 +17,34 @@ export type {
 	ContextItem,
 	ContextSwitcherAction,
 	ContextSwitcherItemState,
+	ContextSwitcherLabels,
 	ContextSwitcherProps,
 	ContextSwitcherTargetState,
 } from "./components/ContextSwitcher";
 export { ContextSwitcher } from "./components/ContextSwitcher";
-export type { NavGroupProps } from "./components/NavGroup";
+export type { NavGroupProps, NavGroupSlot } from "./components/NavGroup";
 // Navigation
 export { NavGroup } from "./components/NavGroup";
-export type { NavHeaderProps } from "./components/NavHeader";
+export type { NavHeaderProps, NavHeaderSlot } from "./components/NavHeader";
 export { NavHeader } from "./components/NavHeader";
 export type {
+	NavBurgerProps,
 	NavShellContextValue,
 	NavShellProps,
+	NavShellSlot,
 } from "./components/NavShell";
 // Layout (wraps Mantine AppShell)
 export {
+	NavBurger,
 	NavShell,
 	useNavShell,
 	useOptionalNavShell,
 } from "./components/NavShell";
-export type { NavSidebarProps } from "./components/NavSidebar";
+export type {
+	NavSidebarLabels,
+	NavSidebarProps,
+	NavSidebarSlot,
+} from "./components/NavSidebar";
 export { NavSidebar } from "./components/NavSidebar";
 export type {
 	NotificationIndicatorProps,
@@ -138,6 +146,7 @@ export type {
 	NavItemType,
 	NavLinkItem,
 	NavSectionHeader,
+	NavSlotStyles,
 	SidebarVariant,
 	UserInfo,
 	Workspace,
@@ -148,4 +157,5 @@ export { flattenNavCommands } from "./utils/flatten";
 export type { FuzzyResult, RankedItem } from "./utils/fuzzy";
 export { fuzzyMatch, rankCommands } from "./utils/fuzzy";
 export { sortItemsByWeight } from "./utils/sorting";
+export { flattenNavTree, walkNavTree } from "./utils/traverse";
 export { filterVisibleItems, isItemVisible } from "./utils/visibility";

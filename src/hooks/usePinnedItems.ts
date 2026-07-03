@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import type { NavItemType } from "../types";
+import { flattenNavTree } from "../utils/traverse";
 import { usePersistedList } from "./usePersistedList";
 
 export interface UsePinnedItemsOptions {
@@ -52,17 +53,7 @@ export function usePinnedItems<TData = unknown>(
 	});
 
 	// Flatten all items to find pinned ones
-	const flatItems = useMemo(() => {
-		const result: NavItemType<TData>[] = [];
-		function collect(items: NavItemType<TData>[]) {
-			for (const item of items) {
-				result.push(item);
-				if (item.type === "group") collect(item.children);
-			}
-		}
-		collect(allItems);
-		return result;
-	}, [allItems]);
+	const flatItems = useMemo(() => flattenNavTree(allItems), [allItems]);
 
 	const pinnedItems = useMemo(
 		() =>

@@ -10,11 +10,14 @@ import {
 	Tooltip,
 } from "@mantine/core";
 import { IconChevronsLeft } from "@tabler/icons-react";
-import type { ReactElement, ReactNode } from "react";
+import type { CSSProperties, ReactElement, ReactNode } from "react";
+import type { NavSlotStyles } from "../../types";
 import { useOptionalNavShell } from "../NavShell";
 
+export type NavSidebarSlot = "header" | "body" | "footer";
+
 /** Props for the sidebar content component. */
-export interface NavSidebarProps {
+export interface NavSidebarProps extends NavSlotStyles<NavSidebarSlot> {
 	header?: ReactNode;
 	children: ReactNode;
 	footer?: ReactNode;
@@ -22,9 +25,18 @@ export interface NavSidebarProps {
 	collapseTogglePosition?: "header" | "footer";
 	/** @deprecated Sections no longer clamp their height; this prop is ignored. */
 	sectionMaxHeight?: number | string;
+	/** Overrides for user-facing strings. */
+	labels?: NavSidebarLabels;
 }
 
-function CollapseToggle() {
+export interface NavSidebarLabels {
+	/** @default "Expand sidebar" */
+	expandSidebar?: string;
+	/** @default "Collapse sidebar" */
+	collapseSidebar?: string;
+}
+
+function CollapseToggle({ labels }: { labels?: NavSidebarLabels }) {
 	const shell = useOptionalNavShell();
 	if (!shell) return null;
 	const { desktopCollapsed, toggleDesktop, isMobile } = shell;
@@ -32,15 +44,16 @@ function CollapseToggle() {
 	// Don't show collapse toggle on mobile — it controls desktop state
 	if (isMobile) return null;
 
+	const toggleLabel = desktopCollapsed
+		? (labels?.expandSidebar ?? "Expand sidebar")
+		: (labels?.collapseSidebar ?? "Collapse sidebar");
+
 	return (
-		<Tooltip
-			label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-			position="right"
-		>
+		<Tooltip label={toggleLabel} position="right">
 			<ActionIcon
 				variant="subtle"
 				onClick={toggleDesktop}
-				aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+				aria-label={toggleLabel}
 				color="gray"
 				size="sm"
 				w="100%"
@@ -67,29 +80,53 @@ function SidebarSection({
 	inShell,
 	body,
 	children,
+	className,
+	style,
 }: {
 	inShell: boolean;
 	body?: boolean;
 	children: ReactNode;
+	className?: string;
+	style?: CSSProperties;
 }): ReactElement {
 	if (inShell) {
 		if (body) {
 			return (
-				<AppShell.Section grow component={ScrollArea} type="hover" pt="xs">
+				<AppShell.Section
+					grow
+					component={ScrollArea}
+					type="hover"
+					pt="xs"
+					className={className}
+					style={style}
+				>
 					{children}
 				</AppShell.Section>
 			);
 		}
-		return <AppShell.Section>{children}</AppShell.Section>;
+		return (
+			<AppShell.Section className={className} style={style}>
+				{children}
+			</AppShell.Section>
+		);
 	}
 	if (body) {
 		return (
-			<ScrollArea type="hover" pt="xs" style={{ flex: 1 }}>
+			<ScrollArea
+				type="hover"
+				pt="xs"
+				className={className}
+				style={{ flex: 1, ...style }}
+			>
 				{children}
 			</ScrollArea>
 		);
 	}
-	return <div>{children}</div>;
+	return (
+		<div className={className} style={style}>
+			{children}
+		</div>
+	);
 }
 
 /**
@@ -116,6 +153,9 @@ export function NavSidebar({
 	footer,
 	showCollapseToggle = true,
 	collapseTogglePosition = "footer",
+	labels,
+	classNames,
+	styles,
 }: NavSidebarProps): ReactElement {
 	const shell = useOptionalNavShell();
 	const inShell = shell !== null;
@@ -127,21 +167,30 @@ export function NavSidebar({
 	return (
 		<>
 			{header && (
-				<SidebarSection inShell={inShell}>
+				<SidebarSection
+					inShell={inShell}
+					className={classNames?.header}
+					style={styles?.header}
+				>
 					<Collapse expanded={!hideHeaderFooter} transitionDuration={200}>
 						<Box pb="xs">
 							{header}
 							{!hideHeaderFooter &&
 								shell &&
 								collapseTogglePosition === "header" &&
-								showCollapseToggle && <CollapseToggle />}
+								showCollapseToggle && <CollapseToggle labels={labels} />}
 							<Divider mt="xs" />
 						</Box>
 					</Collapse>
 				</SidebarSection>
 			)}
 
-			<SidebarSection inShell={inShell} body>
+			<SidebarSection
+				inShell={inShell}
+				body
+				className={classNames?.body}
+				style={styles?.body}
+			>
 				{children}
 			</SidebarSection>
 
@@ -150,7 +199,11 @@ export function NavSidebar({
 					shell &&
 					collapseTogglePosition === "footer" &&
 					showCollapseToggle)) && (
-				<SidebarSection inShell={inShell}>
+				<SidebarSection
+					inShell={inShell}
+					className={classNames?.footer}
+					style={styles?.footer}
+				>
 					<Collapse expanded={!hideHeaderFooter} transitionDuration={200}>
 						<Box pt="xs">
 							<Divider mb="xs" />
@@ -158,7 +211,7 @@ export function NavSidebar({
 							{!hideHeaderFooter &&
 								shell &&
 								collapseTogglePosition === "footer" &&
-								showCollapseToggle && <CollapseToggle />}
+								showCollapseToggle && <CollapseToggle labels={labels} />}
 						</Box>
 					</Collapse>
 				</SidebarSection>
@@ -168,7 +221,7 @@ export function NavSidebar({
 			{hideHeaderFooter && shell && showCollapseToggle && (
 				<SidebarSection inShell={inShell}>
 					<Divider mb="xs" />
-					<CollapseToggle />
+					<CollapseToggle labels={labels} />
 				</SidebarSection>
 			)}
 		</>

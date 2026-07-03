@@ -165,6 +165,55 @@ describe("NavGroup (Mantine NavLink)", () => {
 		expect(screen.getByRole("tree")).toBeInTheDocument();
 	});
 
+	it("applies classNames and styles to tree slots", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ id: "a", type: "link", label: "A", href: "/a" },
+			{ id: "sec", type: "section", label: "Main" },
+			{ id: "div", type: "divider" },
+		];
+
+		// Act
+		const { container } = render(
+			<NavGroup
+				items={items}
+				classNames={{
+					root: "custom-root",
+					item: "custom-item",
+					section: "custom-section",
+					divider: "custom-divider",
+				}}
+				styles={{ item: { color: "rgb(9, 9, 9)" } }}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(container.querySelector(".custom-root")).toHaveAttribute(
+			"role",
+			"tree",
+		);
+		const item = container.querySelector(".custom-item");
+		expect(item).not.toBeNull();
+		expect(item).toHaveStyle({ color: "rgb(9, 9, 9)" });
+		expect(container.querySelector(".custom-section")).not.toBeNull();
+		expect(container.querySelector(".custom-divider")).not.toBeNull();
+	});
+
+	it("applies a custom aria-label to the tree", () => {
+		// Arrange
+
+		// Act
+		render(<NavGroup items={flatItems} aria-label="Hauptnavigation" />, {
+			wrapper: Wrapper,
+		});
+
+		// Assert
+		expect(
+			screen.getByRole("tree", { name: "Hauptnavigation" }),
+		).toBeInTheDocument();
+	});
+
 	describe("visibility", () => {
 		it("hides item with visible: false", () => {
 			const items: NavItemType[] = [

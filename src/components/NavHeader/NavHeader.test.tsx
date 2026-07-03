@@ -49,4 +49,31 @@ describe("NavHeader", () => {
 		);
 		expect(screen.getByText("Action")).toBeInTheDocument();
 	});
+	it("applies classNames and styles to header slots", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavHeader
+				logo={<span>Logo</span>}
+				rightSection={<span>Right</span>}
+				classNames={{
+					root: "custom-hr",
+					logo: "custom-hl",
+					right: "custom-hx",
+				}}
+				styles={{ root: { backgroundColor: "rgb(7, 8, 9)" } }}
+			>
+				<span>Center</span>
+			</NavHeader>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		const root = container.querySelector(".custom-hr");
+		expect(root).not.toBeNull();
+		expect(root).toHaveStyle({ backgroundColor: "rgb(7, 8, 9)" });
+		expect(container.querySelector(".custom-hl")).not.toBeNull();
+		expect(container.querySelector(".custom-hx")).not.toBeNull();
+	});
 });

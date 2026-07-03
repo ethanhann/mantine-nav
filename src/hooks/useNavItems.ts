@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { NavItemType } from "../types";
 import { sortItemsByWeight } from "../utils/sorting";
+import { walkNavTree } from "../utils/traverse";
 import { filterVisibleItems } from "../utils/visibility";
 import { collectGroupIds, useExpandedKeys } from "./useExpandedKeys";
 
@@ -17,14 +18,10 @@ export interface UseNavItemsReturn<TData = unknown> {
 
 function collectDefaultExpanded<TData>(items: NavItemType<TData>[]): string[] {
 	const keys: string[] = [];
-	for (const item of items) {
-		if (item.type === "group") {
-			if (item.defaultOpened) {
-				keys.push(item.id);
-			}
-			keys.push(...collectDefaultExpanded(item.children));
-		}
-	}
+	walkNavTree(items, (item) => {
+		if (item.type === "group" && item.defaultOpened) keys.push(item.id);
+		return undefined;
+	});
 	return keys;
 }
 
@@ -33,12 +30,10 @@ function flattenVisible<TData>(
 	expanded: Set<string>,
 ): NavItemType<TData>[] {
 	const result: NavItemType<TData>[] = [];
-	for (const item of items) {
+	walkNavTree(items, (item) => {
 		result.push(item);
-		if (item.type === "group" && expanded.has(item.id)) {
-			result.push(...flattenVisible(item.children, expanded));
-		}
-	}
+		return item.type === "group" ? expanded.has(item.id) : undefined;
+	});
 	return result;
 }
 

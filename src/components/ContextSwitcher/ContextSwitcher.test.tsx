@@ -440,4 +440,30 @@ describe("ContextSwitcher", () => {
 			expect(screen.getByLabelText("Pick a tenant")).toBeInTheDocument();
 		});
 	});
+	describe("labels object", () => {
+		it("overrides the per-string props", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<ContextSwitcher
+					items={[{ id: "a", label: "Apple" }]}
+					active={null}
+					onSelect={() => {}}
+					searchable
+					emptyMessage="Old empty"
+					labels={{ emptyMessage: "Keine Treffer", placeholder: "Wählen" }}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByText("Wählen")).toBeInTheDocument();
+			await user.click(screen.getByTestId("context-switcher-target"));
+			const search = await screen.findByTestId("context-switcher-search");
+
+			// Act
+			await user.type(search, "zzz");
+
+			// Assert
+			expect(screen.getByText("Keine Treffer")).toBeInTheDocument();
+		});
+	});
 });

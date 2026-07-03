@@ -40,6 +40,18 @@ export interface ContextItem<TData = unknown> {
 	data?: TData;
 }
 
+/** Overrides for user-facing strings in a {@link ContextSwitcher}. */
+export interface ContextSwitcherLabels {
+	/** Trigger text when `active` is null. @default "Choose context" */
+	placeholder?: string;
+	/** @default "Search..." */
+	searchPlaceholder?: string;
+	/** @default "Search" */
+	searchAriaLabel?: string;
+	/** Shown when a search yields no items. @default "No matches found" */
+	emptyMessage?: string;
+}
+
 /** Footer action rendered below the item list (e.g. "Create workspace"). */
 export interface ContextSwitcherAction {
 	id: string;
@@ -79,15 +91,17 @@ export interface ContextSwitcherProps<TData = unknown> {
 	 * marked optimistically — update `active` from your own state.
 	 */
 	onSelect: (item: ContextItem<TData>) => void | Promise<void>;
-	/** Trigger text when `active` is null. @default "Choose context" */
+	/** @deprecated Use `labels.placeholder` instead. */
 	placeholder?: string;
 	searchable?: boolean;
-	/** @default "Search..." */
+	/** @deprecated Use `labels.searchPlaceholder` instead. */
 	searchPlaceholder?: string;
-	/** @default "Search" */
+	/** @deprecated Use `labels.searchAriaLabel` instead. */
 	searchAriaLabel?: string;
-	/** Shown when a search yields no items. @default "No matches found" */
+	/** @deprecated Use `labels.emptyMessage` instead. */
 	emptyMessage?: string;
+	/** Overrides for user-facing strings. Takes precedence over the deprecated per-string props. */
+	labels?: ContextSwitcherLabels;
 	/** Rows visible before the list scrolls. @default 5 */
 	maxVisible?: number;
 	/** Footer actions rendered below a divider. */
@@ -147,11 +161,12 @@ export function ContextSwitcher<TData = unknown>({
 	items,
 	active = null,
 	onSelect,
-	placeholder = "Choose context",
+	placeholder: placeholderProp,
 	searchable = false,
-	searchPlaceholder = "Search...",
-	searchAriaLabel = "Search",
-	emptyMessage = "No matches found",
+	searchPlaceholder: searchPlaceholderProp,
+	searchAriaLabel: searchAriaLabelProp,
+	emptyMessage: emptyMessageProp,
+	labels: labelsProp,
 	maxVisible = 5,
 	actions = [],
 	footer,
@@ -163,6 +178,15 @@ export function ContextSwitcher<TData = unknown>({
 	width = 280,
 	position = "bottom-start",
 }: ContextSwitcherProps<TData>): ReactElement {
+	const placeholder =
+		labelsProp?.placeholder ?? placeholderProp ?? "Choose context";
+	const searchPlaceholder =
+		labelsProp?.searchPlaceholder ?? searchPlaceholderProp ?? "Search...";
+	const searchAriaLabel =
+		labelsProp?.searchAriaLabel ?? searchAriaLabelProp ?? "Search";
+	const emptyMessage =
+		labelsProp?.emptyMessage ?? emptyMessageProp ?? "No matches found";
+
 	const [opened, setOpened] = useState(false);
 	const [search, setSearch] = useState("");
 	const [pendingId, setPendingId] = useState<string | null>(null);

@@ -2,9 +2,12 @@
 
 import { Badge, Group, type MantineColor } from "@mantine/core";
 import type { ReactElement, ReactNode } from "react";
+import type { NavSlotStyles } from "../../types";
+
+export type NavHeaderSlot = "root" | "logo" | "center" | "right";
 
 /** Props for the header bar component. */
-export interface NavHeaderProps {
+export interface NavHeaderProps extends NavSlotStyles<NavHeaderSlot> {
 	logo?: ReactNode;
 	children?: ReactNode;
 	rightSection?: ReactNode;
@@ -31,10 +34,24 @@ export function NavHeader({
 	children,
 	rightSection,
 	environment,
+	classNames,
+	styles,
 }: NavHeaderProps): ReactElement {
 	return (
-		<Group h="100%" justify="space-between" wrap="nowrap" flex={1}>
-			<Group gap="md" wrap="nowrap">
+		<Group
+			h="100%"
+			justify="space-between"
+			wrap="nowrap"
+			flex={1}
+			className={classNames?.root}
+			style={styles?.root}
+		>
+			<Group
+				gap="md"
+				wrap="nowrap"
+				className={classNames?.logo}
+				style={styles?.logo}
+			>
 				{logo}
 				{environment && (
 					<Badge
@@ -49,13 +66,24 @@ export function NavHeader({
 			</Group>
 
 			{children && (
-				<Group gap="xs" flex={1} justify="center">
+				<Group
+					gap="xs"
+					flex={1}
+					justify="center"
+					className={classNames?.center}
+					style={styles?.center}
+				>
 					{children}
 				</Group>
 			)}
 
 			{rightSection && (
-				<Group gap="xs" wrap="nowrap">
+				<Group
+					gap="xs"
+					wrap="nowrap"
+					className={classNames?.right}
+					style={styles?.right}
+				>
 					{rightSection}
 				</Group>
 			)}

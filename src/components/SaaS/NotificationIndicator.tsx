@@ -43,6 +43,17 @@ export interface NotificationIndicatorProps {
 	position?: FloatingPosition;
 	/** Shows a loading placeholder in the dropdown while notifications load. */
 	loading?: boolean;
+	/** Overrides for user-facing strings. */
+	labels?: {
+		/** Dropdown heading. @default "Notifications" */
+		title?: string;
+		/** @default "Mark all as read" */
+		markAllAsRead?: string;
+		/** @default "No notifications" */
+		empty?: string;
+		/** Bell aria-label. @default (unread) => `Notifications (${unread} unread)` */
+		bell?: (unreadCount: number) => string;
+	};
 	/** Controlled dropdown open state. */
 	opened?: boolean;
 	/** Called when the dropdown open state changes. */
@@ -74,6 +85,7 @@ export function NotificationIndicator({
 	width = 340,
 	position = "bottom-end",
 	loading = false,
+	labels,
 	opened,
 	onOpenChange,
 }: NotificationIndicatorProps): ReactElement {
@@ -81,7 +93,9 @@ export function NotificationIndicator({
 	const displayCount =
 		resolvedCount > maxCount ? `${maxCount}+` : String(resolvedCount);
 	const hasUnread = notifications.some((n) => !n.read);
-	const ariaLabel = `Notifications${resolvedCount > 0 ? ` (${resolvedCount} unread)` : ""}`;
+	const ariaLabel =
+		labels?.bell?.(resolvedCount) ??
+		`Notifications${resolvedCount > 0 ? ` (${resolvedCount} unread)` : ""}`;
 
 	const bell = (
 		<ActionIcon
@@ -119,11 +133,11 @@ export function NotificationIndicator({
 					<Menu.Dropdown>
 						<Group justify="space-between" px="sm" py="xs">
 							<Text fw={600} size="sm">
-								Notifications
+								{labels?.title ?? "Notifications"}
 							</Text>
 							{onReadAll && hasUnread && (
 								<Anchor size="xs" onClick={onReadAll} component="button">
-									Mark all as read
+									{labels?.markAllAsRead ?? "Mark all as read"}
 								</Anchor>
 							)}
 						</Group>
@@ -137,7 +151,7 @@ export function NotificationIndicator({
 								</Box>
 							) : notifications.length === 0 ? (
 								<Text c="dimmed" ta="center" py="lg" size="sm">
-									No notifications
+									{labels?.empty ?? "No notifications"}
 								</Text>
 							) : (
 								notifications.map((n) => (

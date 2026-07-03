@@ -19,13 +19,18 @@ import type {
 	NavGroupItem,
 	NavItemType,
 	NavLinkItem,
+	NavSlotStyles,
 } from "../../types";
 import { sortItemsByWeight } from "../../utils/sorting";
 import { filterVisibleItems } from "../../utils/visibility";
 import { useOptionalNavShell } from "../NavShell";
 
+export type NavGroupSlot = "root" | "item" | "section" | "divider";
+
 /** Props for the navigation item tree component. */
-export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
+export interface NavGroupProps<TData = unknown>
+	extends NavCallbacks<TData>,
+		NavSlotStyles<NavGroupSlot> {
 	items: NavItemType<TData>[];
 	maxDepth?: number;
 	renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
@@ -42,6 +47,8 @@ export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
 	accordion?: boolean;
 	accordionScope?: "global" | "sibling";
 	onAccordionChange?: (openedKey: string | null) => void;
+	/** Accessible name for the tree. @default "Navigation" */
+	"aria-label"?: string;
 	// Keyboard
 	enableKeyboardNav?: boolean;
 	typeAhead?: boolean;
@@ -66,6 +73,8 @@ interface InternalNavItemProps<TData = unknown> {
 	hrefProp: string;
 	/** Id of the single treeitem holding tabIndex=0 (roving tabindex). */
 	rovingItemId: string | null;
+	slotClassNames?: NavSlotStyles<NavGroupSlot>["classNames"];
+	slotStyles?: NavSlotStyles<NavGroupSlot>["styles"];
 }
 
 function CollapsedActiveIndicator() {
@@ -102,6 +111,8 @@ function NavItemRenderer<TData>({
 	linkComponent,
 	hrefProp,
 	rovingItemId,
+	slotClassNames,
+	slotStyles,
 }: InternalNavItemProps<TData>) {
 	const itemTabIndex =
 		rovingItemId === null ? undefined : item.id === rovingItemId ? 0 : -1;
@@ -141,6 +152,8 @@ function NavItemRenderer<TData>({
 		return (
 			// biome-ignore lint/a11y/useKeyWithClickEvents: keyboard activation is handled at the tree container level via useNavKeyboard (roving tabindex + onKeyDown), not per treeitem.
 			<div
+				className={slotClassNames?.item}
+				style={slotStyles?.item}
 				data-item-id={item.id}
 				role="treeitem"
 				aria-current={item.type === "link" && active ? "page" : undefined}
@@ -157,7 +170,16 @@ function NavItemRenderer<TData>({
 
 	if (item.type === "divider") {
 		if (collapsed) return null;
-		return <Divider my="sm" mx="sm" role="presentation" label={item.label} />;
+		return (
+			<Divider
+				my="sm"
+				mx="sm"
+				role="presentation"
+				label={item.label}
+				className={slotClassNames?.divider}
+				style={slotStyles?.divider}
+			/>
+		);
 	}
 
 	if (item.type === "section") {
@@ -172,7 +194,8 @@ function NavItemRenderer<TData>({
 				pt="lg"
 				pb="xs"
 				role="presentation"
-				style={{ letterSpacing: "0.05em" }}
+				className={slotClassNames?.section}
+				style={{ letterSpacing: "0.05em", ...slotStyles?.section }}
 			>
 				{item.label}
 			</Text>
@@ -206,6 +229,8 @@ function NavItemRenderer<TData>({
 				? { [hrefProp]: item.href }
 				: { href: item.href };
 			const collapsedProps = {
+				className: slotClassNames?.item,
+				style: slotStyles?.item,
 				label: "" as const,
 				leftSection: item.icon,
 				...linkDest,
@@ -260,6 +285,8 @@ function NavItemRenderer<TData>({
 			? { [hrefProp]: item.href }
 			: { href: item.href };
 		const standardProps = {
+			className: slotClassNames?.item,
+			style: slotStyles?.item,
 			label: item.label,
 			leftSection: item.icon,
 			rightSection: item.badge,
@@ -429,6 +456,8 @@ function NavItemRenderer<TData>({
 
 	return (
 		<NavLink
+			className={slotClassNames?.item}
+			style={slotStyles?.item}
 			label={groupItem.label}
 			leftSection={groupItem.icon}
 			rightSection={groupItem.badge}
@@ -480,6 +509,8 @@ function NavItemRenderer<TData>({
 					linkComponent={linkComponent}
 					hrefProp={hrefProp}
 					rovingItemId={rovingItemId}
+					slotClassNames={slotClassNames}
+					slotStyles={slotStyles}
 				/>
 			))}
 		</NavLink>
@@ -647,6 +678,9 @@ export function NavGroup<TData = unknown>({
 	accordion = false,
 	accordionScope = "sibling",
 	onAccordionChange,
+	"aria-label": ariaLabel = "Navigation",
+	classNames,
+	styles,
 	// Keyboard
 	enableKeyboardNav = true,
 	typeAhead = true,
@@ -842,7 +876,9 @@ export function NavGroup<TData = unknown>({
 	return (
 		<div
 			role="tree"
-			aria-label="Navigation"
+			aria-label={ariaLabel}
+			className={classNames?.root}
+			style={styles?.root}
 			ref={containerRef}
 			tabIndex={enableKeyboardNav ? -1 : undefined}
 			onKeyDown={
@@ -869,6 +905,8 @@ export function NavGroup<TData = unknown>({
 					linkComponent={resolvedLinkComponent}
 					hrefProp={resolvedHrefProp}
 					rovingItemId={rovingItemId}
+					slotClassNames={classNames}
+					slotStyles={styles}
 				/>
 			))}
 		</div>

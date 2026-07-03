@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockViewport, resetViewport } from "../../__integration__/helpers";
-import { NavShell, useNavShell } from "./NavShell";
+import { NavBurger, NavShell, useNavShell } from "./NavShell";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
 	return <MantineProvider>{children}</MantineProvider>;
@@ -93,6 +93,100 @@ describe("NavShell", () => {
 			{ wrapper: Wrapper },
 		);
 		expect(screen.getByTestId("main-element")).toBeInTheDocument();
+	});
+
+	it("applies custom labels to the burger", () => {
+		// Arrange
+		mockViewport(400);
+
+		// Act
+		render(
+			<NavShell
+				header={<span>Logo</span>}
+				sidebar={<span>Nav</span>}
+				labels={{ toggleNavigation: "Menü öffnen" }}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByLabelText("Menü öffnen")).toBeInTheDocument();
+		resetViewport();
+	});
+
+	it("applies asideWidth and footerHeight to the AppShell", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavShell
+				aside={<span>Aside</span>}
+				footer={<span>Footer</span>}
+				asideWidth={340}
+				footerHeight={72}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(container.innerHTML).toMatch(
+			/--app-shell-aside-width:\s*calc\(21\.25rem/,
+		);
+		expect(container.innerHTML).toMatch(
+			/--app-shell-footer-height:\s*calc\(4\.5rem/,
+		);
+	});
+
+	it("NavBurger toggles the mobile drawer in a header-less layout", async () => {
+		// Arrange
+		mockViewport(400);
+		const user = userEvent.setup();
+		function Probe() {
+			const ctx = useNavShell();
+			return <span data-testid="opened">{String(ctx.mobileOpened)}</span>;
+		}
+		render(
+			<NavShell sidebar={<span>Nav</span>}>
+				<NavBurger aria-label="Open menu" />
+				<Probe />
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+		expect(screen.getByTestId("opened")).toHaveTextContent("false");
+
+		// Act
+		await user.click(screen.getByLabelText("Open menu"));
+
+		// Assert
+		expect(screen.getByTestId("opened")).toHaveTextContent("true");
+		resetViewport();
+	});
+
+	it("applies classNames and styles to shell slots", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavShell
+				header={<span>Logo</span>}
+				sidebar={<span>Nav</span>}
+				classNames={{ navbar: "custom-navbar", header: "custom-header" }}
+				styles={{ navbar: { backgroundColor: "rgb(1, 2, 3)" } }}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		const navbar = container.querySelector(".custom-navbar");
+		expect(navbar).not.toBeNull();
+		expect(navbar).toHaveStyle({ backgroundColor: "rgb(1, 2, 3)" });
+		expect(container.querySelector(".custom-header")).not.toBeNull();
 	});
 
 	describe("controlled desktop collapse", () => {

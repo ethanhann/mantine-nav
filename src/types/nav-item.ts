@@ -1,4 +1,13 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+
+// --- Styles API ---
+/** Slot-based className and style overrides shared by the layout components. */
+export interface NavSlotStyles<Slot extends string> {
+	/** Class name applied to each named slot element. */
+	classNames?: Partial<Record<Slot, string>>;
+	/** Inline styles applied to each named slot element. */
+	styles?: Partial<Record<Slot, CSSProperties>>;
+}
 
 // --- Active matching ---
 export type ActiveMatchStrategy = "exact" | "prefix" | "regex";

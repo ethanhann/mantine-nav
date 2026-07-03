@@ -24,6 +24,19 @@ export interface WorkspaceSwitcherProps {
 	loading?: boolean;
 	/** Trigger text when the active workspace cannot be resolved. */
 	placeholder?: string;
+	/** Overrides for user-facing strings. */
+	labels?: {
+		/** @default "Search workspaces..." */
+		searchPlaceholder?: string;
+		/** @default "Search workspaces" */
+		searchAriaLabel?: string;
+		/** @default "No workspaces found" */
+		emptyMessage?: string;
+		/** @default "Create workspace" */
+		createWorkspace?: string;
+		/** Trigger aria-label. @default (name) => `Switch workspace, current: ${name}` */
+		switchWorkspace?: (activeName: string) => string;
+	};
 }
 
 function workspaceAvatar(workspace: Workspace): ReactNode {
@@ -72,7 +85,11 @@ export function WorkspaceSwitcher({
 	renderWorkspace,
 	loading = false,
 	placeholder,
+	labels,
 }: WorkspaceSwitcherProps): ReactElement {
+	const switchLabel =
+		labels?.switchWorkspace?.(activeWorkspace.name) ??
+		`Switch workspace, current: ${activeWorkspace.name}`;
 	const items: ContextItem<Workspace>[] = workspaces.map((ws) => ({
 		id: ws.id,
 		label: ws.name,
@@ -95,16 +112,16 @@ export function WorkspaceSwitcher({
 							renderWorkspace(item.data as Workspace, state.active)
 					: undefined
 			}
-			searchPlaceholder="Search workspaces..."
-			searchAriaLabel="Search workspaces"
-			emptyMessage="No workspaces found"
-			ariaLabel={`Switch workspace, current: ${activeWorkspace.name}`}
+			searchPlaceholder={labels?.searchPlaceholder ?? "Search workspaces..."}
+			searchAriaLabel={labels?.searchAriaLabel ?? "Search workspaces"}
+			emptyMessage={labels?.emptyMessage ?? "No workspaces found"}
+			aria-label={switchLabel}
 			actions={
 				onCreate
 					? [
 							{
 								id: "create-workspace",
-								label: "Create workspace",
+								label: labels?.createWorkspace ?? "Create workspace",
 								icon: <IconPlus size={14} stroke={1.5} />,
 								onClick: onCreate,
 							},
@@ -117,7 +134,7 @@ export function WorkspaceSwitcher({
 							<UnstyledButton
 								p="xs"
 								w="100%"
-								aria-label={`Switch workspace, current: ${activeWorkspace.name}`}
+								aria-label={switchLabel}
 								style={{ borderRadius: "var(--mantine-radius-sm)" }}
 							>
 								{renderWorkspace(activeWorkspace, true)}

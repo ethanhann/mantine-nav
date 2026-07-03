@@ -1,2 +1,12 @@
-export type { NavShellContextValue, NavShellProps } from "./NavShell";
-export { NavShell, useNavShell, useOptionalNavShell } from "./NavShell";
+export type {
+	NavBurgerProps,
+	NavShellContextValue,
+	NavShellProps,
+	NavShellSlot,
+} from "./NavShell";
+export {
+	NavBurger,
+	NavShell,
+	useNavShell,
+	useOptionalNavShell,
+} from "./NavShell";
