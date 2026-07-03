@@ -3,11 +3,17 @@
 import {
 	ActionIcon,
 	Center,
+	type FloatingPosition,
 	Menu,
 	SegmentedControl,
 	Tooltip,
 } from "@mantine/core";
-import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react";
+import {
+	IconCheck,
+	IconDeviceDesktop,
+	IconMoon,
+	IconSun,
+} from "@tabler/icons-react";
 import type { ReactElement, ReactNode } from "react";
 import { useNavColorScheme } from "../../hooks/useNavColorScheme";
 
@@ -25,6 +31,10 @@ export interface ColorModePickerProps {
 	onChange?: (value: string) => void;
 	size?: "xs" | "sm" | "md" | "lg" | "xl";
 	showLabels?: boolean;
+	/** Dropdown width for the menu variant. */
+	width?: number;
+	/** Dropdown position for the menu variant. */
+	position?: FloatingPosition;
 	"aria-label"?: string;
 }
 
@@ -55,6 +65,8 @@ export function ColorModePicker({
 	onChange,
 	size = "sm",
 	showLabels = true,
+	width = 160,
+	position,
 	"aria-label": ariaLabel = "Color mode",
 }: ColorModePickerProps): ReactElement | null {
 	const { rawColorScheme, setColorScheme } = useNavColorScheme();
@@ -104,7 +116,7 @@ export function ColorModePicker({
 		const activeMode = modes.find((m) => m.value === activeValue) ?? modes[0];
 
 		return (
-			<Menu shadow="md" width={160}>
+			<Menu shadow="md" width={width} position={position}>
 				<Menu.Target>
 					<Tooltip label={ariaLabel}>
 						<ActionIcon
@@ -118,18 +130,25 @@ export function ColorModePicker({
 					</Tooltip>
 				</Menu.Target>
 				<Menu.Dropdown>
-					{modes.map((mode) => (
-						<Menu.Item
-							key={mode.value}
-							leftSection={mode.icon}
-							onClick={() => handleChange(mode.value)}
-							style={
-								mode.value === activeValue ? { fontWeight: 600 } : undefined
-							}
-						>
-							{mode.label}
-						</Menu.Item>
-					))}
+					{modes.map((mode) => {
+						const isActiveMode = mode.value === activeValue;
+						return (
+							<Menu.Item
+								key={mode.value}
+								aria-current={isActiveMode ? true : undefined}
+								leftSection={mode.icon}
+								rightSection={
+									isActiveMode ? (
+										<IconCheck size={14} stroke={1.5} aria-hidden="true" />
+									) : undefined
+								}
+								onClick={() => handleChange(mode.value)}
+								style={isActiveMode ? { fontWeight: 600 } : undefined}
+							>
+								{mode.label}
+							</Menu.Item>
+						);
+					})}
 				</Menu.Dropdown>
 			</Menu>
 		);
