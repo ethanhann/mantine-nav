@@ -9,7 +9,6 @@ export interface UseSidebarResizeOptions {
 	onResize?: (width: number) => void;
 	onResizeEnd?: (width: number) => void;
 	persistKey?: string;
-	collapsedWidth?: number;
 	onCollapse?: () => void;
 }
 

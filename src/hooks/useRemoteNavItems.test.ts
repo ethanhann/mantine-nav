@@ -128,7 +128,7 @@ describe("useRemoteNavItems", () => {
 			}),
 		);
 
-		expect(result.current.items[0].visible).toBe(false);
+		expect(result.current.items[0]!.visible).toBe(false);
 	});
 
 	it("hydrates nested group items recursively", () => {
@@ -208,7 +208,7 @@ describe("useRemoteNavItems", () => {
 
 		const { result } = renderHook(() => useRemoteNavItems({ items: raw }));
 
-		expect(result.current.items[0].weight).toBe(10);
+		expect(result.current.items[0]!.weight).toBe(10);
 		expect((result.current.items[0] as NavLinkItem).data).toEqual({
 			role: "admin",
 		});

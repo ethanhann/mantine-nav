@@ -48,7 +48,7 @@ describe("Spec 003: useReorderableNav", () => {
 		});
 
 		expect(onReorder).toHaveBeenCalledTimes(1);
-		const [newItems, from, to] = onReorder.mock.calls[0];
+		const [newItems, from, to] = onReorder.mock.calls[0]!;
 		expect(from).toBe(0);
 		expect(to).toBe(2);
 		expect(newItems.map((i: NavItemType) => i.id)).toEqual(["b", "c", "a"]);

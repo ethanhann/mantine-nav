@@ -98,14 +98,14 @@ describe("useCommandSearch", () => {
 		await waitFor(() => expect(deferreds).toHaveLength(2)); // "bb" fired, "aa" aborted
 
 		// Resolve the latest first, then the stale (now-aborted) "aa".
-		deferreds[1].resolve([{ id: "bb", label: "bb", href: "/bb" }]);
+		deferreds[1]!.resolve([{ id: "bb", label: "bb", href: "/bb" }]);
 		await waitFor(() =>
 			expect(result.current.results.map((r) => r.id)).toEqual(["bb"]),
 		);
-		deferreds[0].resolve([{ id: "aa", label: "aa", href: "/aa" }]);
+		deferreds[0]!.resolve([{ id: "aa", label: "aa", href: "/aa" }]);
 		await delay(20);
 		expect(result.current.results.map((r) => r.id)).toEqual(["bb"]);
-		expect(deferreds[0].isAborted()).toBe(true);
+		expect(deferreds[0]!.isAborted()).toBe(true);
 	});
 
 	it("resets `stalled` when a stalled request is superseded", async () => {

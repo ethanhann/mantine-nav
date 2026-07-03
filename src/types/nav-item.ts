@@ -12,7 +12,7 @@ export type ActiveMatcher =
 export type NavCSSVariable = `--nav-${string}`;
 
 // --- Base item properties shared across all types ---
-interface NavItemBase {
+export interface NavItemBase {
 	id: string;
 	disabled?: boolean;
 	visible?: boolean | (() => boolean);

@@ -10,6 +10,7 @@ export type {
 	NavCSSVariable,
 	NavDividerItem,
 	NavGroupItem,
+	NavItemBase,
 	// Core item types
 	NavItemType,
 	NavLinkItem,

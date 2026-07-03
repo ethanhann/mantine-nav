@@ -10,7 +10,6 @@ export interface UseReorderableNavOptions<TData = unknown> {
 		fromIndex: number,
 		toIndex: number,
 	) => void;
-	reorderScope?: "siblings" | "root";
 }
 
 export interface UseReorderableNavReturn<TData = unknown> {

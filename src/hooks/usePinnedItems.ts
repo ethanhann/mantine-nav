@@ -5,6 +5,9 @@ import type { NavItemType } from "../types";
 import { usePersistedList } from "./usePersistedList";
 
 export interface UsePinnedItemsOptions {
+	/** Upper bound on pinned items, matching the other persistence hooks. */
+	maxItems?: number;
+	/** @deprecated Use `maxItems` instead. */
 	maxPinned?: number;
 	storageKey?: string;
 }
@@ -29,7 +32,8 @@ export function usePinnedItems<TData = unknown>(
 	allItems: NavItemType<TData>[],
 	options: UsePinnedItemsOptions = {},
 ): UsePinnedItemsReturn<TData> {
-	const { maxPinned = 10, storageKey } = options;
+	const { maxItems, maxPinned, storageKey } = options;
+	const resolvedMaxItems = maxItems ?? maxPinned ?? 10;
 
 	const {
 		items: pinnedIdList,
@@ -43,7 +47,7 @@ export function usePinnedItems<TData = unknown>(
 	} = usePersistedList<string>({
 		getId: (id) => id,
 		storageKey,
-		maxItems: maxPinned,
+		maxItems: resolvedMaxItems,
 		parse: parseIds,
 	});
 

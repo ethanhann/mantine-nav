@@ -9,16 +9,9 @@ const PRINT_STYLE_ID = "nav-print-styles";
 // removed once the last printFriendly instance unmounts.
 let printStyleRefCount = 0;
 
-export interface ResponsiveBreakpointConfig {
-	sidebarMode: SidebarMode;
-	sidebarCollapsed: boolean;
-	navbarVisible: boolean;
-}
-
 export interface UseResponsiveNavOptions {
 	sidebarBreakpoint?: number;
 	navbarBreakpoint?: number;
-	strategy?: Record<string, ResponsiveBreakpointConfig>;
 	printFriendly?: boolean;
 }
 
