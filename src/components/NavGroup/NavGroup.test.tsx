@@ -98,9 +98,47 @@ describe("NavGroup (Mantine NavLink)", () => {
 			{ id: "div", type: "divider" },
 			{ id: "b", type: "link", label: "B", href: "/b" },
 		];
+		const { container } = render(<NavGroup items={items} />, {
+			wrapper: Wrapper,
+		});
+		expect(
+			container.querySelector(".mantine-Divider-root"),
+		).toBeInTheDocument();
+	});
+
+	it("renders a divider label", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ id: "a", type: "link", label: "A", href: "/a" },
+			{ id: "div", type: "divider", label: "Archive" },
+		];
+
+		// Act
 		render(<NavGroup items={items} />, { wrapper: Wrapper });
-		expect(screen.getByText("A")).toBeInTheDocument();
-		expect(screen.getByText("B")).toBeInTheDocument();
+
+		// Assert
+		expect(screen.getByText("Archive")).toBeInTheDocument();
+	});
+
+	it("applies a per-item aria-label to links", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{
+				id: "a",
+				type: "link",
+				label: "A",
+				href: "/a",
+				"aria-label": "Go to section A",
+			},
+		];
+
+		// Act
+		render(<NavGroup items={items} />, { wrapper: Wrapper });
+
+		// Assert
+		expect(
+			screen.getByRole("treeitem", { name: "Go to section A" }),
+		).toBeInTheDocument();
 	});
 
 	it("renders section headers", () => {
@@ -396,6 +434,40 @@ describe("NavGroup (Mantine NavLink)", () => {
 		});
 	});
 
+	describe("controlled expandedKeys", () => {
+		it("drives group expansion from the prop and reports intended changes", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onExpandedChange = vi.fn();
+			const { rerender } = render(
+				<NavGroup
+					items={nestedItems}
+					expandedKeys={[]}
+					onExpandedChange={onExpandedChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			const getGroup = () =>
+				screen.getByText("Products").closest('[role="treeitem"]');
+			expect(getGroup()).toHaveAttribute("aria-expanded", "false");
+
+			// Act
+			await user.click(screen.getByText("Products"));
+
+			// Assert
+			expect(onExpandedChange).toHaveBeenCalledWith(["products"]);
+			expect(getGroup()).toHaveAttribute("aria-expanded", "false");
+			rerender(
+				<NavGroup
+					items={nestedItems}
+					expandedKeys={["products"]}
+					onExpandedChange={onExpandedChange}
+				/>,
+			);
+			expect(getGroup()).toHaveAttribute("aria-expanded", "true");
+		});
+	});
+
 	describe("accordion callbacks", () => {
 		it("fires onAccordionChange exactly once per toggle under StrictMode", async () => {
 			// Arrange
@@ -672,7 +744,7 @@ describe("NavGroup (Mantine NavLink)", () => {
 
 			// Assert
 			expect(onActiveChange).toHaveBeenCalledTimes(1);
-			expect(onActiveChange.mock.calls[0][0]).toMatchObject({
+			expect(onActiveChange.mock.calls[0]![0]).toMatchObject({
 				id: "about",
 				href: "/about",
 			});
@@ -702,7 +774,9 @@ describe("NavGroup (Mantine NavLink)", () => {
 
 			// Assert
 			expect(onActiveChange).toHaveBeenCalledTimes(1);
-			expect(onActiveChange.mock.calls[0][0]).toMatchObject({ id: "settings" });
+			expect(onActiveChange.mock.calls[0]![0]).toMatchObject({
+				id: "settings",
+			});
 		});
 
 		it("fires null when no item matches the new path", () => {
@@ -811,7 +885,7 @@ describe("NavGroup (Mantine NavLink)", () => {
 			expect(itemOnClick).toHaveBeenCalledTimes(1);
 			expect(defaultPrevented).toBe(false);
 			expect(onItemClick).toHaveBeenCalledTimes(1);
-			expect(onItemClick.mock.calls[0][0]).toMatchObject({ id: "home" });
+			expect(onItemClick.mock.calls[0]![0]).toMatchObject({ id: "home" });
 		});
 
 		it("dispatches a real click on the link element when Enter is pressed", () => {
@@ -827,7 +901,7 @@ describe("NavGroup (Mantine NavLink)", () => {
 
 			// Assert
 			expect(clickSpy).toHaveBeenCalledTimes(1);
-			const target = clickSpy.mock.calls[0][0].target as HTMLElement;
+			const target = clickSpy.mock.calls[0]![0].target as HTMLElement;
 			expect(target.closest("a")).toHaveAttribute("href", "/");
 		});
 
@@ -856,7 +930,7 @@ describe("NavGroup (Mantine NavLink)", () => {
 			// Assert
 			expect(itemOnClick).toHaveBeenCalledTimes(1);
 			expect(onItemClick).toHaveBeenCalledTimes(1);
-			expect(onItemClick.mock.calls[0][0]).toMatchObject({ id: "home" });
+			expect(onItemClick.mock.calls[0]![0]).toMatchObject({ id: "home" });
 		});
 
 		it("does not activate a disabled link via Enter", () => {

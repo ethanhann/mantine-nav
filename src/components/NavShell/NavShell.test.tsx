@@ -1,7 +1,7 @@
-import { MantineProvider } from "@mantine/core";
+import { type AppShellMainProps, MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockViewport, resetViewport } from "../../__integration__/helpers";
 import { NavShell, useNavShell } from "./NavShell";
 
@@ -85,7 +85,7 @@ describe("NavShell", () => {
 	it("should pass props through to AppShell.main", () => {
 		render(
 			<NavShell
-				mainProps={{ "data-testid": "main-element" }}
+				mainProps={{ "data-testid": "main-element" } as AppShellMainProps}
 				sidebar={<span>Nav Items</span>}
 			>
 				<div>Content</div>
@@ -93,6 +93,75 @@ describe("NavShell", () => {
 			{ wrapper: Wrapper },
 		);
 		expect(screen.getByTestId("main-element")).toBeInTheDocument();
+	});
+
+	describe("controlled desktop collapse", () => {
+		function CollapseProbe() {
+			const ctx = useNavShell();
+			return (
+				<button type="button" onClick={ctx.toggleDesktop}>
+					{String(ctx.desktopCollapsed)}
+				</button>
+			);
+		}
+
+		it("follows the desktopCollapsed prop and reports intent without mutating", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onDesktopCollapsedChange = vi.fn();
+			const { rerender } = render(
+				<NavShell
+					desktopCollapsed
+					onDesktopCollapsedChange={onDesktopCollapsedChange}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "true" }));
+
+			// Assert
+			expect(onDesktopCollapsedChange).toHaveBeenCalledWith(false);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+			rerender(
+				<MantineProvider>
+					<NavShell
+						desktopCollapsed={false}
+						onDesktopCollapsedChange={onDesktopCollapsedChange}
+						sidebar={<CollapseProbe />}
+					>
+						<div>Content</div>
+					</NavShell>
+				</MantineProvider>,
+			);
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("fires onDesktopCollapsedChange in uncontrolled mode and updates state", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onDesktopCollapsedChange = vi.fn();
+			render(
+				<NavShell
+					onDesktopCollapsedChange={onDesktopCollapsedChange}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "false" }));
+
+			// Assert
+			expect(onDesktopCollapsedChange).toHaveBeenCalledWith(true);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
 	});
 
 	describe("mobile drawer", () => {

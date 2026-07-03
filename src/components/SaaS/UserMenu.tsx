@@ -3,6 +3,7 @@
 import {
 	Avatar,
 	Box,
+	type FloatingPosition,
 	Group,
 	type MantineColor,
 	Menu,
@@ -43,6 +44,14 @@ export interface UserMenuProps {
 	avatarSize?: number | string;
 	/** "full" shows avatar + name + role/email (sidebar). "compact" shows avatar only (header). */
 	variant?: "full" | "compact";
+	/** Dropdown width. */
+	width?: number;
+	/** Dropdown position. Defaults to "bottom-end" (compact) or "top-start" (full). */
+	position?: FloatingPosition;
+	/** Controlled menu open state. */
+	opened?: boolean;
+	/** Called when the menu open state changes. */
+	onOpenChange?: (opened: boolean) => void;
 }
 
 /**
@@ -69,13 +78,19 @@ export function UserMenu({
 	showEmail = false,
 	avatarSize = "sm",
 	variant = "full",
+	width = 200,
+	position,
+	opened,
+	onOpenChange,
 }: UserMenuProps): ReactElement {
 	const isCompact = variant === "compact";
 
 	return (
 		<Menu
-			width={200}
-			position={isCompact ? "bottom-end" : "top-start"}
+			width={width}
+			position={position ?? (isCompact ? "bottom-end" : "top-start")}
+			opened={opened}
+			onChange={onOpenChange}
 			withinPortal
 		>
 			<Menu.Target>

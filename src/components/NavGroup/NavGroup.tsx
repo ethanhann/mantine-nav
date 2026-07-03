@@ -12,11 +12,9 @@ import {
 	useState,
 } from "react";
 import { useActiveNavItem } from "../../hooks/useActiveNavItem";
-import { useNavAnimation } from "../../hooks/useNavAnimation";
 import { useNavKeyboard } from "../../hooks/useNavKeyboard";
 import type {
 	ActiveMatcher,
-	NavAnimationConfig,
 	NavCallbacks,
 	NavGroupItem,
 	NavItemType,
@@ -34,10 +32,12 @@ export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
 	activeItem?: string | null;
 	activeMatcher?: ActiveMatcher;
 	currentPath?: string;
-	animation?: Partial<NavAnimationConfig>;
-	transitionDuration?: number;
 	variant?: "subtle" | "light" | "filled";
 	color?: MantineColor;
+	/** Controlled expanded group ids. When set, pair with onExpandedChange. */
+	expandedKeys?: string[];
+	/** Called with the intended expanded group ids whenever a group toggles. */
+	onExpandedChange?: (expandedIds: string[]) => void;
 	// Accordion
 	accordion?: boolean;
 	accordionScope?: "global" | "sibling";
@@ -59,7 +59,6 @@ interface InternalNavItemProps<TData = unknown> {
 	onItemClick?: NavCallbacks<TData>["onItemClick"];
 	onGroupToggle?: NavCallbacks<TData>["onGroupToggle"];
 	renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
-	transitionDuration: number;
 	variant: "subtle" | "light" | "filled";
 	color?: MantineColor;
 	collapsed?: boolean;
@@ -97,7 +96,6 @@ function NavItemRenderer<TData>({
 	onItemClick,
 	onGroupToggle,
 	renderItem,
-	transitionDuration,
 	variant,
 	color,
 	collapsed,
@@ -159,7 +157,7 @@ function NavItemRenderer<TData>({
 
 	if (item.type === "divider") {
 		if (collapsed) return null;
-		return <Divider my="sm" mx="sm" role="presentation" />;
+		return <Divider my="sm" mx="sm" role="presentation" label={item.label} />;
 	}
 
 	if (item.type === "section") {
@@ -215,7 +213,7 @@ function NavItemRenderer<TData>({
 				variant,
 				color,
 				disabled: item.disabled,
-				"aria-label": item.label,
+				"aria-label": item["aria-label"] ?? item.label,
 				"aria-current": active ? ("page" as const) : undefined,
 				"aria-selected": active,
 				"data-item-id": item.id,
@@ -270,6 +268,7 @@ function NavItemRenderer<TData>({
 			variant,
 			color,
 			disabled: item.disabled,
+			"aria-label": item["aria-label"],
 			"aria-current": active ? ("page" as const) : undefined,
 			"aria-selected": active,
 			"data-item-id": item.id,
@@ -403,7 +402,7 @@ function NavItemRenderer<TData>({
 								disabled={groupItem.disabled}
 								data-item-id={groupItem.id}
 								role="treeitem"
-								aria-label={groupItem.label}
+								aria-label={groupItem["aria-label"] ?? groupItem.label}
 								tabIndex={itemTabIndex}
 								styles={{
 									root: {
@@ -440,6 +439,7 @@ function NavItemRenderer<TData>({
 			opened={isExpanded}
 			data-item-id={groupItem.id}
 			role="treeitem"
+			aria-label={groupItem["aria-label"]}
 			aria-expanded={isExpanded}
 			tabIndex={itemTabIndex}
 			styles={{
@@ -474,7 +474,6 @@ function NavItemRenderer<TData>({
 					onItemClick={onItemClick}
 					onGroupToggle={onGroupToggle}
 					renderItem={renderItem}
-					transitionDuration={transitionDuration}
 					variant={variant}
 					color={color}
 					collapsed={collapsed}
@@ -637,10 +636,10 @@ export function NavGroup<TData = unknown>({
 	activeItem,
 	activeMatcher = "prefix",
 	currentPath,
-	animation,
-	transitionDuration: transitionDurationProp,
 	variant = "light",
 	color,
+	expandedKeys: expandedKeysProp,
+	onExpandedChange,
 	onItemClick,
 	onGroupToggle,
 	onActiveChange,
@@ -683,9 +682,17 @@ export function NavGroup<TData = unknown>({
 	);
 
 	// Manage expanded state with accordion support
-	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
-		collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
+	const isExpandedControlled = expandedKeysProp !== undefined;
+	const [internalExpandedGroups, setExpandedGroups] = useState<Set<string>>(
+		() => collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
 	);
+	const controlledExpandedGroups = useMemo(
+		() => new Set(expandedKeysProp ?? []),
+		[expandedKeysProp],
+	);
+	const expandedGroups = isExpandedControlled
+		? controlledExpandedGroups
+		: internalExpandedGroups;
 
 	// Groups whose defaultOpened we've already applied. The useState initializer
 	// above only runs once, so groups added after mount (e.g. async-loaded nav
@@ -694,6 +701,7 @@ export function NavGroup<TData = unknown>({
 	// user has since collapsed.
 	const knownGroupIds = useRef<Set<string> | null>(null);
 	useEffect(() => {
+		if (isExpandedControlled) return;
 		const allIds = collectAllGroupIds(visibleItemTree);
 		if (knownGroupIds.current === null) {
 			// First effect run: defaults already applied by the initializer.
@@ -717,7 +725,7 @@ export function NavGroup<TData = unknown>({
 				return next;
 			});
 		}
-	}, [visibleItemTree, accordion, accordionScope]);
+	}, [visibleItemTree, accordion, accordionScope, isExpandedControlled]);
 
 	// Computed outside the setState updater so onAccordionChange cannot
 	// double-fire when React re-invokes updaters (StrictMode).
@@ -741,7 +749,8 @@ export function NavGroup<TData = unknown>({
 				}
 				next.add(key);
 			}
-			setExpandedGroups(next);
+			onExpandedChange?.(Array.from(next));
+			if (!isExpandedControlled) setExpandedGroups(next);
 		},
 		[
 			expandedGroups,
@@ -749,6 +758,8 @@ export function NavGroup<TData = unknown>({
 			accordionScope,
 			visibleItemTree,
 			onAccordionChange,
+			onExpandedChange,
+			isExpandedControlled,
 		],
 	);
 
@@ -787,10 +798,6 @@ export function NavGroup<TData = unknown>({
 		},
 		[activeItem, isActiveByRoute],
 	);
-
-	// Animation
-	const { duration } = useNavAnimation(animation);
-	const resolvedDuration = transitionDurationProp ?? duration;
 
 	// Keyboard navigation
 	const flatItems = flattenVisibleItems(
@@ -856,7 +863,6 @@ export function NavGroup<TData = unknown>({
 					onItemClick={wrappedOnItemClick}
 					onGroupToggle={onGroupToggle}
 					renderItem={renderItem}
-					transitionDuration={resolvedDuration}
 					variant={variant}
 					color={color}
 					collapsed={isCollapsed}

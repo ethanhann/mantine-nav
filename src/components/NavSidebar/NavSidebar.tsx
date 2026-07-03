@@ -4,6 +4,7 @@ import {
 	ActionIcon,
 	AppShell,
 	Box,
+	Collapse,
 	Divider,
 	ScrollArea,
 	Tooltip,
@@ -19,11 +20,7 @@ export interface NavSidebarProps {
 	footer?: ReactNode;
 	showCollapseToggle?: boolean;
 	collapseTogglePosition?: "header" | "footer";
-	/**
-	 * Max height of the header/footer sections when expanded. Used as the
-	 * collapse-animation target, so it must be a finite value. Raise it if your
-	 * header/footer content is taller than the default. Defaults to `"500px"`.
-	 */
+	/** @deprecated Sections no longer clamp their height; this prop is ignored. */
 	sectionMaxHeight?: number | string;
 }
 
@@ -63,6 +60,39 @@ function CollapseToggle() {
 }
 
 /**
+ * Section wrapper that renders AppShell.Section inside a NavShell and a plain
+ * element standalone, since AppShell.Section throws outside an AppShell tree.
+ */
+function SidebarSection({
+	inShell,
+	body,
+	children,
+}: {
+	inShell: boolean;
+	body?: boolean;
+	children: ReactNode;
+}): ReactElement {
+	if (inShell) {
+		if (body) {
+			return (
+				<AppShell.Section grow component={ScrollArea} type="hover" pt="xs">
+					{children}
+				</AppShell.Section>
+			);
+		}
+		return <AppShell.Section>{children}</AppShell.Section>;
+	}
+	if (body) {
+		return (
+			<ScrollArea type="hover" pt="xs" style={{ flex: 1 }}>
+				{children}
+			</ScrollArea>
+		);
+	}
+	return <div>{children}</div>;
+}
+
+/**
  * Sidebar content with optional header, scrollable body, and footer sections.
  *
  * Renders inside `AppShell.Navbar` and includes an optional collapse toggle
@@ -86,69 +116,60 @@ export function NavSidebar({
 	footer,
 	showCollapseToggle = true,
 	collapseTogglePosition = "footer",
-	sectionMaxHeight = "500px",
 }: NavSidebarProps): ReactElement {
 	const shell = useOptionalNavShell();
+	const inShell = shell !== null;
 	const desktopCollapsed = shell?.desktopCollapsed ?? false;
 	const isMobile = shell?.isMobile ?? false;
-	// On desktop collapsed, visually hide header/footer to make room for icon rail
+	// On desktop collapsed, hide header/footer to make room for the icon rail
 	const hideHeaderFooter = !isMobile && desktopCollapsed;
-	const hiddenStyle: React.CSSProperties | undefined = hideHeaderFooter
-		? {
-				opacity: 0,
-				maxHeight: 0,
-				overflow: "hidden",
-				transition: "opacity 200ms ease, max-height 200ms ease",
-			}
-		: {
-				opacity: 1,
-				maxHeight: sectionMaxHeight,
-				overflow: "hidden",
-				transition: "opacity 200ms ease, max-height 200ms ease",
-			};
 
 	return (
 		<>
 			{header && (
-				<AppShell.Section style={hiddenStyle}>
-					<Box pb="xs">
-						{header}
-						{!hideHeaderFooter &&
-							shell &&
-							collapseTogglePosition === "header" &&
-							showCollapseToggle && <CollapseToggle />}
-						<Divider mt="xs" />
-					</Box>
-				</AppShell.Section>
+				<SidebarSection inShell={inShell}>
+					<Collapse expanded={!hideHeaderFooter} transitionDuration={200}>
+						<Box pb="xs">
+							{header}
+							{!hideHeaderFooter &&
+								shell &&
+								collapseTogglePosition === "header" &&
+								showCollapseToggle && <CollapseToggle />}
+							<Divider mt="xs" />
+						</Box>
+					</Collapse>
+				</SidebarSection>
 			)}
 
-			<AppShell.Section grow component={ScrollArea} type="hover" pt="xs">
+			<SidebarSection inShell={inShell} body>
 				{children}
-			</AppShell.Section>
+			</SidebarSection>
 
 			{(footer ||
 				(!hideHeaderFooter &&
 					shell &&
 					collapseTogglePosition === "footer" &&
 					showCollapseToggle)) && (
-				<AppShell.Section style={hiddenStyle}>
-					<Box pt="xs">
-						<Divider mb="xs" />
-						{footer}
-						{!hideHeaderFooter &&
-							shell &&
-							collapseTogglePosition === "footer" &&
-							showCollapseToggle && <CollapseToggle />}
-					</Box>
-				</AppShell.Section>
+				<SidebarSection inShell={inShell}>
+					<Collapse expanded={!hideHeaderFooter} transitionDuration={200}>
+						<Box pt="xs">
+							<Divider mb="xs" />
+							{footer}
+							{!hideHeaderFooter &&
+								shell &&
+								collapseTogglePosition === "footer" &&
+								showCollapseToggle && <CollapseToggle />}
+						</Box>
+					</Collapse>
+				</SidebarSection>
 			)}
 
 			{/* When collapsed on desktop, show toggle at the bottom */}
 			{hideHeaderFooter && shell && showCollapseToggle && (
-				<AppShell.Section>
+				<SidebarSection inShell={inShell}>
 					<Divider mb="xs" />
 					<CollapseToggle />
-				</AppShell.Section>
+				</SidebarSection>
 			)}
 		</>
 	);

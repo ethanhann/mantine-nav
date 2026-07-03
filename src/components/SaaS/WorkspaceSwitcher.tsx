@@ -13,11 +13,17 @@ import {
 export interface WorkspaceSwitcherProps {
 	workspaces: Workspace[];
 	activeWorkspace: Workspace;
-	onSwitch: (workspace: Workspace) => void;
+	/** Returning a promise enables ContextSwitcher's built-in pending state. */
+	onSwitch: (workspace: Workspace) => void | Promise<void>;
 	onCreate?: () => void;
 	searchable?: boolean;
 	maxVisible?: number;
+	/** Custom renderer used for the trigger and each dropdown row. */
 	renderWorkspace?: (workspace: Workspace, isActive: boolean) => ReactNode;
+	/** Shows skeleton rows while the workspace list is being fetched. */
+	loading?: boolean;
+	/** Trigger text when the active workspace cannot be resolved. */
+	placeholder?: string;
 }
 
 function workspaceAvatar(workspace: Workspace): ReactNode {
@@ -64,6 +70,8 @@ export function WorkspaceSwitcher({
 	searchable = false,
 	maxVisible = 5,
 	renderWorkspace,
+	loading = false,
+	placeholder,
 }: WorkspaceSwitcherProps): ReactElement {
 	const items: ContextItem<Workspace>[] = workspaces.map((ws) => ({
 		id: ws.id,
@@ -79,6 +87,14 @@ export function WorkspaceSwitcher({
 			onSelect={(item) => onSwitch(item.data as Workspace)}
 			searchable={searchable}
 			maxVisible={maxVisible}
+			loading={loading}
+			placeholder={placeholder}
+			renderItem={
+				renderWorkspace
+					? (item, state) =>
+							renderWorkspace(item.data as Workspace, state.active)
+					: undefined
+			}
 			searchPlaceholder="Search workspaces..."
 			searchAriaLabel="Search workspaces"
 			emptyMessage="No workspaces found"

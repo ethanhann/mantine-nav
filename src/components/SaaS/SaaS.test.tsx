@@ -1,6 +1,6 @@
 import { MantineProvider } from "@mantine/core";
 import { IconSun } from "@tabler/icons-react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ColorModePicker } from "../ColorModePicker";
@@ -376,6 +376,114 @@ describe("SaaS Components", () => {
 			// Assert
 			expect(onRead).toHaveBeenCalledWith("n1");
 			expect(screen.getByText("Hello")).toBeInTheDocument();
+		});
+
+		it("renders the NotificationIndicator dropdown when opened is controlled", () => {
+			// Arrange
+			const notifications = [{ id: "n1", title: "Hello", read: false }];
+
+			// Act
+			render(<NotificationIndicator notifications={notifications} opened />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("Hello")).toBeInTheDocument();
+		});
+
+		it("renders the UserMenu dropdown when opened is controlled", () => {
+			// Arrange
+			const user = { id: "1", name: "Jane", email: "jane@acme.com" };
+
+			// Act
+			render(
+				<UserMenu
+					user={user}
+					opened
+					menuItems={[{ label: "Sign out", onClick: () => {} }]}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByText("Sign out")).toBeInTheDocument();
+		});
+
+		it("passes renderWorkspace through to dropdown rows", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const workspaces = [
+				{ id: "w1", name: "One" },
+				{ id: "w2", name: "Two" },
+			];
+			render(
+				<WorkspaceSwitcher
+					workspaces={workspaces}
+					activeWorkspace={workspaces[0]!}
+					onSwitch={() => {}}
+					renderWorkspace={(ws, isActive) => (
+						<span data-testid={`row-${ws.id}`}>
+							{ws.name}
+							{isActive ? " (current)" : ""}
+						</span>
+					)}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByRole("button"));
+
+			// Assert
+			const dropdown = await screen.findByTestId("context-switcher-dropdown");
+			expect(within(dropdown).getByTestId("row-w2")).toHaveTextContent("Two");
+			expect(within(dropdown).getByTestId("row-w1")).toHaveTextContent(
+				"One (current)",
+			);
+		});
+
+		it("shows a loading state in the NotificationIndicator dropdown", () => {
+			// Arrange
+
+			// Act
+			render(
+				<NotificationIndicator
+					notifications={[{ id: "n1", title: "Hello", read: false }]}
+					loading
+					opened
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByTestId("notification-loading")).toBeInTheDocument();
+			expect(screen.queryByText("Hello")).not.toBeInTheDocument();
+		});
+
+		it("marks the active mode in the menu variant with aria-current and a check", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(<ColorModePicker variant="menu" value="dark" />, {
+				wrapper: Wrapper,
+			});
+
+			// Act
+			await user.click(screen.getByLabelText("Color mode"));
+
+			// Assert
+			// Mantine's open transition never completes in jsdom, so the
+			// dropdown stays a11y-hidden; query with hidden: true.
+			const dark = await screen.findByRole("menuitem", {
+				name: /Dark/,
+				hidden: true,
+			});
+			expect(dark).toHaveAttribute("aria-current", "true");
+			expect(dark.querySelector("svg")).not.toBeNull();
+			const light = screen.getByRole("menuitem", {
+				name: /Light/,
+				hidden: true,
+			});
+			expect(light).not.toHaveAttribute("aria-current");
 		});
 
 		it("renders nothing for an empty modes array instead of crashing", () => {

@@ -3,11 +3,14 @@
 import {
 	ActionIcon,
 	Anchor,
+	Box,
+	type FloatingPosition,
 	Group,
 	Indicator,
 	type MantineColor,
 	Menu,
 	ScrollArea,
+	Skeleton,
 	Text,
 } from "@mantine/core";
 import { IconBell } from "@tabler/icons-react";
@@ -34,6 +37,16 @@ export interface NotificationIndicatorProps {
 	onClick?: () => void;
 	showDropdown?: boolean;
 	color?: MantineColor;
+	/** Dropdown width. */
+	width?: number;
+	/** Dropdown position. */
+	position?: FloatingPosition;
+	/** Shows a loading placeholder in the dropdown while notifications load. */
+	loading?: boolean;
+	/** Controlled dropdown open state. */
+	opened?: boolean;
+	/** Called when the dropdown open state changes. */
+	onOpenChange?: (opened: boolean) => void;
 }
 
 /**
@@ -58,6 +71,11 @@ export function NotificationIndicator({
 	onClick,
 	showDropdown = true,
 	color = "red",
+	width = 340,
+	position = "bottom-end",
+	loading = false,
+	opened,
+	onOpenChange,
 }: NotificationIndicatorProps): ReactElement {
 	const resolvedCount = count ?? notifications.filter((n) => !n.read).length;
 	const displayCount =
@@ -89,7 +107,13 @@ export function NotificationIndicator({
 			{!showDropdown ? (
 				bell
 			) : (
-				<Menu width={340} position="bottom-end" withinPortal>
+				<Menu
+					width={width}
+					position={position}
+					opened={opened}
+					onChange={onOpenChange}
+					withinPortal
+				>
 					<Menu.Target>{bell}</Menu.Target>
 
 					<Menu.Dropdown>
@@ -105,7 +129,13 @@ export function NotificationIndicator({
 						</Group>
 						<Menu.Divider />
 						<ScrollArea.Autosize mah={300}>
-							{notifications.length === 0 ? (
+							{loading ? (
+								<Box px="sm" py="xs" data-testid="notification-loading">
+									{[0, 1, 2].map((row) => (
+										<Skeleton key={row} height={36} mb={row < 2 ? 8 : 0} />
+									))}
+								</Box>
+							) : notifications.length === 0 ? (
 								<Text c="dimmed" ta="center" py="lg" size="sm">
 									No notifications
 								</Text>

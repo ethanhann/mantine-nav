@@ -78,6 +78,10 @@ export interface NavShellProps {
 	sidebarBreakpoint?: MantineBreakpoint;
 	sidebarCollapsible?: boolean;
 	defaultDesktopCollapsed?: boolean;
+	/** Controlled collapse state. When set, pair with onDesktopCollapsedChange. */
+	desktopCollapsed?: boolean;
+	/** Called with the intended collapse state on toggle/collapse/expand. */
+	onDesktopCollapsedChange?: (collapsed: boolean) => void;
 	layout?: "default" | "alt";
 	withBorder?: boolean;
 	padding?: MantineSpacing;
@@ -117,6 +121,8 @@ export function NavShell({
 	sidebarBreakpoint = "sm",
 	sidebarCollapsible = true,
 	defaultDesktopCollapsed = false,
+	desktopCollapsed: desktopCollapsedProp,
+	onDesktopCollapsedChange,
 	layout = "default",
 	withBorder = true,
 	padding = "md",
@@ -131,14 +137,13 @@ export function NavShell({
 	] = useDisclosure(false);
 	const [
 		desktopExpanded,
-		{
-			toggle: toggleDesktopExpanded,
-			open: expandDesktopInner,
-			close: collapseDesktopInner,
-		},
+		{ open: expandDesktopInner, close: collapseDesktopInner },
 	] = useDisclosure(!defaultDesktopCollapsed);
 
-	const desktopCollapsed = sidebarCollapsible ? !desktopExpanded : false;
+	const isCollapseControlled = desktopCollapsedProp !== undefined;
+	const desktopCollapsed = sidebarCollapsible
+		? (desktopCollapsedProp ?? !desktopExpanded)
+		: false;
 	// Resolve the breakpoint from the active theme so a custom theme keeps
 	// isMobile in sync with AppShell's own collapse point.
 	const theme = useMantineTheme();
@@ -146,9 +151,34 @@ export function NavShell({
 		useMediaQuery(`(max-width: ${theme.breakpoints[sidebarBreakpoint]})`) ??
 		false;
 
-	const toggleDesktop = toggleDesktopExpanded;
-	const collapseDesktop = collapseDesktopInner;
-	const expandDesktop = expandDesktopInner;
+	const setDesktopCollapsed = useCallback(
+		(collapsed: boolean) => {
+			if (!isCollapseControlled) {
+				if (collapsed) collapseDesktopInner();
+				else expandDesktopInner();
+			}
+			onDesktopCollapsedChange?.(collapsed);
+		},
+		[
+			isCollapseControlled,
+			collapseDesktopInner,
+			expandDesktopInner,
+			onDesktopCollapsedChange,
+		],
+	);
+
+	const toggleDesktop = useCallback(
+		() => setDesktopCollapsed(!desktopCollapsed),
+		[setDesktopCollapsed, desktopCollapsed],
+	);
+	const collapseDesktop = useCallback(
+		() => setDesktopCollapsed(true),
+		[setDesktopCollapsed],
+	);
+	const expandDesktop = useCallback(
+		() => setDesktopCollapsed(false),
+		[setDesktopCollapsed],
+	);
 
 	// Close mobile sidebar on Escape key
 	const handleEscape = useCallback(
