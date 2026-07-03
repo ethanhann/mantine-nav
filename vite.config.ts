@@ -10,6 +10,7 @@ export default defineConfig({
 		preserveDirectives(),
 		!process.env.STORYBOOK &&
 			dts({
+				tsconfigPath: "./tsconfig.build.json",
 				include: ["src"],
 				exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
 				entryRoot: "src",
@@ -20,6 +21,7 @@ export default defineConfig({
 			}),
 	],
 	build: {
+		sourcemap: true,
 		lib: {
 			entry: resolve(__dirname, "src/index.ts"),
 			name: "Nav",

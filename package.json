@@ -12,8 +12,19 @@
 		}
 	},
 	"engines": {
-		"node": ">=v24"
+		"node": ">=20"
 	},
+	"keywords": [
+		"react",
+		"mantine",
+		"navigation",
+		"sidebar",
+		"appshell",
+		"nav",
+		"menu",
+		"command-palette",
+		"saas"
+	],
 	"files": [
 		"dist"
 	],
