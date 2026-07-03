@@ -396,4 +396,48 @@ describe("ContextSwitcher", () => {
 		await user.click(screen.getByTestId("context-switcher-target"));
 		expect(await screen.findByText("Admin (current)")).toBeInTheDocument();
 	});
+	describe("loading state", () => {
+		it("shows skeleton rows instead of items while loading", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<ContextSwitcher
+					items={[{ id: "a", label: "A" }]}
+					active={null}
+					onSelect={() => {}}
+					loading
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByTestId("context-switcher-target"));
+
+			// Assert
+			expect(
+				await screen.findByTestId("context-switcher-loading"),
+			).toBeInTheDocument();
+			expect(screen.queryByText("A")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("aria-label convention", () => {
+		it("accepts the attribute-style aria-label prop", () => {
+			// Arrange
+
+			// Act
+			render(
+				<ContextSwitcher
+					items={[{ id: "a", label: "A" }]}
+					active="a"
+					onSelect={() => {}}
+					aria-label="Pick a tenant"
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByLabelText("Pick a tenant")).toBeInTheDocument();
+		});
+	});
 });

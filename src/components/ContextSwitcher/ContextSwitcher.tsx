@@ -8,6 +8,7 @@ import {
 	type MantineColor,
 	Menu,
 	ScrollArea,
+	Skeleton,
 	Text,
 	TextInput,
 	UnstyledButton,
@@ -108,7 +109,11 @@ export interface ContextSwitcherProps<TData = unknown> {
 		state: ContextSwitcherTargetState,
 	) => ReactElement;
 	/** Trigger aria-label. Defaults to "Switch context, current: <label>" or the placeholder. */
+	"aria-label"?: string;
+	/** @deprecated Use `aria-label` instead. */
 	ariaLabel?: string;
+	/** Shows skeleton rows in the dropdown while the item list is being fetched. */
+	loading?: boolean;
 	/** Dropdown width. @default 280 */
 	width?: number;
 	/** @default "bottom-start" */
@@ -152,7 +157,9 @@ export function ContextSwitcher<TData = unknown>({
 	footer,
 	renderItem,
 	renderTarget,
+	"aria-label": ariaLabelAttr,
 	ariaLabel,
+	loading = false,
 	width = 280,
 	position = "bottom-start",
 }: ContextSwitcherProps<TData>): ReactElement {
@@ -224,6 +231,7 @@ export function ContextSwitcher<TData = unknown>({
 	}
 
 	const resolvedAriaLabel =
+		ariaLabelAttr ??
 		ariaLabel ??
 		(activeItem ? `Switch context, current: ${activeItem.label}` : placeholder);
 
@@ -300,7 +308,14 @@ export function ContextSwitcher<TData = unknown>({
 					/>
 				)}
 				<ScrollArea.Autosize mah={maxVisible * 44}>
-					{filtered.length === 0 && searchable && search && (
+					{loading && (
+						<Box px="xs" py="xs" data-testid="context-switcher-loading">
+							{[0, 1, 2].map((row) => (
+								<Skeleton key={row} height={28} mb={row < 2 ? 8 : 0} />
+							))}
+						</Box>
+					)}
+					{!loading && filtered.length === 0 && searchable && search && (
 						<Text
 							c="dimmed"
 							ta="center"
@@ -311,54 +326,59 @@ export function ContextSwitcher<TData = unknown>({
 							{emptyMessage}
 						</Text>
 					)}
-					{[...sections.entries()].map(([section, sectionItems]) => (
-						<Box key={section ?? "__unsectioned"}>
-							{section && <Menu.Label>{section}</Menu.Label>}
-							{sectionItems.map((item) => {
-								const isActive = item.id === active;
-								const isPendingItem = item.id === pendingId;
-								return (
-									<Menu.Item
-										key={item.id}
-										closeMenuOnClick={false}
-										disabled={item.disabled || (pending && !isPendingItem)}
-										aria-current={isActive ? true : undefined}
-										data-pending={isPendingItem || undefined}
-										data-testid={`context-switcher-item-${item.id}`}
-										leftSection={item.icon}
-										rightSection={
-											isPendingItem ? (
-												<Loader size={14} aria-hidden="true" />
-											) : isActive ? (
-												<IconCheck size={14} stroke={1.5} aria-hidden="true" />
+					{!loading &&
+						[...sections.entries()].map(([section, sectionItems]) => (
+							<Box key={section ?? "__unsectioned"}>
+								{section && <Menu.Label>{section}</Menu.Label>}
+								{sectionItems.map((item) => {
+									const isActive = item.id === active;
+									const isPendingItem = item.id === pendingId;
+									return (
+										<Menu.Item
+											key={item.id}
+											closeMenuOnClick={false}
+											disabled={item.disabled || (pending && !isPendingItem)}
+											aria-current={isActive ? true : undefined}
+											data-pending={isPendingItem || undefined}
+											data-testid={`context-switcher-item-${item.id}`}
+											leftSection={item.icon}
+											rightSection={
+												isPendingItem ? (
+													<Loader size={14} aria-hidden="true" />
+												) : isActive ? (
+													<IconCheck
+														size={14}
+														stroke={1.5}
+														aria-hidden="true"
+													/>
+												) : (
+													(item.badge ?? null)
+												)
+											}
+											onClick={() => handleSelect(item)}
+										>
+											{renderItem ? (
+												renderItem(item, {
+													active: isActive,
+													pending: isPendingItem,
+												})
 											) : (
-												(item.badge ?? null)
-											)
-										}
-										onClick={() => handleSelect(item)}
-									>
-										{renderItem ? (
-											renderItem(item, {
-												active: isActive,
-												pending: isPendingItem,
-											})
-										) : (
-											<Box miw={0}>
-												<Text size="sm" truncate>
-													{item.label}
-												</Text>
-												{item.description && (
-													<Text size="xs" c="dimmed" truncate>
-														{item.description}
+												<Box miw={0}>
+													<Text size="sm" truncate>
+														{item.label}
 													</Text>
-												)}
-											</Box>
-										)}
-									</Menu.Item>
-								);
-							})}
-						</Box>
-					))}
+													{item.description && (
+														<Text size="xs" c="dimmed" truncate>
+															{item.description}
+														</Text>
+													)}
+												</Box>
+											)}
+										</Menu.Item>
+									);
+								})}
+							</Box>
+						))}
 				</ScrollArea.Autosize>
 				{(actions.length > 0 || footer) && <Menu.Divider />}
 				{actions.map((action) => (
