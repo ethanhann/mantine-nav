@@ -9,7 +9,7 @@ A React navigation component library (`@ethanhann/mantine-nav`) built on Mantine
 ## Commands
 
 - **`npm run dev`** — Start Storybook dev server (port 6006)
-- **`npm run build`** — Build library to dist/ (ESM + CJS via Vite)
+- **`npm run build`** — Build library to dist/ (ESM via Vite)
 - **`npm run test`** — Run tests in watch mode
 - **`npm run test:run`** — Single test run
 - **`npx vitest run path/to/file.test.tsx`** — Run a single test file
@@ -51,6 +51,6 @@ Hooks in `src/hooks/` cover: active item matching (`useActiveNavItem`), keyboard
 ## Build
 
 - Entry: `src/index.ts` (barrel export)
-- Output: `dist/` with ESM (`index.js`), CJS (`index.cjs`), types (`index.d.ts`), and `styles.css`
+- Output: `dist/` with ESM (`index.js`) and types (`index.d.ts`); no CSS is shipped (all styling is inline or via Mantine)
 - Externals: React, ReactDOM, Mantine, Tabler icons (peer dependencies)
-- Peer deps: React 19+, @mantine/core 9+, @mantine/hooks 9+, @tabler/icons-react 3+
+- Peer deps: React 19+, @mantine/core 9+, @mantine/hooks 9+, @mantine/spotlight 9+, @tabler/icons-react 3+
