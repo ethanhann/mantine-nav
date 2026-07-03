@@ -89,9 +89,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `useNavVars.resetVars` restores pre-override values instead of clearing them.
 - The README Storybook badge links to the correct deployment.
 
-## [0.6.0] and earlier
+## [0.6.0] - 2026-06-23
 
-Releases before 0.7.0 predate this changelog.
+### Added
+
+- `mainProps` on `NavShell` for passing props through to `AppShell.Main`.
+- The `CommandPalette` search input autofocuses when the palette opens.
+
+### Changed
+
+- Default `NavGroup` variant changed from `subtle` to `light`.
+- The package is published as ESM only.
+- `engines.node` set to `>=24`, later relaxed to `>=20` in 0.7.0.
+- Publishing is now validated with publint and arethetypeswrong.
+
+## [0.5.0] - 2026-06-14
+
+### Added
+
+- `useExpandedKeys` and `usePersistedList` hooks, the shared primitives behind expand/collapse state and the
+  localStorage-backed list hooks.
+- `compact` variant on `UserMenu` for header placement, with truncation for long names and emails.
+
+## [0.4.0] - 2026-06-11
+
+### Added
+
+- `CommandPalette` component built on `@mantine/spotlight`: Cmd+K shortcut, fuzzy-ranked navigation and actions, and
+  Recently Viewed and Starred sections.
+- Backend search for `CommandPalette` via an async `search` function, backed by the `useCommandSearch` hook with
+  debouncing, request cancellation, and stale-while-revalidate behavior.
+- `ContextSwitcher` component for generic context and persona switching, with async pending state.
+- `ColorModePicker` component with `toggle`, `segmented`, and `menu` variants.
+
+### Removed
+
+- `ColorSchemeToggle`, replaced by `ColorModePicker`.
+  The migration is a drop-in swap, and the default toggle variant cycles System, Light, Dark.
+
+## [0.3.9] - 2026-06-03
+
+### Added
+
+- Timestamps on `NotificationIndicator` notifications, accepting a string or a `Date`.
+
+## Earlier releases
+
+Releases before 0.3.9 predate this changelog.
 
 [Unreleased]: https://github.com/ethanhann/mantine-nav/compare/v0.7.0...HEAD
 [0.7.0]: https://github.com/ethanhann/mantine-nav/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/ethanhann/mantine-nav/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/ethanhann/mantine-nav/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/ethanhann/mantine-nav/compare/v0.3.9...v0.4.0
+[0.3.9]: https://github.com/ethanhann/mantine-nav/compare/v0.3.7...v0.3.9
