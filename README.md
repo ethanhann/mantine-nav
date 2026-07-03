@@ -17,7 +17,7 @@ and SaaS-oriented building blocks (workspace switcher, user menu, plan badge, no
 npm install @ethanhann/mantine-nav
 ```
 
-**Peer dependencies:** React 19+, `@mantine/core` 9+, `@mantine/hooks` 9+, `@tabler/icons-react` 3+.
+**Peer dependencies:** React 19+, `@mantine/core` 9+, `@mantine/hooks` 9+, `@mantine/spotlight` 9+, `@tabler/icons-react` 3+.
 
 ## Quick Start
 
@@ -27,7 +27,6 @@ mobile drawer:
 ```tsx
 import {NavShell, NavHeader, NavSidebar, NavGroup} from '@ethanhann/mantine-nav';
 import type {NavItemType} from '@ethanhann/mantine-nav';
-import '@ethanhann/mantine-nav/styles.css';
 
 const items: NavItemType[] = [
     {id: 'home', type: 'link', label: 'Home', href: '/', icon: <HomeIcon/>},
@@ -154,7 +153,6 @@ import {
     IconChartBar, IconSettings, IconCalendar, IconFileText,
 } from '@tabler/icons-react';
 import {Badge} from '@mantine/core';
-import '@ethanhann/mantine-nav/styles.css';
 
 const crmItems: NavItemType[] = [
     {id: 'dashboard', type: 'link', label: 'Dashboard', href: '/', icon: <IconHome size={18}/>},
