@@ -4,7 +4,7 @@
 [![CI](https://github.com/ethanhann/mantine-nav/actions/workflows/ci.yml/badge.svg)](https://github.com/ethanhann/mantine-nav/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ethanhann/mantine-nav/blob/main/LICENSE)
 [![Coverage](https://img.shields.io/endpoint?url=https://ethanhann.github.io/mantine-nav/coverage-badge.json)](https://ethanhann.github.io/mantine-nav/)
-[![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/nav/)
+[![Storybook](https://img.shields.io/badge/Storybook-deployed-ff4785.svg)](https://ethanhann.github.io/mantine-nav/)
 
 A React navigation component library built on [Mantine v9](https://mantine.dev).
 
@@ -66,6 +66,11 @@ function App() {
 `NavShell` wraps Mantine's `AppShell` and manages responsive collapse (desktop) and drawer toggling (mobile). Any
 descendant can read state via `useNavShell()` or `useOptionalNavShell()`.
 
+Layout is configured with `headerHeight`, `sidebarWidth`, `sidebarCollapsedWidth`, `sidebarBreakpoint`, `asideWidth`,
+`asideBreakpoint`, `footerHeight`, `padding`, and `withBorder`.
+For layouts without a header, render the exported `NavBurger` anywhere inside the shell to toggle the mobile drawer.
+It renders nothing outside a `NavShell`.
+
 ## Nav Items
 
 `NavItemType` is a discriminated union with four variants:
@@ -94,16 +99,17 @@ descendant can read state via `useNavShell()` or `useOptionalNavShell()`.
     'section', label
 }
 
-// Horizontal divider
+// Horizontal divider with an optional inline label
 {
     id, type
 :
-    'divider'
+    'divider', label ?
 }
 ```
 
 All items support `visible?: boolean | (() => boolean)` to hide per role/flag, and `weight?: number` to control sort
 order.
+Links and groups also accept an `"aria-label"` used as the accessible name of the rendered tree item.
 
 ### `onClick` and navigation
 
@@ -242,13 +248,21 @@ Pass `activeMatcher` to `NavGroup` to control how the current path maps to items
 
 | Strategy                             | Behavior                                       |
 |--------------------------------------|------------------------------------------------|
-| `'exact'` (default)                  | `href` must equal `currentPath`                |
-| `'prefix'`                           | `currentPath` must start with `href`           |
+| `'exact'`                            | `href` must equal `currentPath`                |
+| `'prefix'` (default)                 | `currentPath` must start with `href`           |
 | `'regex'`                            | `href` is treated as a regex pattern           |
 | `RegExp`                             | Match `currentPath` against the provided regex |
 | `(currentPath, itemHref) => boolean` | Custom matcher                                 |
 
 Individual items can override the strategy via `activeMatch`.
+
+Subscribe to active-link changes with `onActiveChange`:
+
+```tsx
+<NavGroup items={items} currentPath={pathname} onActiveChange={(item) => setBreadcrumbSource(item)}/>
+```
+
+The callback fires with the resolved active link whenever it changes, and with `null` when nothing matches.
 
 ## NavHeader
 
@@ -283,12 +297,9 @@ desktop:
 </NavSidebar>
 ```
 
-The header/footer sections animate their max-height when the sidebar collapses. If your header or footer content is taller
-than the `500px` default and gets clipped, raise it via `sectionMaxHeight` (a number of px or any CSS length):
-
-```tsx
-<NavSidebar sectionMaxHeight={800} header={...} footer={...}>...</NavSidebar>
-```
+Header and footer sections animate open and closed with Mantine `Collapse` and are never height-clamped while expanded.
+The `sectionMaxHeight` prop from earlier versions is deprecated and ignored.
+`NavSidebar` also renders outside a `NavShell`, in which case the collapse toggle is omitted.
 
 ## Router Integration
 
@@ -306,6 +317,101 @@ import {Link} from 'react-router-dom';
 
 <NavShell linkComponent={Link} hrefProp="to">...</NavShell>
 ```
+
+## Controlled State
+
+Layout state is uncontrolled by default, and every stateful surface also accepts a controlled prop pair:
+
+```tsx
+// Sidebar collapse
+<NavShell desktopCollapsed={collapsed} onDesktopCollapsedChange={setCollapsed} sidebar={sidebar}>...</NavShell>
+
+// Expanded groups
+<NavGroup items={items} expandedKeys={expanded} onExpandedChange={setExpanded}/>
+
+// Dropdown menus
+<UserMenu user={user} opened={menuOpened} onOpenChange={setMenuOpened}/>
+<NotificationIndicator notifications={notifications} opened={opened} onOpenChange={setOpened}/>
+```
+
+In uncontrolled mode the change callbacks still fire with the intended value, so they double as event hooks.
+
+## Styling
+
+`NavShell`, `NavGroup`, `NavSidebar`, and `NavHeader` accept slot-based `classNames` and `styles` props, so visuals can
+be themed with plain CSS instead of overriding inline styles.
+
+| Component    | Slots                                         |
+|--------------|-----------------------------------------------|
+| `NavShell`   | `header`, `navbar`, `aside`, `footer`, `main` |
+| `NavGroup`   | `root`, `item`, `section`, `divider`          |
+| `NavSidebar` | `header`, `body`, `footer`                    |
+| `NavHeader`  | `root`, `logo`, `center`, `right`             |
+
+```tsx
+<NavGroup
+    items={items}
+    classNames={{item: 'app-nav-item'}}
+    styles={{root: {padding: 4}}}
+/>
+```
+
+`UserMenu`, `NotificationIndicator`, `ContextSwitcher`, and the `ColorModePicker` menu variant accept `width` and
+`position` for their dropdowns.
+
+## Localization
+
+Every user-facing string can be overridden.
+Components with several strings take a `labels` object, and single-string surfaces take an `aria-label` prop:
+
+```tsx
+<NavShell labels={{toggleNavigation: 'Menü öffnen'}} sidebar={sidebar}>...</NavShell>
+<NavGroup items={items} aria-label="Hauptnavigation"/>
+<NavSidebar labels={{expandSidebar: 'Ausklappen', collapseSidebar: 'Einklappen'}}>...</NavSidebar>
+<WorkspaceSwitcher
+    labels={{
+        searchPlaceholder: 'Arbeitsbereiche suchen...',
+        createWorkspace: 'Arbeitsbereich erstellen',
+        switchWorkspace: (name) => `Arbeitsbereich wechseln, aktuell: ${name}`,
+    }}
+    {...props}
+/>
+<NotificationIndicator
+    labels={{
+        title: 'Benachrichtigungen',
+        markAllAsRead: 'Alle als gelesen markieren',
+        empty: 'Keine Benachrichtigungen',
+        bell: (unread) => `Benachrichtigungen (${unread} ungelesen)`,
+    }}
+    {...props}
+/>
+<ContextSwitcher labels={{placeholder: 'Wählen', emptyMessage: 'Keine Treffer'}} {...props}/>
+<CommandPalette labels={{pages: 'Seiten', actions: 'Aktionen'}} {...props}/>
+```
+
+`ContextSwitcher`'s older per-string props (`placeholder`, `searchPlaceholder`, `searchAriaLabel`, `emptyMessage`) still
+work but are deprecated in favor of `labels`.
+
+## Keyboard Navigation and Accessibility
+
+`NavGroup` renders an ARIA tree with a roving tabindex.
+Exactly one item sits in the tab order: the last focused item, else the active link, else the first visible item.
+
+| Key             | Behavior                                                                          |
+|-----------------|-----------------------------------------------------------------------------------|
+| Tab             | Enters or leaves the tree at the roving item                                      |
+| Arrow Up/Down   | Moves focus between visible items (wraps while `loopNavigation` is on)            |
+| Arrow Right     | Expands a group, or moves to its first child when already open                    |
+| Arrow Left      | Collapses a group, or moves focus to the parent group                             |
+| Home / End      | Moves to the first or last visible item                                           |
+| Enter / Space   | Activates the item: links navigate natively and fire `onClick` and `onItemClick`, groups toggle |
+| Characters      | Type-ahead to the next item whose label matches the typed prefix                  |
+
+Disabled items are focusable but not activatable, and children of collapsed groups are skipped.
+The active link exposes `aria-current="page"` and `aria-selected`.
+
+The mobile drawer moves focus to its first focusable element on open, traps Tab and Shift+Tab inside, restores focus to
+the previously focused element on close, and closes on Escape.
 
 ## SaaS Components
 
@@ -353,6 +459,25 @@ import {
 </NavSidebar>
 ```
 
+**WorkspaceSwitcher** notes:
+
+- `onSwitch` may return a promise. The dropdown then shows the built-in pending state and closes once the promise resolves.
+- `Workspace.logo` accepts an image URL string or any React node. The workspace name initial is the fallback.
+- `renderWorkspace(workspace, isActive)` customizes both the trigger and each dropdown row.
+- `loading` renders skeleton rows while the workspace list is being fetched.
+- `placeholder` sets the trigger text when the active workspace cannot be resolved from `workspaces`.
+
+**NotificationIndicator** notes:
+
+- The badge count defaults to the number of unread `notifications`. Pass `count` to override it, for example with a server-side total.
+- Marking a notification read keeps the dropdown open. Notifications with an `href` navigate and close it.
+- `loading` shows skeleton rows while notifications are being fetched.
+
+**ColorModePicker** props: `variant` (`'toggle' | 'segmented' | 'menu'`), custom `modes`
+(`{value, label, icon, onActivate?}`), a controlled `value` with `onChange`, `size`, and `showLabels`.
+The toggle variant cycles through `modes` in order.
+An empty `modes` array renders nothing.
+
 > **Note:** `ColorSchemeToggle` was removed in v0.4.0, replaced by `ColorModePicker`. The migration is a drop-in swap (
 `<ColorSchemeToggle />` → `<ColorModePicker />`); the default `toggle` variant cycles System → Light → Dark instead of
 > flipping light/dark, preserving the user's system preference. To restore the old binary behavior, pass only light and
@@ -386,7 +511,7 @@ import {ContextSwitcher} from '@ethanhann/mantine-nav';
         data: p,
     }))}
     active={me.actingPersona && `${me.actingPersona.type}:${me.actingPersona.id}`}
-    placeholder="Choose a persona"
+    labels={{placeholder: 'Choose a persona'}}
     onSelect={(item) =>
         // Async: the switcher shows pending state until this resolves,
         // then your refetched `me.actingPersona` drives `active`.
@@ -505,6 +630,32 @@ Memoize the `search` function (e.g. `useCallback`): swapping in a different func
 workspace-scoped searches stay fresh), which means an unmemoized inline function costs a superseded request per parent
 render.
 
+### Advanced exports
+
+- `useCommandSearch(options)` is the backend-search state machine behind the palette (debounce, abort, supersession, stale-while-revalidate). Use it directly to build a custom search UI.
+- `commandPaletteStore` and `commandPaletteControls` expose the shared Spotlight store for imperative open, close, and toggle calls outside React.
+- `fuzzyMatch(query, text)` and `rankCommands(query, commands)` are the ranking primitives used for local matches.
+
+## SSR and Next.js
+
+The published build preserves `"use client"` directives, so components and hooks work in the Next.js App Router without
+a manual client boundary.
+
+The persistence hooks (`usePinnedItems`, `useRecentlyViewed`, `useStarredPages`, `usePersistedList`,
+`useSidebarResize`) read localStorage in a lazy initializer.
+On the server they return their defaults, and the stored value appears after hydration on the client.
+Gate markup that depends on persisted state with `useHydrated()` to avoid hydration mismatches:
+
+```tsx
+import {useHydrated, usePinnedItems} from '@ethanhann/mantine-nav';
+
+const hydrated = useHydrated();
+const {pinnedItems} = usePinnedItems(items, {storageKey: 'nav-pins'});
+if (!hydrated) return <NavGroup items={items}/>;
+```
+
+`useIsSSR()` returns `true` during server rendering and the first client render.
+
 ## Hooks
 
 ### `useNavShell` / `useOptionalNavShell`
@@ -551,6 +702,7 @@ const sidebar = useHeadlessSidebar({
 
 | Hook                       | Purpose                                                  |
 |----------------------------|----------------------------------------------------------|
+| `useCommandSearch`         | Backend-search state machine used by `CommandPalette`    |
 | `useCurrentPath`           | Reactive pathname for active matching                    |
 | `useNavItems`              | Flatten, expand/collapse, and traverse item trees        |
 | `useExpandedKeys`          | Headless expand/collapse state for a tree (toggle/expand-all/collapse-all) |
@@ -558,16 +710,16 @@ const sidebar = useHeadlessSidebar({
 | `useNavAnimation`          | Transition config that respects `prefers-reduced-motion` |
 | `useNavColorScheme`        | Read and toggle light/dark color scheme                  |
 | `useNavRegistry`           | Flat dot-notation registration of nav entries            |
-| `useNavVars`               | Read/write CSS custom properties for nav tokens          |
+| `useNavVars`               | Read/write CSS custom properties, restoring prior values on reset |
 | `useSidebarResize`         | Drag-to-resize sidebar with localStorage persistence     |
 | `useSidebarVariant`        | Cycle sidebar between `full`, `rail`, `mini`             |
 | `useResponsiveNav`         | Mobile/tablet/desktop breakpoint state and helpers       |
 | `useReorderableNav`        | Drag-and-drop reordering of nav items                    |
-| `useRemoteNavItems`        | Hydrate items from an async source                       |
+| `useRemoteNavItems`        | Hydrate items from an async source, re-hydrating when resolvers change |
 | `usePinnedItems`           | Pin/unpin favorites (localStorage-backed)                |
 | `useRecentlyViewed`        | Track recently visited pages (localStorage-backed)       |
 | `useStarredPages`          | Star/bookmark pages (localStorage-backed)                |
-| `usePersistedList`         | Ordered, localStorage-backed list primitive (add/remove/toggle/reorder) |
+| `usePersistedList`         | Ordered, localStorage-backed list primitive (add/remove/toggle/reorder/upsertFirst) |
 | `useIsSSR` / `useHydrated` | SSR-safety helpers                                       |
 
 ## Utilities
@@ -577,6 +729,11 @@ const sidebar = useHeadlessSidebar({
 | `filterVisibleItems(items)` | Recursively drop items where `visible` evaluates to `false`; prunes empty groups |
 | `isItemVisible(item)`       | Resolve an item's `visible` flag (boolean or function)                           |
 | `sortItemsByWeight(items)`  | Stable sort by `weight` (lower first); recurses into group children              |
+| `walkNavTree(items, visit)` | Depth-first traversal; return `false` from `visit` to skip a group's children    |
+| `flattenNavTree(items)`     | Flatten a nav tree depth-first into a single list                                |
+| `flattenNavCommands(items)` | Flatten link items into `NavCommand[]` for command palettes                      |
+| `fuzzyMatch(query, text)`   | Lightweight fuzzy matcher returning a score and matched indices                  |
+| `rankCommands(query, cmds)` | Rank commands with `fuzzyMatch`, best first                                      |
 
 ## Development
 
@@ -610,7 +767,7 @@ npm run test:coverage   # with v8 coverage
 ### Build
 
 ```bash
-npm run build           # build the library to dist/ (ESM + CJS + .d.ts)
+npm run build           # build the library to dist/ (ESM + .d.ts + sourcemaps)
 npm run typecheck       # type-check without emitting
 ```
 
