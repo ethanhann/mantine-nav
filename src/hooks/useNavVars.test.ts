@@ -7,6 +7,19 @@ describe("useNavVars", () => {
 		document.documentElement.style.removeProperty("--nav-accent");
 	});
 
+	it("getVar reads the current value of a custom property", () => {
+		// Arrange
+		document.documentElement.style.setProperty("--nav-accent", "teal");
+		const { result } = renderHook(() => useNavVars());
+
+		// Act
+		const value = result.current.getVar("--nav-accent");
+
+		// Assert
+		expect(value).toBe("teal");
+		expect(result.current.getVar("--nav-unset")).toBe("");
+	});
+
 	it("sets a custom property on the document element", () => {
 		// Arrange
 		const { result } = renderHook(() => useNavVars());

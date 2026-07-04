@@ -145,6 +145,63 @@ describe("Spec 003: useReorderableNav", () => {
 		]);
 	});
 
+	it("getDropTargetProps marks the hovered target and completes the drop", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result } = renderHook(() =>
+			useReorderableNav({ items, onReorder }),
+		);
+		const dragOverEvent = {
+			preventDefault: vi.fn(),
+		} as unknown as React.DragEvent;
+		act(() => result.current.handleDragStart("a"));
+		act(() => result.current.getDropTargetProps("c").onDragOver(dragOverEvent));
+		expect(dragOverEvent.preventDefault).toHaveBeenCalledTimes(1);
+		expect(result.current.dropTargetId).toBe("c");
+		expect(result.current.getDropTargetProps("c")["data-drop-target"]).toBe(
+			true,
+		);
+		expect(
+			result.current.getDropTargetProps("b")["data-drop-target"],
+		).toBeUndefined();
+		const dropEvent = { preventDefault: vi.fn() } as unknown as React.DragEvent;
+
+		// Act
+		act(() => result.current.getDropTargetProps("c").onDrop(dropEvent));
+
+		// Assert
+		expect(dropEvent.preventDefault).toHaveBeenCalledTimes(1);
+		expect(onReorder).toHaveBeenCalledExactlyOnceWith(expect.anything(), 0, 2);
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+		]);
+		expect(result.current.draggedId).toBeNull();
+		expect(result.current.dropTargetId).toBeNull();
+	});
+
+	it("drag end without a drop target clears state and does not reorder", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result } = renderHook(() =>
+			useReorderableNav({ items, onReorder }),
+		);
+		act(() => result.current.handleDragStart("a"));
+
+		// Act
+		act(() => result.current.handleDragEnd());
+
+		// Assert
+		expect(onReorder).not.toHaveBeenCalled();
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"a",
+			"b",
+			"c",
+		]);
+		expect(result.current.draggedId).toBeNull();
+	});
+
 	it("getDragHandleProps returns draggable props", () => {
 		const onReorder = vi.fn();
 		const { result } = renderHook(() =>

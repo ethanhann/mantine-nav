@@ -90,6 +90,125 @@ describe("Spec 009: useSidebarResize", () => {
 			expect(document.body.style.userSelect).toBe("");
 		});
 
+		it("clamps drag movement to maxWidth and reports each clamped step", () => {
+			// Arrange
+			const onResize = vi.fn();
+			const { result } = renderHook(() =>
+				useSidebarResize({ defaultWidth: 260, maxWidth: 480, onResize }),
+			);
+			startDrag(result, 300);
+
+			// Act
+			act(() => {
+				document.dispatchEvent(
+					new MouseEvent("pointermove", { clientX: 2000 }),
+				);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(480);
+			expect(onResize).toHaveBeenCalledWith(480);
+		});
+
+		it("ends the drag on pointer up, persisting and reporting the final width", () => {
+			// Arrange
+			const onResizeEnd = vi.fn();
+			const { result } = renderHook(() =>
+				useSidebarResize({
+					defaultWidth: 260,
+					persistKey: "nav-sidebar-width",
+					onResizeEnd,
+				}),
+			);
+			startDrag(result, 300);
+			act(() => {
+				document.dispatchEvent(new MouseEvent("pointermove", { clientX: 340 }));
+			});
+			expect(result.current.isResizing).toBe(true);
+
+			// Act
+			act(() => {
+				document.dispatchEvent(new MouseEvent("pointerup"));
+			});
+
+			// Assert
+			expect(result.current.isResizing).toBe(false);
+			expect(result.current.width).toBe(300);
+			expect(onResizeEnd).toHaveBeenCalledExactlyOnceWith(300);
+			expect(localStorage.getItem("nav-sidebar-width")).toBe("300");
+		});
+
+		it("Home and End keys snap to minWidth and maxWidth", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({ minWidth: 180, maxWidth: 480 }),
+			);
+
+			// Act
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "End",
+					shiftKey: false,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(480);
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "Home",
+					shiftKey: false,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+			expect(result.current.width).toBe(180);
+		});
+
+		it("Shift with an arrow key resizes in 20px steps", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({ defaultWidth: 260 }),
+			);
+
+			// Act
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "ArrowRight",
+					shiftKey: true,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(280);
+		});
+
+		it("double-click resets to the default width and persists it", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({
+					defaultWidth: 260,
+					persistKey: "nav-sidebar-width",
+				}),
+			);
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "ArrowRight",
+					shiftKey: true,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+			expect(result.current.width).toBe(280);
+
+			// Act
+			act(() => result.current.getHandleProps().onDoubleClick());
+
+			// Assert
+			expect(result.current.width).toBe(260);
+			expect(localStorage.getItem("nav-sidebar-width")).toBe("260");
+		});
+
 		it("persists keyboard-adjusted width and fires onResizeEnd", () => {
 			// Arrange
 			const onResizeEnd = vi.fn();
