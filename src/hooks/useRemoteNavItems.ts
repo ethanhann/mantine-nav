@@ -113,6 +113,26 @@ function hydrateItems(
 	});
 }
 
+function shallowRecordEqual(
+	a: Record<string, unknown> | undefined,
+	b: Record<string, unknown> | undefined,
+): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	const aKeys = Object.keys(a);
+	if (aKeys.length !== Object.keys(b).length) return false;
+	return aKeys.every((key) => Object.is(a[key], b[key]));
+}
+
+function resolversEqual(a: NavItemResolvers, b: NavItemResolvers): boolean {
+	return (
+		shallowRecordEqual(a.icons, b.icons) &&
+		shallowRecordEqual(a.badges, b.badges) &&
+		shallowRecordEqual(a.onClick, b.onClick) &&
+		shallowRecordEqual(a.visible, b.visible)
+	);
+}
+
 /**
  * Hook that hydrates JSON-serializable nav item definitions from an API
  * into fully-typed `NavItemType[]` with React nodes and callbacks.
@@ -137,12 +157,21 @@ export function useRemoteNavItems({
 }: UseRemoteNavItemsOptions): UseRemoteNavItemsReturn {
 	const isLoading = rawItems == null;
 
+	// Compare resolver content instead of object identity so inline resolver
+	// objects stay referentially stable, while genuinely changed entries
+	// (late-loaded icons, swapped handlers) still trigger rehydration.
 	const resolversRef = useRef(resolvers);
-	resolversRef.current = resolvers;
+	const resolverVersionRef = useRef(0);
+	if (!resolversEqual(resolversRef.current, resolvers)) {
+		resolversRef.current = resolvers;
+		resolverVersionRef.current += 1;
+	}
+	const resolverVersion = resolverVersionRef.current;
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies(resolverVersion): resolverVersion stands in for resolver content read via resolversRef.
 	const items = useMemo(
 		() => (rawItems ? hydrateItems(rawItems, resolversRef.current) : []),
-		[rawItems],
+		[rawItems, resolverVersion],
 	);
 
 	return { items, isLoading };

@@ -127,4 +127,20 @@ describe("Spec 004: usePinnedItems", () => {
 			"home",
 		]);
 	});
+	it("accepts maxItems as the canonical cap option", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "a", label: "A", href: "/a" },
+			{ type: "link", id: "b", label: "B", href: "/b" },
+		];
+		const { result } = renderHook(() => usePinnedItems(items, { maxItems: 1 }));
+		act(() => result.current.pin(items[0]!));
+
+		// Act
+		act(() => result.current.pin(items[1]!));
+
+		// Assert
+		expect(result.current.pinnedItems.map((i) => i.id)).toEqual(["a"]);
+		expect(result.current.canPin).toBe(false);
+	});
 });

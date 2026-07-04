@@ -26,7 +26,7 @@ function renderWithWorkspaceSwitcher(
 							header={
 								<WorkspaceSwitcher
 									workspaces={sampleWorkspaces}
-									activeWorkspace={sampleWorkspaces[0]}
+									activeWorkspace={sampleWorkspaces[0]!}
 									onSwitch={onSwitch}
 									searchable={opts.searchable}
 								/>

@@ -2,9 +2,13 @@
 
 import { useCallback, useMemo } from "react";
 import type { NavItemType } from "../types";
+import { flattenNavTree } from "../utils/traverse";
 import { usePersistedList } from "./usePersistedList";
 
 export interface UsePinnedItemsOptions {
+	/** Upper bound on pinned items, matching the other persistence hooks. */
+	maxItems?: number;
+	/** @deprecated Use `maxItems` instead. */
 	maxPinned?: number;
 	storageKey?: string;
 }
@@ -29,7 +33,8 @@ export function usePinnedItems<TData = unknown>(
 	allItems: NavItemType<TData>[],
 	options: UsePinnedItemsOptions = {},
 ): UsePinnedItemsReturn<TData> {
-	const { maxPinned = 10, storageKey } = options;
+	const { maxItems, maxPinned, storageKey } = options;
+	const resolvedMaxItems = maxItems ?? maxPinned ?? 10;
 
 	const {
 		items: pinnedIdList,
@@ -43,22 +48,12 @@ export function usePinnedItems<TData = unknown>(
 	} = usePersistedList<string>({
 		getId: (id) => id,
 		storageKey,
-		maxItems: maxPinned,
+		maxItems: resolvedMaxItems,
 		parse: parseIds,
 	});
 
 	// Flatten all items to find pinned ones
-	const flatItems = useMemo(() => {
-		const result: NavItemType<TData>[] = [];
-		function collect(items: NavItemType<TData>[]) {
-			for (const item of items) {
-				result.push(item);
-				if (item.type === "group") collect(item.children);
-			}
-		}
-		collect(allItems);
-		return result;
-	}, [allItems]);
+	const flatItems = useMemo(() => flattenNavTree(allItems), [allItems]);
 
 	const pinnedItems = useMemo(
 		() =>

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { ActiveMatcher, NavItemType, NavLinkItem } from "../types";
+import { walkNavTree } from "../utils/traverse";
 import { useCurrentPath } from "./useCurrentPath";
 
 export interface UseActiveNavItemOptions {
@@ -51,27 +52,24 @@ function collectLinks<TData>(
 	items: NavItemType<TData>[],
 ): NavLinkItem<TData>[] {
 	const links: NavLinkItem<TData>[] = [];
-	for (const item of items) {
+	walkNavTree(items, (item) => {
 		if (item.type === "link") {
 			links.push(item);
-		} else if (item.type === "group" && item.children) {
-			// Also check if the group itself has an href
-			if (item.href) {
-				links.push({
-					type: "link",
-					id: item.id,
-					label: item.label,
-					href: item.href,
-					data: item.data,
-					// Preserve the group's matching config so a group with
-					// activeExact / activeMatch matches the same way a link would.
-					activeMatch: item.activeMatch,
-					activeExact: item.activeExact,
-				} as NavLinkItem<TData>);
-			}
-			links.push(...collectLinks(item.children));
+		} else if (item.type === "group" && item.href) {
+			// A group with its own href matches like a link would; preserve
+			// its matching config.
+			links.push({
+				type: "link",
+				id: item.id,
+				label: item.label,
+				href: item.href,
+				data: item.data,
+				activeMatch: item.activeMatch,
+				activeExact: item.activeExact,
+			} as NavLinkItem<TData>);
 		}
-	}
+		return undefined;
+	});
 	return links;
 }
 

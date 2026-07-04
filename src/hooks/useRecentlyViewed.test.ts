@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { createElement, StrictMode } from "react";
+import { describe, expect, it, vi } from "vitest";
 import { useRecentlyViewed } from "./useRecentlyViewed";
 
 describe("Spec 030: useRecentlyViewed", () => {
@@ -103,5 +104,48 @@ describe("Spec 030: useRecentlyViewed", () => {
 		act(() => result.current.addItem({ id: "1", label: "P1", href: "/1" }));
 		act(() => result.current.clearAll());
 		expect(result.current.items.length).toBe(0);
+	});
+
+	it("writes to storage exactly once per add under StrictMode", () => {
+		// Arrange
+		const key = "test-recent-strict";
+		localStorage.removeItem(key);
+		const setItemSpy = vi.spyOn(window.localStorage, "setItem");
+		const { result } = renderHook(
+			() => useRecentlyViewed({ storageKey: key }),
+			{
+				wrapper: ({ children }) => createElement(StrictMode, null, children),
+			},
+		);
+		setItemSpy.mockClear();
+
+		// Act
+		act(() => result.current.addItem({ id: "1", label: "P1", href: "/1" }));
+
+		// Assert
+		expect(setItemSpy).toHaveBeenCalledTimes(1);
+		setItemSpy.mockRestore();
+		localStorage.removeItem(key);
+	});
+
+	it("trims a stored list longer than maxItems on load", () => {
+		// Arrange
+		const key = "test-recent-trim";
+		const data = Array.from({ length: 5 }, (_, i) => ({
+			id: String(i),
+			label: `P${i}`,
+			href: `/${i}`,
+			timestamp: 1000 + i,
+		}));
+		localStorage.setItem(key, JSON.stringify(data));
+
+		// Act
+		const { result } = renderHook(() =>
+			useRecentlyViewed({ storageKey: key, maxItems: 3 }),
+		);
+
+		// Assert
+		expect(result.current.items.length).toBe(3);
+		localStorage.removeItem(key);
 	});
 });

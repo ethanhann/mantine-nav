@@ -12,36 +12,43 @@ import {
 	useState,
 } from "react";
 import { useActiveNavItem } from "../../hooks/useActiveNavItem";
-import { useNavAnimation } from "../../hooks/useNavAnimation";
 import { useNavKeyboard } from "../../hooks/useNavKeyboard";
 import type {
 	ActiveMatcher,
-	NavAnimationConfig,
 	NavCallbacks,
 	NavGroupItem,
 	NavItemType,
 	NavLinkItem,
+	NavSlotStyles,
 } from "../../types";
 import { sortItemsByWeight } from "../../utils/sorting";
 import { filterVisibleItems } from "../../utils/visibility";
 import { useOptionalNavShell } from "../NavShell";
 
+export type NavGroupSlot = "root" | "item" | "section" | "divider";
+
 /** Props for the navigation item tree component. */
-export interface NavGroupProps<TData = unknown> extends NavCallbacks<TData> {
+export interface NavGroupProps<TData = unknown>
+	extends NavCallbacks<TData>,
+		NavSlotStyles<NavGroupSlot> {
 	items: NavItemType<TData>[];
 	maxDepth?: number;
 	renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
 	activeItem?: string | null;
 	activeMatcher?: ActiveMatcher;
 	currentPath?: string;
-	animation?: Partial<NavAnimationConfig>;
-	transitionDuration?: number;
 	variant?: "subtle" | "light" | "filled";
 	color?: MantineColor;
+	/** Controlled expanded group ids. When set, pair with onExpandedChange. */
+	expandedKeys?: string[];
+	/** Called with the intended expanded group ids whenever a group toggles. */
+	onExpandedChange?: (expandedIds: string[]) => void;
 	// Accordion
 	accordion?: boolean;
 	accordionScope?: "global" | "sibling";
 	onAccordionChange?: (openedKey: string | null) => void;
+	/** Accessible name for the tree. @default "Navigation" */
+	"aria-label"?: string;
 	// Keyboard
 	enableKeyboardNav?: boolean;
 	typeAhead?: boolean;
@@ -59,12 +66,15 @@ interface InternalNavItemProps<TData = unknown> {
 	onItemClick?: NavCallbacks<TData>["onItemClick"];
 	onGroupToggle?: NavCallbacks<TData>["onGroupToggle"];
 	renderItem?: (item: NavItemType<TData>, depth: number) => ReactNode;
-	transitionDuration: number;
 	variant: "subtle" | "light" | "filled";
 	color?: MantineColor;
 	collapsed?: boolean;
 	linkComponent?: React.FunctionComponent<Record<string, unknown>>;
 	hrefProp: string;
+	/** Id of the single treeitem holding tabIndex=0 (roving tabindex). */
+	rovingItemId: string | null;
+	slotClassNames?: NavSlotStyles<NavGroupSlot>["classNames"];
+	slotStyles?: NavSlotStyles<NavGroupSlot>["styles"];
 }
 
 function CollapsedActiveIndicator() {
@@ -95,13 +105,18 @@ function NavItemRenderer<TData>({
 	onItemClick,
 	onGroupToggle,
 	renderItem,
-	transitionDuration,
 	variant,
 	color,
 	collapsed,
 	linkComponent,
 	hrefProp,
+	rovingItemId,
+	slotClassNames,
+	slotStyles,
 }: InternalNavItemProps<TData>) {
+	const itemTabIndex =
+		rovingItemId === null ? undefined : item.id === rovingItemId ? 0 : -1;
+
 	if (renderItem) {
 		const custom = renderItem(item, depth);
 
@@ -137,12 +152,15 @@ function NavItemRenderer<TData>({
 		return (
 			// biome-ignore lint/a11y/useKeyWithClickEvents: keyboard activation is handled at the tree container level via useNavKeyboard (roving tabindex + onKeyDown), not per treeitem.
 			<div
+				className={slotClassNames?.item}
+				style={slotStyles?.item}
 				data-item-id={item.id}
 				role="treeitem"
 				aria-current={item.type === "link" && active ? "page" : undefined}
+				aria-selected={item.type === "link" ? active : undefined}
 				aria-expanded={expanded}
 				aria-disabled={item.disabled || undefined}
-				tabIndex={-1}
+				tabIndex={itemTabIndex}
 				onClick={handleCustomClick}
 			>
 				{custom}
@@ -152,7 +170,16 @@ function NavItemRenderer<TData>({
 
 	if (item.type === "divider") {
 		if (collapsed) return null;
-		return <Divider my="sm" mx="sm" role="presentation" />;
+		return (
+			<Divider
+				my="sm"
+				mx="sm"
+				role="presentation"
+				label={item.label}
+				className={slotClassNames?.divider}
+				style={slotStyles?.divider}
+			/>
+		);
 	}
 
 	if (item.type === "section") {
@@ -167,7 +194,8 @@ function NavItemRenderer<TData>({
 				pt="lg"
 				pb="xs"
 				role="presentation"
-				style={{ letterSpacing: "0.05em" }}
+				className={slotClassNames?.section}
+				style={{ letterSpacing: "0.05em", ...slotStyles?.section }}
 			>
 				{item.label}
 			</Text>
@@ -201,6 +229,8 @@ function NavItemRenderer<TData>({
 				? { [hrefProp]: item.href }
 				: { href: item.href };
 			const collapsedProps = {
+				className: slotClassNames?.item,
+				style: slotStyles?.item,
 				label: "" as const,
 				leftSection: item.icon,
 				...linkDest,
@@ -208,11 +238,12 @@ function NavItemRenderer<TData>({
 				variant,
 				color,
 				disabled: item.disabled,
-				"aria-label": item.label,
+				"aria-label": item["aria-label"] ?? item.label,
 				"aria-current": active ? ("page" as const) : undefined,
+				"aria-selected": active,
 				"data-item-id": item.id,
 				role: "treeitem" as const,
-				tabIndex: -1 as const,
+				tabIndex: itemTabIndex,
 				styles: {
 					root: {
 						justifyContent: "center" as const,
@@ -254,6 +285,8 @@ function NavItemRenderer<TData>({
 			? { [hrefProp]: item.href }
 			: { href: item.href };
 		const standardProps = {
+			className: slotClassNames?.item,
+			style: slotStyles?.item,
 			label: item.label,
 			leftSection: item.icon,
 			rightSection: item.badge,
@@ -262,10 +295,12 @@ function NavItemRenderer<TData>({
 			variant,
 			color,
 			disabled: item.disabled,
+			"aria-label": item["aria-label"],
 			"aria-current": active ? ("page" as const) : undefined,
+			"aria-selected": active,
 			"data-item-id": item.id,
 			role: "treeitem" as const,
-			tabIndex: -1 as const,
+			tabIndex: itemTabIndex,
 			styles: {
 				root: {
 					borderRadius: "var(--mantine-radius-sm)",
@@ -302,17 +337,89 @@ function NavItemRenderer<TData>({
 
 	// In collapsed mode, show icon-only group with popover submenu
 	if (collapsed && depth === 0) {
+		const renderRailMenuChildren = (
+			children: NavItemType<TData>[],
+		): ReactNode[] =>
+			children.flatMap((child): ReactNode[] => {
+				if (child.type === "section") {
+					return [<Menu.Label key={child.id}>{child.label}</Menu.Label>];
+				}
+				if (child.type === "divider") {
+					return [<Menu.Divider key={child.id} />];
+				}
+				if (child.type === "group") {
+					return [
+						<Menu.Label key={child.id}>{child.label}</Menu.Label>,
+						...renderRailMenuChildren(child.children),
+					];
+				}
+
+				const useChildRouterLink = linkComponent && !child.external;
+				const menuLinkDest = child.href
+					? useChildRouterLink
+						? { [hrefProp]: child.href }
+						: { href: child.href }
+					: {};
+				const menuItemProps = {
+					leftSection: child.icon,
+					disabled: child.disabled,
+					...menuLinkDest,
+					onClick: (e: React.MouseEvent) => {
+						if (child.disabled) return;
+						if (child.onClick) {
+							// Match the expanded-mode link behavior: only suppress
+							// navigation for pure action items (no href).
+							if (!child.href) e.preventDefault();
+							child.onClick(e);
+						}
+						onItemClick?.(child, e);
+					},
+				};
+
+				if (child.external) {
+					return [
+						<Menu.Item
+							key={child.id}
+							component="a"
+							target="_blank"
+							rel="noopener noreferrer"
+							{...menuItemProps}
+						>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				if (linkComponent && child.href) {
+					return [
+						<Menu.Item
+							key={child.id}
+							component={linkComponent}
+							{...menuItemProps}
+						>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				if (child.href) {
+					return [
+						<Menu.Item key={child.id} component="a" {...menuItemProps}>
+							{child.label}
+						</Menu.Item>,
+					];
+				}
+				return [
+					<Menu.Item key={child.id} {...menuItemProps}>
+						{child.label}
+					</Menu.Item>,
+				];
+			});
+
 		return (
 			<div style={{ position: "relative" }}>
 				{groupActive && <CollapsedActiveIndicator />}
 				<Menu position="right-start" withArrow offset={8} withinPortal>
 					<Menu.Target>
-						<Tooltip
-							label={groupItem.label}
-							position="right"
-							withArrow
-							disabled={groupItem.children.length > 0}
-						>
+						<Tooltip label={groupItem.label} position="right" withArrow>
 							<NavLink
 								label=""
 								leftSection={groupItem.icon}
@@ -322,8 +429,8 @@ function NavItemRenderer<TData>({
 								disabled={groupItem.disabled}
 								data-item-id={groupItem.id}
 								role="treeitem"
-								aria-label={groupItem.label}
-								tabIndex={-1}
+								aria-label={groupItem["aria-label"] ?? groupItem.label}
+								tabIndex={itemTabIndex}
 								styles={{
 									root: {
 										justifyContent: "center",
@@ -340,68 +447,7 @@ function NavItemRenderer<TData>({
 					</Menu.Target>
 					<Menu.Dropdown>
 						<Menu.Label>{groupItem.label}</Menu.Label>
-						{groupItem.children
-							.filter(
-								(child): child is NavLinkItem<TData> => child.type === "link",
-							)
-							.map((child) => {
-								const useChildRouterLink = linkComponent && !child.external;
-								const menuLinkDest = child.href
-									? useChildRouterLink
-										? { [hrefProp]: child.href }
-										: { href: child.href }
-									: {};
-								const menuItemProps = {
-									leftSection: child.icon,
-									disabled: child.disabled,
-									...menuLinkDest,
-									onClick: (e: React.MouseEvent) => {
-										if (child.disabled) return;
-										if (child.onClick) {
-											e.preventDefault();
-											child.onClick(e);
-										}
-										onItemClick?.(child, e);
-									},
-								};
-
-								if (child.external) {
-									return (
-										<Menu.Item
-											key={child.id}
-											component="a"
-											target="_blank"
-											rel="noopener noreferrer"
-											{...menuItemProps}
-										>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								if (linkComponent && child.href) {
-									return (
-										<Menu.Item
-											key={child.id}
-											component={linkComponent}
-											{...menuItemProps}
-										>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								if (child.href) {
-									return (
-										<Menu.Item key={child.id} component="a" {...menuItemProps}>
-											{child.label}
-										</Menu.Item>
-									);
-								}
-								return (
-									<Menu.Item key={child.id} {...menuItemProps}>
-										{child.label}
-									</Menu.Item>
-								);
-							})}
+						{renderRailMenuChildren(groupItem.children)}
 					</Menu.Dropdown>
 				</Menu>
 			</div>
@@ -410,6 +456,8 @@ function NavItemRenderer<TData>({
 
 	return (
 		<NavLink
+			className={slotClassNames?.item}
+			style={slotStyles?.item}
 			label={groupItem.label}
 			leftSection={groupItem.icon}
 			rightSection={groupItem.badge}
@@ -420,8 +468,9 @@ function NavItemRenderer<TData>({
 			opened={isExpanded}
 			data-item-id={groupItem.id}
 			role="treeitem"
+			aria-label={groupItem["aria-label"]}
 			aria-expanded={isExpanded}
-			tabIndex={-1}
+			tabIndex={itemTabIndex}
 			styles={{
 				root: {
 					borderRadius: "var(--mantine-radius-sm)",
@@ -454,12 +503,14 @@ function NavItemRenderer<TData>({
 					onItemClick={onItemClick}
 					onGroupToggle={onGroupToggle}
 					renderItem={renderItem}
-					transitionDuration={transitionDuration}
 					variant={variant}
 					color={color}
 					collapsed={collapsed}
 					linkComponent={linkComponent}
 					hrefProp={hrefProp}
+					rovingItemId={rovingItemId}
+					slotClassNames={slotClassNames}
+					slotStyles={slotStyles}
 				/>
 			))}
 		</NavLink>
@@ -558,6 +609,22 @@ function findFirstDefault<TData>(
 	return false;
 }
 
+function findLinkByIdOrHref<TData>(
+	items: NavItemType<TData>[],
+	target: string,
+): NavLinkItem<TData> | null {
+	for (const item of items) {
+		if (item.type === "link" && (item.id === target || item.href === target)) {
+			return item;
+		}
+		if (item.type === "group") {
+			const found = findLinkByIdOrHref(item.children, target);
+			if (found) return found;
+		}
+	}
+	return null;
+}
+
 // Flatten visible items for keyboard navigation
 function flattenVisibleItems<TData>(
 	items: NavItemType<TData>[],
@@ -600,17 +667,20 @@ export function NavGroup<TData = unknown>({
 	activeItem,
 	activeMatcher = "prefix",
 	currentPath,
-	animation,
-	transitionDuration: transitionDurationProp,
 	variant = "light",
 	color,
+	expandedKeys: expandedKeysProp,
+	onExpandedChange,
 	onItemClick,
 	onGroupToggle,
-	onActiveChange: _onActiveChange,
+	onActiveChange,
 	// Accordion
 	accordion = false,
 	accordionScope = "sibling",
 	onAccordionChange,
+	"aria-label": ariaLabel = "Navigation",
+	classNames,
+	styles,
 	// Keyboard
 	enableKeyboardNav = true,
 	typeAhead = true,
@@ -646,9 +716,17 @@ export function NavGroup<TData = unknown>({
 	);
 
 	// Manage expanded state with accordion support
-	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() =>
-		collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
+	const isExpandedControlled = expandedKeysProp !== undefined;
+	const [internalExpandedGroups, setExpandedGroups] = useState<Set<string>>(
+		() => collectDefaultExpanded(visibleItemTree, accordion, accordionScope),
 	);
+	const controlledExpandedGroups = useMemo(
+		() => new Set(expandedKeysProp ?? []),
+		[expandedKeysProp],
+	);
+	const expandedGroups = isExpandedControlled
+		? controlledExpandedGroups
+		: internalExpandedGroups;
 
 	// Groups whose defaultOpened we've already applied. The useState initializer
 	// above only runs once, so groups added after mount (e.g. async-loaded nav
@@ -657,6 +735,7 @@ export function NavGroup<TData = unknown>({
 	// user has since collapsed.
 	const knownGroupIds = useRef<Set<string> | null>(null);
 	useEffect(() => {
+		if (isExpandedControlled) return;
 		const allIds = collectAllGroupIds(visibleItemTree);
 		if (knownGroupIds.current === null) {
 			// First effect run: defaults already applied by the initializer.
@@ -680,40 +759,66 @@ export function NavGroup<TData = unknown>({
 				return next;
 			});
 		}
-	}, [visibleItemTree, accordion, accordionScope]);
+	}, [visibleItemTree, accordion, accordionScope, isExpandedControlled]);
 
+	// Computed outside the setState updater so onAccordionChange cannot
+	// double-fire when React re-invokes updaters (StrictMode).
 	const handleToggleGroup = useCallback(
 		(key: string) => {
-			setExpandedGroups((prev) => {
-				const next = new Set(prev);
-				if (next.has(key)) {
-					next.delete(key);
-					if (accordion) onAccordionChange?.(null);
-				} else {
-					if (accordion) {
-						if (accordionScope === "global") {
-							next.clear();
-						} else {
-							const siblings = getSiblingGroupIds(visibleItemTree, key);
-							for (const s of siblings) {
-								if (s !== key) next.delete(s);
-							}
+			const next = new Set(expandedGroups);
+			if (next.has(key)) {
+				next.delete(key);
+				if (accordion) onAccordionChange?.(null);
+			} else {
+				if (accordion) {
+					if (accordionScope === "global") {
+						next.clear();
+					} else {
+						const siblings = getSiblingGroupIds(visibleItemTree, key);
+						for (const s of siblings) {
+							if (s !== key) next.delete(s);
 						}
-						onAccordionChange?.(key);
 					}
-					next.add(key);
+					onAccordionChange?.(key);
 				}
-				return next;
-			});
+				next.add(key);
+			}
+			onExpandedChange?.(Array.from(next));
+			if (!isExpandedControlled) setExpandedGroups(next);
 		},
-		[accordion, accordionScope, visibleItemTree, onAccordionChange],
+		[
+			expandedGroups,
+			accordion,
+			accordionScope,
+			visibleItemTree,
+			onAccordionChange,
+			onExpandedChange,
+			isExpandedControlled,
+		],
 	);
 
 	// Active state
-	const { isActive: isActiveByRoute } = useActiveNavItem(visibleItemTree, {
-		currentPath,
-		matcher: activeMatcher,
-	});
+	const { isActive: isActiveByRoute, activeItem: routeActiveItem } =
+		useActiveNavItem(visibleItemTree, {
+			currentPath,
+			matcher: activeMatcher,
+		});
+
+	// The activeItem prop (matched by id or href) overrides route matching.
+	const resolvedActiveLink = useMemo(() => {
+		if (activeItem !== undefined && activeItem !== null) {
+			return findLinkByIdOrHref(visibleItemTree, activeItem);
+		}
+		return routeActiveItem;
+	}, [activeItem, visibleItemTree, routeActiveItem]);
+
+	const lastActiveIdRef = useRef<string | null>(null);
+	useEffect(() => {
+		const id = resolvedActiveLink?.id ?? null;
+		if (lastActiveIdRef.current === id) return;
+		lastActiveIdRef.current = id;
+		onActiveChange?.(resolvedActiveLink ?? null);
+	}, [resolvedActiveLink, onActiveChange]);
 
 	const isActive = useCallback(
 		(item: NavItemType<TData>): boolean => {
@@ -728,10 +833,6 @@ export function NavGroup<TData = unknown>({
 		[activeItem, isActiveByRoute],
 	);
 
-	// Animation
-	const { duration } = useNavAnimation(animation);
-	const resolvedDuration = transitionDurationProp ?? duration;
-
 	// Keyboard navigation
 	const flatItems = flattenVisibleItems(
 		visibleItemTree,
@@ -739,17 +840,20 @@ export function NavGroup<TData = unknown>({
 		maxDepth,
 	);
 
-	const { handleKeyDown } = useNavKeyboard({
+	const { handleKeyDown, focusedItemId } = useNavKeyboard({
 		items: flatItems,
 		treeItems: visibleItemTree,
 		expandedKeys: expandedGroups,
 		onToggle: handleToggleGroup,
 		onSelect: (item) => {
 			if (item.type === "link") {
-				const syntheticEvent = new MouseEvent("click", {
-					bubbles: true,
-				}) as unknown as React.MouseEvent;
-				wrappedOnItemClick(item, syntheticEvent);
+				// Click the real DOM node so keyboard activation follows the
+				// href natively and runs the same path as a mouse click
+				// (item.onClick, onItemClick, mobile drawer close).
+				const el = containerRef.current?.querySelector<HTMLElement>(
+					`[data-item-id="${CSS.escape(item.id)}"]`,
+				);
+				el?.click();
 			}
 		},
 		containerRef: containerRef as React.RefObject<HTMLElement>,
@@ -759,12 +863,24 @@ export function NavGroup<TData = unknown>({
 		enabled: enableKeyboardNav,
 	});
 
+	// Roving tabindex: exactly one treeitem is tabbable. The last focused item
+	// wins, then the active link, then the first visible item.
+	const rovingItemId = !enableKeyboardNav
+		? null
+		: focusedItemId && flatItems.some((item) => item.id === focusedItemId)
+			? focusedItemId
+			: (flatItems.find((item) => item.type === "link" && isActive(item))?.id ??
+				flatItems[0]?.id ??
+				null);
+
 	return (
 		<div
 			role="tree"
-			aria-label="Navigation"
+			aria-label={ariaLabel}
+			className={classNames?.root}
+			style={styles?.root}
 			ref={containerRef}
-			tabIndex={enableKeyboardNav ? 0 : undefined}
+			tabIndex={enableKeyboardNav ? -1 : undefined}
 			onKeyDown={
 				enableKeyboardNav
 					? (handleKeyDown as React.KeyboardEventHandler<HTMLDivElement>)
@@ -783,12 +899,14 @@ export function NavGroup<TData = unknown>({
 					onItemClick={wrappedOnItemClick}
 					onGroupToggle={onGroupToggle}
 					renderItem={renderItem}
-					transitionDuration={resolvedDuration}
 					variant={variant}
 					color={color}
 					collapsed={isCollapsed}
 					linkComponent={resolvedLinkComponent}
 					hrefProp={resolvedHrefProp}
+					rovingItemId={rovingItemId}
+					slotClassNames={classNames}
+					slotStyles={styles}
 				/>
 			))}
 		</div>

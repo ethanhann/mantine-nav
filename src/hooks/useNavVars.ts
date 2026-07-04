@@ -20,17 +20,25 @@ export function useNavVars(): UseNavVarsReturn {
 
 	const setVar = useCallback((name: string, value: string): void => {
 		if (typeof document === "undefined") return;
-		overridesRef.current.set(
-			name,
-			getComputedStyle(document.documentElement).getPropertyValue(name),
-		);
+		// Remember the pre-override inline value (first override only) so
+		// resetVars can restore it instead of clearing it.
+		if (!overridesRef.current.has(name)) {
+			overridesRef.current.set(
+				name,
+				document.documentElement.style.getPropertyValue(name),
+			);
+		}
 		document.documentElement.style.setProperty(name, value);
 	}, []);
 
 	const resetVars = useCallback((): void => {
 		if (typeof document === "undefined") return;
-		for (const [name] of overridesRef.current) {
-			document.documentElement.style.removeProperty(name);
+		for (const [name, previous] of overridesRef.current) {
+			if (previous) {
+				document.documentElement.style.setProperty(name, previous);
+			} else {
+				document.documentElement.style.removeProperty(name);
+			}
 		}
 		overridesRef.current.clear();
 	}, []);

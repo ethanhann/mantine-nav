@@ -1,7 +1,9 @@
-import { MantineProvider } from "@mantine/core";
+import { type AppShellMainProps, MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { NavShell, useNavShell } from "./NavShell";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { mockViewport, resetViewport } from "../../__integration__/helpers";
+import { NavBurger, NavShell, useNavShell } from "./NavShell";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
 	return <MantineProvider>{children}</MantineProvider>;
@@ -83,7 +85,7 @@ describe("NavShell", () => {
 	it("should pass props through to AppShell.main", () => {
 		render(
 			<NavShell
-				mainProps={{ "data-testid": "main-element" }}
+				mainProps={{ "data-testid": "main-element" } as AppShellMainProps}
 				sidebar={<span>Nav Items</span>}
 			>
 				<div>Content</div>
@@ -91,5 +93,264 @@ describe("NavShell", () => {
 			{ wrapper: Wrapper },
 		);
 		expect(screen.getByTestId("main-element")).toBeInTheDocument();
+	});
+
+	it("applies custom labels to the burger", () => {
+		// Arrange
+		mockViewport(400);
+
+		// Act
+		render(
+			<NavShell
+				header={<span>Logo</span>}
+				sidebar={<span>Nav</span>}
+				labels={{ toggleNavigation: "Menü öffnen" }}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByLabelText("Menü öffnen")).toBeInTheDocument();
+		resetViewport();
+	});
+
+	it("applies asideWidth and footerHeight to the AppShell", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavShell
+				aside={<span>Aside</span>}
+				footer={<span>Footer</span>}
+				asideWidth={340}
+				footerHeight={72}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(container.innerHTML).toMatch(
+			/--app-shell-aside-width:\s*calc\(21\.25rem/,
+		);
+		expect(container.innerHTML).toMatch(
+			/--app-shell-footer-height:\s*calc\(4\.5rem/,
+		);
+	});
+
+	it("NavBurger toggles the mobile drawer in a header-less layout", async () => {
+		// Arrange
+		mockViewport(400);
+		const user = userEvent.setup();
+		function Probe() {
+			const ctx = useNavShell();
+			return <span data-testid="opened">{String(ctx.mobileOpened)}</span>;
+		}
+		render(
+			<NavShell sidebar={<span>Nav</span>}>
+				<NavBurger aria-label="Open menu" />
+				<Probe />
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+		expect(screen.getByTestId("opened")).toHaveTextContent("false");
+
+		// Act
+		await user.click(screen.getByLabelText("Open menu"));
+
+		// Assert
+		expect(screen.getByTestId("opened")).toHaveTextContent("true");
+		resetViewport();
+	});
+
+	it("applies classNames and styles to shell slots", () => {
+		// Arrange
+
+		// Act
+		const { container } = render(
+			<NavShell
+				header={<span>Logo</span>}
+				sidebar={<span>Nav</span>}
+				classNames={{ navbar: "custom-navbar", header: "custom-header" }}
+				styles={{ navbar: { backgroundColor: "rgb(1, 2, 3)" } }}
+			>
+				<div>Content</div>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		const navbar = container.querySelector(".custom-navbar");
+		expect(navbar).not.toBeNull();
+		expect(navbar).toHaveStyle({ backgroundColor: "rgb(1, 2, 3)" });
+		expect(container.querySelector(".custom-header")).not.toBeNull();
+	});
+
+	describe("controlled desktop collapse", () => {
+		function CollapseProbe() {
+			const ctx = useNavShell();
+			return (
+				<button type="button" onClick={ctx.toggleDesktop}>
+					{String(ctx.desktopCollapsed)}
+				</button>
+			);
+		}
+
+		it("follows the desktopCollapsed prop and reports intent without mutating", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onDesktopCollapsedChange = vi.fn();
+			const { rerender } = render(
+				<NavShell
+					desktopCollapsed
+					onDesktopCollapsedChange={onDesktopCollapsedChange}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "true" }));
+
+			// Assert
+			expect(onDesktopCollapsedChange).toHaveBeenCalledWith(false);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+			rerender(
+				<MantineProvider>
+					<NavShell
+						desktopCollapsed={false}
+						onDesktopCollapsedChange={onDesktopCollapsedChange}
+						sidebar={<CollapseProbe />}
+					>
+						<div>Content</div>
+					</NavShell>
+				</MantineProvider>,
+			);
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("fires onDesktopCollapsedChange in uncontrolled mode and updates state", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onDesktopCollapsedChange = vi.fn();
+			render(
+				<NavShell
+					onDesktopCollapsedChange={onDesktopCollapsedChange}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "false" }));
+
+			// Assert
+			expect(onDesktopCollapsedChange).toHaveBeenCalledWith(true);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+	});
+
+	describe("mobile drawer", () => {
+		beforeEach(() => {
+			mockViewport(400);
+		});
+
+		afterEach(() => {
+			resetViewport();
+		});
+
+		function renderMobileShell() {
+			return render(
+				<NavShell
+					header={<span>Logo</span>}
+					sidebar={
+						<div>
+							<a href="/one">One</a>
+							<a href="/two">Two</a>
+							<button type="button">Action</button>
+						</div>
+					}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+		}
+
+		it("moves focus into the drawer when it opens", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+
+			// Act
+			await user.click(screen.getByLabelText("Toggle navigation"));
+
+			// Assert
+			expect(screen.getByText("One")).toHaveFocus();
+		});
+
+		it("returns focus to the previously focused element when closed via Escape", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			const burger = screen.getByLabelText("Toggle navigation");
+			await user.click(burger);
+
+			// Act
+			await user.keyboard("{Escape}");
+
+			// Assert
+			expect(burger).toHaveFocus();
+		});
+
+		it("does not expose the backdrop overlay as a button", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+
+			// Act
+			await user.click(screen.getByLabelText("Toggle navigation"));
+
+			// Assert
+			expect(
+				screen.queryByRole("button", { name: "Close navigation" }),
+			).not.toBeInTheDocument();
+		});
+
+		it("wraps Tab focus within the open drawer", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			await user.click(screen.getByLabelText("Toggle navigation"));
+			screen.getByText("Action").focus();
+
+			// Act
+			await user.tab();
+
+			// Assert
+			expect(screen.getByText("One")).toHaveFocus();
+		});
+
+		it("wraps Shift+Tab focus from the first drawer element to the last", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			renderMobileShell();
+			await user.click(screen.getByLabelText("Toggle navigation"));
+			screen.getByText("One").focus();
+
+			// Act
+			await user.tab({ shift: true });
+
+			// Assert
+			expect(screen.getByText("Action")).toHaveFocus();
+		});
 	});
 });

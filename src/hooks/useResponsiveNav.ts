@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export type SidebarMode = "persistent" | "temporary" | "overlay";
 
@@ -9,16 +9,9 @@ const PRINT_STYLE_ID = "nav-print-styles";
 // removed once the last printFriendly instance unmounts.
 let printStyleRefCount = 0;
 
-export interface ResponsiveBreakpointConfig {
-	sidebarMode: SidebarMode;
-	sidebarCollapsed: boolean;
-	navbarVisible: boolean;
-}
-
 export interface UseResponsiveNavOptions {
 	sidebarBreakpoint?: number;
 	navbarBreakpoint?: number;
-	strategy?: Record<string, ResponsiveBreakpointConfig>;
 	printFriendly?: boolean;
 }
 
@@ -43,7 +36,9 @@ export function useResponsiveNav({
 	const [viewportWidth, setViewportWidth] = useState(() =>
 		typeof window !== "undefined" ? window.innerWidth : 1024,
 	);
-	const [sidebarVisible, setSidebarVisible] = useState(true);
+	const [sidebarVisible, setSidebarVisible] = useState(
+		() => viewportWidth >= sidebarBreakpoint,
+	);
 
 	useEffect(() => {
 		if (typeof window === "undefined") return;
@@ -52,13 +47,15 @@ export function useResponsiveNav({
 		return () => window.removeEventListener("resize", handler);
 	}, []);
 
-	// Auto-hide sidebar on mobile
+	// Auto-hide on entering mobile and auto-show on leaving it, but only on
+	// actual mode crossings so consumer showSidebar/hideSidebar calls are not
+	// overridden by unrelated resize events.
+	const wasMobileRef = useRef(viewportWidth < sidebarBreakpoint);
 	useEffect(() => {
-		if (viewportWidth < sidebarBreakpoint) {
-			setSidebarVisible(false);
-		} else {
-			setSidebarVisible(true);
-		}
+		const mobile = viewportWidth < sidebarBreakpoint;
+		if (wasMobileRef.current === mobile) return;
+		wasMobileRef.current = mobile;
+		setSidebarVisible(!mobile);
 	}, [viewportWidth, sidebarBreakpoint]);
 
 	// Print styles. Reference-counted so multiple hook instances share one

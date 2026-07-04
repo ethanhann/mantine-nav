@@ -7,6 +7,7 @@ import {
 	type MantineBreakpoint,
 	type MantineSpacing,
 	Overlay,
+	useMantineTheme,
 } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import {
@@ -16,7 +17,12 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
+	useRef,
 } from "react";
+import type { NavSlotStyles } from "../../types";
+
+export type NavShellSlot = "header" | "navbar" | "aside" | "footer" | "main";
 
 /** Context value provided by NavShell to descendant components. */
 export interface NavShellContextValue {
@@ -34,14 +40,8 @@ export interface NavShellContextValue {
 	hrefProp?: string;
 }
 
-/** Mantine's default breakpoint values, in em, for media-query mapping. */
-const BREAKPOINT_EM: Record<MantineBreakpoint, string> = {
-	xs: "36em",
-	sm: "48em",
-	md: "62em",
-	lg: "75em",
-	xl: "88em",
-};
+const FOCUSABLE_SELECTOR =
+	'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const NavShellContext = createContext<NavShellContextValue | null>(null);
 
@@ -69,7 +69,7 @@ export function useOptionalNavShell(): NavShellContextValue | null {
 }
 
 /** Props for the NavShell layout component. */
-export interface NavShellProps {
+export interface NavShellProps extends NavSlotStyles<NavShellSlot> {
 	header?: ReactNode;
 	sidebar?: ReactNode;
 	aside?: ReactNode;
@@ -81,6 +81,16 @@ export interface NavShellProps {
 	sidebarBreakpoint?: MantineBreakpoint;
 	sidebarCollapsible?: boolean;
 	defaultDesktopCollapsed?: boolean;
+	/** Controlled collapse state. When set, pair with onDesktopCollapsedChange. */
+	desktopCollapsed?: boolean;
+	/** Called with the intended collapse state on toggle/collapse/expand. */
+	onDesktopCollapsedChange?: (collapsed: boolean) => void;
+	/** Aside panel width. @default 300 */
+	asideWidth?: number;
+	/** Breakpoint below which the aside is hidden. @default "md" */
+	asideBreakpoint?: MantineBreakpoint;
+	/** Footer height. @default 60 */
+	footerHeight?: number;
 	layout?: "default" | "alt";
 	withBorder?: boolean;
 	padding?: MantineSpacing;
@@ -90,6 +100,11 @@ export interface NavShellProps {
 	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
 	hrefProp?: string;
 	mainProps?: AppShellMainProps;
+	/** Overrides for user-facing strings. */
+	labels?: {
+		/** Burger aria-label. @default "Toggle navigation" */
+		toggleNavigation?: string;
+	};
 }
 
 /**
@@ -120,6 +135,11 @@ export function NavShell({
 	sidebarBreakpoint = "sm",
 	sidebarCollapsible = true,
 	defaultDesktopCollapsed = false,
+	desktopCollapsed: desktopCollapsedProp,
+	onDesktopCollapsedChange,
+	asideWidth = 300,
+	asideBreakpoint = "md",
+	footerHeight = 60,
 	layout = "default",
 	withBorder = true,
 	padding = "md",
@@ -127,6 +147,9 @@ export function NavShell({
 	linkComponent,
 	hrefProp,
 	mainProps = {},
+	labels,
+	classNames,
+	styles,
 }: NavShellProps): ReactElement {
 	const [
 		mobileOpened,
@@ -134,20 +157,48 @@ export function NavShell({
 	] = useDisclosure(false);
 	const [
 		desktopExpanded,
-		{
-			toggle: toggleDesktopExpanded,
-			open: expandDesktopInner,
-			close: collapseDesktopInner,
-		},
+		{ open: expandDesktopInner, close: collapseDesktopInner },
 	] = useDisclosure(!defaultDesktopCollapsed);
 
-	const desktopCollapsed = sidebarCollapsible ? !desktopExpanded : false;
+	const isCollapseControlled = desktopCollapsedProp !== undefined;
+	const desktopCollapsed = sidebarCollapsible
+		? (desktopCollapsedProp ?? !desktopExpanded)
+		: false;
+	// Resolve the breakpoint from the active theme so a custom theme keeps
+	// isMobile in sync with AppShell's own collapse point.
+	const theme = useMantineTheme();
 	const isMobile =
-		useMediaQuery(`(max-width: ${BREAKPOINT_EM[sidebarBreakpoint]})`) ?? false;
+		useMediaQuery(`(max-width: ${theme.breakpoints[sidebarBreakpoint]})`) ??
+		false;
 
-	const toggleDesktop = toggleDesktopExpanded;
-	const collapseDesktop = collapseDesktopInner;
-	const expandDesktop = expandDesktopInner;
+	const setDesktopCollapsed = useCallback(
+		(collapsed: boolean) => {
+			if (!isCollapseControlled) {
+				if (collapsed) collapseDesktopInner();
+				else expandDesktopInner();
+			}
+			onDesktopCollapsedChange?.(collapsed);
+		},
+		[
+			isCollapseControlled,
+			collapseDesktopInner,
+			expandDesktopInner,
+			onDesktopCollapsedChange,
+		],
+	);
+
+	const toggleDesktop = useCallback(
+		() => setDesktopCollapsed(!desktopCollapsed),
+		[setDesktopCollapsed, desktopCollapsed],
+	);
+	const collapseDesktop = useCallback(
+		() => setDesktopCollapsed(true),
+		[setDesktopCollapsed],
+	);
+	const expandDesktop = useCallback(
+		() => setDesktopCollapsed(false),
+		[setDesktopCollapsed],
+	);
 
 	// Close mobile sidebar on Escape key
 	const handleEscape = useCallback(
@@ -164,19 +215,72 @@ export function NavShell({
 		return () => document.removeEventListener("keydown", handleEscape);
 	}, [handleEscape]);
 
-	const ctx: NavShellContextValue = {
-		mobileOpened,
-		toggleMobile,
-		openMobile,
-		closeMobile,
-		desktopCollapsed,
-		toggleDesktop,
-		collapseDesktop,
-		expandDesktop,
-		isMobile,
-		linkComponent,
-		hrefProp,
-	};
+	// Mobile drawer focus management: move focus into the drawer on open and
+	// restore it to the previously focused element on close.
+	const navbarRef = useRef<HTMLDivElement>(null);
+	const returnFocusRef = useRef<HTMLElement | null>(null);
+	const drawerActive = isMobile && mobileOpened;
+
+	useEffect(() => {
+		if (!drawerActive) return;
+		returnFocusRef.current = document.activeElement as HTMLElement | null;
+		const navbar = navbarRef.current;
+		if (navbar) {
+			const first = navbar.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+			(first ?? navbar).focus();
+		}
+		return () => {
+			returnFocusRef.current?.focus();
+			returnFocusRef.current = null;
+		};
+	}, [drawerActive]);
+
+	const handleDrawerKeyDown = useCallback((e: React.KeyboardEvent) => {
+		if (e.key !== "Tab" || !navbarRef.current) return;
+		const focusables = Array.from(
+			navbarRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+		);
+		if (focusables.length === 0) return;
+		const first = focusables[0];
+		const last = focusables[focusables.length - 1];
+		const active = document.activeElement;
+		if (e.shiftKey && (active === first || active === navbarRef.current)) {
+			e.preventDefault();
+			last?.focus();
+		} else if (!e.shiftKey && active === last) {
+			e.preventDefault();
+			first?.focus();
+		}
+	}, []);
+
+	const ctx: NavShellContextValue = useMemo(
+		() => ({
+			mobileOpened,
+			toggleMobile,
+			openMobile,
+			closeMobile,
+			desktopCollapsed,
+			toggleDesktop,
+			collapseDesktop,
+			expandDesktop,
+			isMobile,
+			linkComponent,
+			hrefProp,
+		}),
+		[
+			mobileOpened,
+			toggleMobile,
+			openMobile,
+			closeMobile,
+			desktopCollapsed,
+			toggleDesktop,
+			collapseDesktop,
+			expandDesktop,
+			isMobile,
+			linkComponent,
+			hrefProp,
+		],
+	);
 
 	return (
 		<NavShellContext.Provider value={ctx}>
@@ -196,17 +300,24 @@ export function NavShell({
 				}
 				aside={
 					aside
-						? { width: 300, breakpoint: "md", collapsed: { mobile: true } }
+						? {
+								width: asideWidth,
+								breakpoint: asideBreakpoint,
+								collapsed: { mobile: true },
+							}
 						: undefined
 				}
-				footer={footer ? { height: 60 } : undefined}
+				footer={footer ? { height: footerHeight } : undefined}
 				layout={layout}
 				padding={padding}
 				withBorder={withBorder}
 				transitionDuration={transitionDuration}
 			>
 				{header && (
-					<AppShell.Header>
+					<AppShell.Header
+						className={classNames?.header}
+						style={styles?.header}
+					>
 						<Group h="100%" px="md" wrap="nowrap">
 							{sidebar && (
 								<Burger
@@ -214,7 +325,7 @@ export function NavShell({
 									onClick={toggleMobile}
 									hiddenFrom={sidebarBreakpoint}
 									size="sm"
-									aria-label="Toggle navigation"
+									aria-label={labels?.toggleNavigation ?? "Toggle navigation"}
 								/>
 							)}
 							{header}
@@ -222,26 +333,90 @@ export function NavShell({
 					</AppShell.Header>
 				)}
 
-				{sidebar && <AppShell.Navbar p="sm">{sidebar}</AppShell.Navbar>}
+				{sidebar && (
+					<AppShell.Navbar
+						p="sm"
+						ref={navbarRef}
+						onKeyDown={drawerActive ? handleDrawerKeyDown : undefined}
+						className={classNames?.navbar}
+						style={styles?.navbar}
+					>
+						{sidebar}
+					</AppShell.Navbar>
+				)}
 
-				{aside && <AppShell.Aside p="md">{aside}</AppShell.Aside>}
+				{aside && (
+					<AppShell.Aside
+						p="md"
+						className={classNames?.aside}
+						style={styles?.aside}
+					>
+						{aside}
+					</AppShell.Aside>
+				)}
 
-				{/* Backdrop overlay when mobile sidebar is open */}
-				{isMobile && mobileOpened && (
+				{/* Backdrop overlay when mobile sidebar is open. Click-to-close is
+				    a pointer convenience only; keyboard users close with Escape. */}
+				{drawerActive && (
 					<Overlay
 						onClick={closeMobile}
 						opacity={0.5}
 						color="var(--mantine-color-black)"
 						zIndex={"calc(var(--mantine-z-index-app) - 1)" as unknown as number}
-						role="button"
-						aria-label="Close navigation"
 					/>
 				)}
 
-				<AppShell.Main {...mainProps}>{children}</AppShell.Main>
+				<AppShell.Main
+					className={classNames?.main}
+					style={styles?.main}
+					{...mainProps}
+				>
+					{children}
+				</AppShell.Main>
 
-				{footer && <AppShell.Footer p="md">{footer}</AppShell.Footer>}
+				{footer && (
+					<AppShell.Footer
+						p="md"
+						className={classNames?.footer}
+						style={styles?.footer}
+					>
+						{footer}
+					</AppShell.Footer>
+				)}
 			</AppShell>
 		</NavShellContext.Provider>
+	);
+}
+
+/** Props for the standalone mobile navigation toggle. */
+export interface NavBurgerProps {
+	size?: string | number;
+	/** Hide the burger from this breakpoint upward. */
+	hiddenFrom?: MantineBreakpoint;
+	/** @default "Toggle navigation" */
+	"aria-label"?: string;
+}
+
+/**
+ * Standalone mobile drawer toggle bound to the surrounding NavShell.
+ *
+ * Use it in layouts without a header, where NavShell's built-in Burger is
+ * not rendered. Renders nothing outside a NavShell.
+ */
+export function NavBurger({
+	size = "sm",
+	hiddenFrom,
+	"aria-label": ariaLabel = "Toggle navigation",
+}: NavBurgerProps): ReactElement | null {
+	const shell = useOptionalNavShell();
+	if (!shell) return null;
+	return (
+		<Burger
+			opened={shell.mobileOpened}
+			onClick={shell.toggleMobile}
+			hiddenFrom={hiddenFrom}
+			size={size}
+			aria-label={ariaLabel}
+		/>
 	);
 }

@@ -1,7 +1,8 @@
-import { Text } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import {
+	NavBurger,
 	NavGroup,
 	NavHeader,
 	NavShell,
@@ -75,6 +76,11 @@ export const Default: Story = {
 };
 
 /** Shell with sidebar only, no top header bar. */
+/**
+ * Header-less layout. `NavBurger` renders the mobile drawer toggle that the
+ * built-in header Burger would normally provide. Resize to a mobile viewport
+ * to see it in action.
+ */
 export const WithoutHeader: Story = {
 	render: () => (
 		<NavShell
@@ -84,7 +90,10 @@ export const WithoutHeader: Story = {
 				</NavSidebar>
 			}
 		>
-			<Text>Content without a top header bar.</Text>
+			<Group p="md" gap="sm">
+				<NavBurger hiddenFrom="sm" />
+				<Text>Content without a top header bar.</Text>
+			</Group>
 		</NavShell>
 	),
 };

@@ -83,6 +83,6 @@ describe("flattenNavCommands", () => {
 		];
 		const commands = flattenNavCommands(dupes);
 		expect(commands).toHaveLength(1);
-		expect(commands[0].label).toBe("First");
+		expect(commands[0]!.label).toBe("First");
 	});
 });

@@ -3,11 +3,14 @@
 import {
 	ActionIcon,
 	Anchor,
+	Box,
+	type FloatingPosition,
 	Group,
 	Indicator,
 	type MantineColor,
 	Menu,
 	ScrollArea,
+	Skeleton,
 	Text,
 } from "@mantine/core";
 import { IconBell } from "@tabler/icons-react";
@@ -25,6 +28,7 @@ export interface NotificationItem {
 
 /** Props for the notification bell indicator. */
 export interface NotificationIndicatorProps {
+	/** Badge count. Defaults to the number of unread `notifications`. */
 	count?: number;
 	maxCount?: number;
 	notifications?: NotificationItem[];
@@ -33,6 +37,27 @@ export interface NotificationIndicatorProps {
 	onClick?: () => void;
 	showDropdown?: boolean;
 	color?: MantineColor;
+	/** Dropdown width. */
+	width?: number;
+	/** Dropdown position. */
+	position?: FloatingPosition;
+	/** Shows a loading placeholder in the dropdown while notifications load. */
+	loading?: boolean;
+	/** Overrides for user-facing strings. */
+	labels?: {
+		/** Dropdown heading. @default "Notifications" */
+		title?: string;
+		/** @default "Mark all as read" */
+		markAllAsRead?: string;
+		/** @default "No notifications" */
+		empty?: string;
+		/** Bell aria-label. @default (unread) => `Notifications (${unread} unread)` */
+		bell?: (unreadCount: number) => string;
+	};
+	/** Controlled dropdown open state. */
+	opened?: boolean;
+	/** Called when the dropdown open state changes. */
+	onOpenChange?: (opened: boolean) => void;
 }
 
 /**
@@ -49,7 +74,7 @@ export interface NotificationIndicatorProps {
  * ```
  */
 export function NotificationIndicator({
-	count = 0,
+	count,
 	maxCount = 99,
 	notifications = [],
 	onRead,
@@ -57,10 +82,20 @@ export function NotificationIndicator({
 	onClick,
 	showDropdown = true,
 	color = "red",
+	width = 340,
+	position = "bottom-end",
+	loading = false,
+	labels,
+	opened,
+	onOpenChange,
 }: NotificationIndicatorProps): ReactElement {
-	const displayCount = count > maxCount ? `${maxCount}+` : String(count);
+	const resolvedCount = count ?? notifications.filter((n) => !n.read).length;
+	const displayCount =
+		resolvedCount > maxCount ? `${maxCount}+` : String(resolvedCount);
 	const hasUnread = notifications.some((n) => !n.read);
-	const ariaLabel = `Notifications${count > 0 ? ` (${count} unread)` : ""}`;
+	const ariaLabel =
+		labels?.bell?.(resolvedCount) ??
+		`Notifications${resolvedCount > 0 ? ` (${resolvedCount} unread)` : ""}`;
 
 	const bell = (
 		<ActionIcon
@@ -76,35 +111,47 @@ export function NotificationIndicator({
 
 	return (
 		<Indicator
-			label={count > 0 ? displayCount : undefined}
+			label={resolvedCount > 0 ? displayCount : undefined}
 			size={16}
 			color={color}
-			disabled={count === 0}
+			disabled={resolvedCount === 0}
 			processing={false}
 			offset={4}
 		>
 			{!showDropdown ? (
 				bell
 			) : (
-				<Menu width={340} position="bottom-end" withinPortal>
+				<Menu
+					width={width}
+					position={position}
+					opened={opened}
+					onChange={onOpenChange}
+					withinPortal
+				>
 					<Menu.Target>{bell}</Menu.Target>
 
 					<Menu.Dropdown>
 						<Group justify="space-between" px="sm" py="xs">
 							<Text fw={600} size="sm">
-								Notifications
+								{labels?.title ?? "Notifications"}
 							</Text>
 							{onReadAll && hasUnread && (
 								<Anchor size="xs" onClick={onReadAll} component="button">
-									Mark all as read
+									{labels?.markAllAsRead ?? "Mark all as read"}
 								</Anchor>
 							)}
 						</Group>
 						<Menu.Divider />
 						<ScrollArea.Autosize mah={300}>
-							{notifications.length === 0 ? (
+							{loading ? (
+								<Box px="sm" py="xs" data-testid="notification-loading">
+									{[0, 1, 2].map((row) => (
+										<Skeleton key={row} height={36} mb={row < 2 ? 8 : 0} />
+									))}
+								</Box>
+							) : notifications.length === 0 ? (
 								<Text c="dimmed" ta="center" py="lg" size="sm">
-									No notifications
+									{labels?.empty ?? "No notifications"}
 								</Text>
 							) : (
 								notifications.map((n) => (
@@ -112,6 +159,7 @@ export function NotificationIndicator({
 										key={n.id}
 										leftSection={n.icon}
 										onClick={() => onRead?.(n.id)}
+										closeMenuOnClick={Boolean(n.href)}
 										opacity={n.read ? 0.6 : 1}
 										component={n.href ? "a" : undefined}
 										aria-label={`${n.title}${n.read ? "" : " (unread)"}`}

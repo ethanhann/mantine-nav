@@ -1,13 +1,16 @@
 import { resolve } from "node:path";
 import react from "@vitejs/plugin-react";
+import preserveDirectives from "rollup-preserve-directives";
 import dts from "unplugin-dts/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
 	plugins: [
 		react(),
+		preserveDirectives(),
 		!process.env.STORYBOOK &&
 			dts({
+				tsconfigPath: "./tsconfig.build.json",
 				include: ["src"],
 				exclude: ["**/*.test.*", "**/__integration__/**", "**/test-setup.*"],
 				entryRoot: "src",
@@ -17,16 +20,12 @@ export default defineConfig({
 				insertTypesEntry: true,
 			}),
 	],
-	css: {
-		modules: {
-			localsConvention: "camelCase",
-		},
-	},
 	build: {
+		sourcemap: true,
 		lib: {
 			entry: resolve(__dirname, "src/index.ts"),
 			name: "Nav",
-			formats: ["es", "cjs"],
+			formats: ["es"],
 			fileName: "index",
 		},
 		rollupOptions: {

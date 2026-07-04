@@ -128,7 +128,7 @@ describe("useRemoteNavItems", () => {
 			}),
 		);
 
-		expect(result.current.items[0].visible).toBe(false);
+		expect(result.current.items[0]!.visible).toBe(false);
 	});
 
 	it("hydrates nested group items recursively", () => {
@@ -208,9 +208,63 @@ describe("useRemoteNavItems", () => {
 
 		const { result } = renderHook(() => useRemoteNavItems({ items: raw }));
 
-		expect(result.current.items[0].weight).toBe(10);
+		expect(result.current.items[0]!.weight).toBe(10);
 		expect((result.current.items[0] as NavLinkItem).data).toEqual({
 			role: "admin",
+		});
+	});
+	describe("resolver changes", () => {
+		const raw: RemoteNavItem[] = [
+			{ id: "home", type: "link", label: "Home", href: "/", icon: "home" },
+		];
+
+		it("rehydrates when resolvers change while items stay the same", () => {
+			// Arrange
+			const { result, rerender } = renderHook(
+				({ resolvers }: { resolvers: { icons: Record<string, string> } }) =>
+					useRemoteNavItems({ items: raw, resolvers }),
+				{
+					initialProps: { resolvers: { icons: { home: "placeholder-icon" } } },
+				},
+			);
+			expect((result.current.items[0] as NavLinkItem).icon).toBe(
+				"placeholder-icon",
+			);
+
+			// Act
+			rerender({ resolvers: { icons: { home: "real-icon" } } });
+
+			// Assert
+			expect((result.current.items[0] as NavLinkItem).icon).toBe("real-icon");
+		});
+
+		it("keeps items referentially stable when resolvers are recreated with the same content", () => {
+			// Arrange
+			const onClick = vi.fn();
+			const { result, rerender } = renderHook(
+				({
+					resolvers,
+				}: {
+					resolvers: {
+						icons: Record<string, string>;
+						onClick: Record<string, (e: React.MouseEvent) => void>;
+					};
+				}) => useRemoteNavItems({ items: raw, resolvers }),
+				{
+					initialProps: {
+						resolvers: { icons: { home: "i" }, onClick: { home: onClick } },
+					},
+				},
+			);
+			const first = result.current.items;
+
+			// Act
+			rerender({
+				resolvers: { icons: { home: "i" }, onClick: { home: onClick } },
+			});
+
+			// Assert
+			expect(result.current.items).toBe(first);
 		});
 	});
 });

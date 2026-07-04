@@ -20,6 +20,8 @@ export interface UseNavKeyboardOptions<TData = unknown> {
 export interface UseNavKeyboardReturn {
 	focusedIndex: number;
 	setFocusedIndex: (index: number) => void;
+	/** data-item-id of the most recently focused treeitem, for roving tabindex. */
+	focusedItemId: string | null;
 	handleKeyDown: (event: React.KeyboardEvent) => void;
 }
 
@@ -52,39 +54,51 @@ export function useNavKeyboard<TData = unknown>({
 }: UseNavKeyboardOptions<TData>): UseNavKeyboardReturn {
 	const tree = treeItems ?? items;
 	const [focusedIndex, setFocusedIndex] = useState(-1);
+	const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
 	const typeAheadBuffer = useRef("");
 	const typeAheadTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+	// Treeitems whose data-item-id is in the visible flat list. Children of
+	// collapsed groups stay mounted in the DOM (Mantine Collapse), so DOM
+	// queries alone would include non-visible items.
+	const getFocusables = useCallback((): HTMLElement[] => {
+		if (!containerRef.current) return [];
+		const visibleIds = new Set(items.map((item) => item.id));
+		return Array.from(
+			containerRef.current.querySelectorAll<HTMLElement>('[role="treeitem"]'),
+		).filter((el) => {
+			const id = el.getAttribute("data-item-id");
+			return id !== null && visibleIds.has(id);
+		});
+	}, [containerRef, items]);
+
 	const focusItem = useCallback(
 		(index: number) => {
-			if (!containerRef.current) return;
-			const focusables =
-				containerRef.current.querySelectorAll<HTMLElement>('[role="treeitem"]');
-			const el = focusables[index];
+			const el = getFocusables()[index];
 			if (el) {
 				el.focus();
 				setFocusedIndex(index);
+				setFocusedItemId(el.getAttribute("data-item-id"));
 			}
 		},
-		[containerRef],
+		[getFocusables],
 	);
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent) => {
 			if (!enabled || !containerRef.current) return;
 
-			const focusables =
-				containerRef.current.querySelectorAll<HTMLElement>('[role="treeitem"]');
+			const focusables = getFocusables();
 			const count = focusables.length;
 			if (count === 0) return;
 
-			// Find current focused index
+			// Index of the treeitem holding focus, -1 when focus is elsewhere
+			// (e.g. on the container itself).
 			const activeEl = document.activeElement;
 			let currentIdx = -1;
 			focusables.forEach((el, i) => {
 				if (el === activeEl) currentIdx = i;
 			});
-			if (currentIdx === -1) currentIdx = 0;
 
 			const currentEl = focusables[currentIdx];
 			const currentItemId = currentEl?.getAttribute("data-item-id");
@@ -102,7 +116,7 @@ export function useNavKeyboard<TData = unknown>({
 				}
 				case "ArrowUp": {
 					event.preventDefault();
-					let prevIdx = currentIdx - 1;
+					let prevIdx = currentIdx === -1 ? count - 1 : currentIdx - 1;
 					if (prevIdx < 0) prevIdx = loop ? count - 1 : 0;
 					focusItem(prevIdx);
 					break;
@@ -158,7 +172,7 @@ export function useNavKeyboard<TData = unknown>({
 				case "Enter":
 				case " ": {
 					event.preventDefault();
-					if (currentItem) {
+					if (currentItem && !currentItem.disabled) {
 						if (currentItem.type === "group") {
 							onToggle(currentItem.id);
 						}
@@ -211,6 +225,7 @@ export function useNavKeyboard<TData = unknown>({
 		[
 			enabled,
 			containerRef,
+			getFocusables,
 			items,
 			tree,
 			expandedKeys,
@@ -223,5 +238,5 @@ export function useNavKeyboard<TData = unknown>({
 		],
 	);
 
-	return { focusedIndex, setFocusedIndex, handleKeyDown };
+	return { focusedIndex, setFocusedIndex, focusedItemId, handleKeyDown };
 }

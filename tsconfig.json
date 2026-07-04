@@ -12,21 +12,12 @@
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
-		"outDir": "dist",
-		"rootDir": "src",
+		"noEmit": true,
+		"types": ["vitest/globals", "@testing-library/jest-dom"],
 		"paths": {
 			"@ethanhann/mantine-nav": ["./src/index.ts"]
 		}
 	},
-	"include": ["src"],
-	"exclude": [
-		"node_modules",
-		"dist",
-		"**/*.test.ts",
-		"**/*.test.tsx",
-		"**/*.story.tsx"
-	]
+	"include": ["src", "stories", ".storybook"],
+	"exclude": ["node_modules", "dist"]
 }

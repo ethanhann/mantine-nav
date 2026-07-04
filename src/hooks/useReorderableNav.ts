@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { NavItemType } from "../types";
 
 export interface UseReorderableNavOptions<TData = unknown> {
@@ -10,7 +10,6 @@ export interface UseReorderableNavOptions<TData = unknown> {
 		fromIndex: number,
 		toIndex: number,
 	) => void;
-	reorderScope?: "siblings" | "root";
 }
 
 export interface UseReorderableNavReturn<TData = unknown> {
@@ -36,18 +35,33 @@ export function useReorderableNav<TData = unknown>({
 	items,
 	onReorder,
 }: UseReorderableNavOptions<TData>): UseReorderableNavReturn<TData> {
-	const [orderedItems, setOrderedItems] = useState(items);
+	// The user-chosen order as ids, null until the first reorder. orderedItems
+	// is derived from the items prop, so fresh item data always flows through
+	// and an unstable items reference cannot cause a render loop.
+	const [localOrder, setLocalOrder] = useState<string[] | null>(null);
 	const [draggedId, setDraggedId] = useState<string | null>(null);
 	const [dropTargetId, setDropTargetId] = useState<string | null>(null);
 	const draggedIdRef = useRef<string | null>(null);
 	const dropTargetIdRef = useRef<string | null>(null);
 
-	// Keep orderedItems in sync with prop changes
-	useEffect(() => {
-		if (!draggedId) {
-			setOrderedItems(items);
+	const orderedItems = useMemo(() => {
+		if (!localOrder) return items;
+		const byId = new Map(items.map((item) => [item.id, item]));
+		const ordered: NavItemType<TData>[] = [];
+		for (const id of localOrder) {
+			const item = byId.get(id);
+			if (item) {
+				ordered.push(item);
+				byId.delete(id);
+			}
 		}
-	}, [items, draggedId]);
+		// Items that appeared after the reorder keep their original relative
+		// position at the end.
+		for (const item of byId.values()) {
+			ordered.push(item);
+		}
+		return ordered;
+	}, [items, localOrder]);
 
 	const handleDragStart = useCallback(
 		(id: string) => {
@@ -80,7 +94,7 @@ export function useReorderableNav<TData = unknown>({
 				const newItems = [...orderedItems];
 				const [moved] = newItems.splice(fromIndex, 1);
 				if (moved) newItems.splice(toIndex, 0, moved);
-				setOrderedItems(newItems);
+				setLocalOrder(newItems.map((item) => item.id));
 				onReorder(newItems, fromIndex, toIndex);
 			}
 		}

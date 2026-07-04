@@ -2,6 +2,7 @@ import { MantineProvider } from "@mantine/core";
 import type { Preview } from "@storybook/react-vite";
 import React from "react";
 import ReactDOM from "react-dom";
+import { MINIMAL_VIEWPORTS } from "storybook/viewport";
 
 import "@mantine/core/styles.css";
 import "@mantine/spotlight/styles.css";
@@ -27,7 +28,27 @@ const highlightJsAdapter = createHighlightJsAdapter(hljs);
 
 const preview: Preview = {
 	tags: ["autodocs"],
+	globalTypes: {
+		colorScheme: {
+			description: "Mantine color scheme",
+			toolbar: {
+				title: "Scheme",
+				icon: "mirror",
+				items: [
+					{ value: "light", title: "Light" },
+					{ value: "dark", title: "Dark" },
+				],
+				dynamicTitle: true,
+			},
+		},
+	},
+	initialGlobals: {
+		colorScheme: "light",
+	},
 	parameters: {
+		viewport: {
+			options: MINIMAL_VIEWPORTS,
+		},
 		controls: {
 			matchers: {
 				color: /(background|color)$/i,
@@ -36,8 +57,12 @@ const preview: Preview = {
 		},
 	},
 	decorators: [
-		(Story) => (
-			<MantineProvider>
+		(Story, context) => (
+			<MantineProvider
+				forceColorScheme={
+					context.globals.colorScheme === "dark" ? "dark" : "light"
+				}
+			>
 				<CodeHighlightAdapterProvider adapter={highlightJsAdapter}>
 					<Story />
 				</CodeHighlightAdapterProvider>

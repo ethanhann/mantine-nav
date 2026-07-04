@@ -7,6 +7,7 @@ import {
 	useState,
 } from "react";
 import type { NavItemType } from "../types";
+import { walkNavTree } from "../utils/traverse";
 
 export interface UseExpandedKeysReturn {
 	expandedKeys: Set<string>;
@@ -22,12 +23,10 @@ export interface UseExpandedKeysReturn {
 /** Collect the ids of every `group` item in a nav tree, recursively. */
 export function collectGroupIds<TData>(items: NavItemType<TData>[]): string[] {
 	const keys: string[] = [];
-	for (const item of items) {
-		if (item.type === "group") {
-			keys.push(item.id);
-			keys.push(...collectGroupIds(item.children));
-		}
-	}
+	walkNavTree(items, (item) => {
+		if (item.type === "group") keys.push(item.id);
+		return undefined;
+	});
 	return keys;
 }
 

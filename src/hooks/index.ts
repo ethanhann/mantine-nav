@@ -69,6 +69,7 @@ export type {
 } from "./useReorderableNav";
 export { useReorderableNav } from "./useReorderableNav";
 export type {
+	SidebarMode,
 	UseResponsiveNavOptions,
 	UseResponsiveNavReturn,
 } from "./useResponsiveNav";

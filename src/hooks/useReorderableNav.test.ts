@@ -48,7 +48,7 @@ describe("Spec 003: useReorderableNav", () => {
 		});
 
 		expect(onReorder).toHaveBeenCalledTimes(1);
-		const [newItems, from, to] = onReorder.mock.calls[0];
+		const [newItems, from, to] = onReorder.mock.calls[0]!;
 		expect(from).toBe(0);
 		expect(to).toBe(2);
 		expect(newItems.map((i: NavItemType) => i.id)).toEqual(["b", "c", "a"]);
@@ -65,6 +65,140 @@ describe("Spec 003: useReorderableNav", () => {
 		);
 
 		act(() => result.current.handleDragStart("x"));
+		expect(result.current.draggedId).toBeNull();
+	});
+
+	it("does not re-render infinitely when items is a new array each render", () => {
+		// Arrange
+		let renders = 0;
+		const onReorder = vi.fn();
+
+		const { result, rerender } = renderHook(() => {
+			renders++;
+			return useReorderableNav({
+				items: [
+					{ type: "link", id: "a", label: "A", href: "/a" },
+					{ type: "link", id: "b", label: "B", href: "/b" },
+				],
+				onReorder,
+			});
+		});
+
+		// Act
+		rerender();
+
+		// Assert
+		expect(renders).toBeLessThanOrEqual(3);
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual(["a", "b"]);
+	});
+
+	it("keeps the local order when the items prop is refreshed after a reorder", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result, rerender } = renderHook(
+			({ navItems }: { navItems: NavItemType[] }) =>
+				useReorderableNav({ items: navItems, onReorder }),
+			{ initialProps: { navItems: items } },
+		);
+		act(() => {
+			result.current.handleDragStart("a");
+			result.current.handleDragOver("c");
+			result.current.handleDragEnd();
+		});
+
+		// Act
+		rerender({ navItems: items.map((i) => ({ ...i })) });
+
+		// Assert
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+		]);
+	});
+
+	it("appends items added after a reorder to the end", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result, rerender } = renderHook(
+			({ navItems }: { navItems: NavItemType[] }) =>
+				useReorderableNav({ items: navItems, onReorder }),
+			{ initialProps: { navItems: items } },
+		);
+		act(() => {
+			result.current.handleDragStart("a");
+			result.current.handleDragOver("c");
+			result.current.handleDragEnd();
+		});
+
+		// Act
+		rerender({
+			navItems: [...items, { type: "link", id: "d", label: "D", href: "/d" }],
+		});
+
+		// Assert
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+			"d",
+		]);
+	});
+
+	it("getDropTargetProps marks the hovered target and completes the drop", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result } = renderHook(() =>
+			useReorderableNav({ items, onReorder }),
+		);
+		const dragOverEvent = {
+			preventDefault: vi.fn(),
+		} as unknown as React.DragEvent;
+		act(() => result.current.handleDragStart("a"));
+		act(() => result.current.getDropTargetProps("c").onDragOver(dragOverEvent));
+		expect(dragOverEvent.preventDefault).toHaveBeenCalledTimes(1);
+		expect(result.current.dropTargetId).toBe("c");
+		expect(result.current.getDropTargetProps("c")["data-drop-target"]).toBe(
+			true,
+		);
+		expect(
+			result.current.getDropTargetProps("b")["data-drop-target"],
+		).toBeUndefined();
+		const dropEvent = { preventDefault: vi.fn() } as unknown as React.DragEvent;
+
+		// Act
+		act(() => result.current.getDropTargetProps("c").onDrop(dropEvent));
+
+		// Assert
+		expect(dropEvent.preventDefault).toHaveBeenCalledTimes(1);
+		expect(onReorder).toHaveBeenCalledExactlyOnceWith(expect.anything(), 0, 2);
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"b",
+			"c",
+			"a",
+		]);
+		expect(result.current.draggedId).toBeNull();
+		expect(result.current.dropTargetId).toBeNull();
+	});
+
+	it("drag end without a drop target clears state and does not reorder", () => {
+		// Arrange
+		const onReorder = vi.fn();
+		const { result } = renderHook(() =>
+			useReorderableNav({ items, onReorder }),
+		);
+		act(() => result.current.handleDragStart("a"));
+
+		// Act
+		act(() => result.current.handleDragEnd());
+
+		// Assert
+		expect(onReorder).not.toHaveBeenCalled();
+		expect(result.current.orderedItems.map((i) => i.id)).toEqual([
+			"a",
+			"b",
+			"c",
+		]);
 		expect(result.current.draggedId).toBeNull();
 	});
 
