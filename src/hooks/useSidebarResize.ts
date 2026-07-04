@@ -21,9 +21,9 @@ export interface UseSidebarResizeReturn {
 		onPointerDown: (e: React.PointerEvent) => void;
 		onDoubleClick: () => void;
 		onKeyDown: (e: React.KeyboardEvent) => void;
-		role: string;
+		role: "separator";
 		"aria-label": string;
-		"aria-orientation": string;
+		"aria-orientation": "vertical";
 		"aria-valuenow": number;
 		"aria-valuemin": number;
 		"aria-valuemax": number;
@@ -183,7 +183,7 @@ export function useSidebarResize({
 			onPointerDown: handlePointerDown,
 			onDoubleClick: resetWidth,
 			onKeyDown: handleKeyDown,
-			role: "separator",
+			role: "separator" as const,
 			"aria-label": "Resize sidebar",
 			"aria-orientation": "vertical" as const,
 			"aria-valuenow": width,

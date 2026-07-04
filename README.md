@@ -749,12 +749,15 @@ Stories are organized by area:
 
 | Category            | What's covered                                                                      |
 |---------------------|-------------------------------------------------------------------------------------|
-| **Shell**           | `NavShell` variants, responsive collapse, router `linkComponent` integration        |
+| **Shell**           | `NavShell` variants, `NavHeader`, `NavSidebar`, mobile drawer viewports, router `linkComponent` integration |
 | **NavGroup**        | Core tree, external links / onClick items, custom `renderItem`, weight-based ordering |
+| **Customization**   | Controlled state, localization, slot styling, loading skeletons, collapsed rail    |
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |
 | **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
-| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`                                               |
+| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `useReorderableNav`, `usePinnedItems` |
 | **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site              |
+
+A color scheme toggle in the Storybook toolbar renders every story in light or dark mode.
 
 ### Tests
 
