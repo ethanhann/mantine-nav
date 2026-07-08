@@ -228,6 +228,130 @@ describe("SaaS Components", () => {
 		expect(onClick).toHaveBeenCalled();
 	});
 
+	it("NotificationIndicator uses formatCount for badge display", () => {
+		// Arrange / Act
+		render(
+			<NotificationIndicator
+				count={150}
+				formatCount={(n) => `${n} new`}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByText("150 new")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator formatCount overrides maxCount", () => {
+		// Arrange / Act
+		render(
+			<NotificationIndicator
+				count={150}
+				maxCount={99}
+				formatCount={(n) => String(n)}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByText("150")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator uses formatTimestamp for Date timestamps", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const date = new Date("2026-07-01T12:00:00Z");
+		const notifications = [
+			{ id: "1", title: "Test", timestamp: date, read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				formatTimestamp={(d) => `${d.getFullYear()} custom`}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByText("2026 custom")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator formatTimestamp does not affect string timestamps", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const notifications = [
+			{ id: "1", title: "Test", timestamp: "5 min ago", read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				formatTimestamp={() => "should not appear"}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByText("5 min ago")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator uses renderNotification for custom item rendering", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const notifications = [
+			{ id: "1", title: "Custom", description: "desc", read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				renderNotification={(n) => (
+					<span data-testid={`custom-${n.id}`}>{n.title} (custom)</span>
+				)}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByTestId("custom-1")).toBeInTheDocument();
+		expect(screen.getByText("Custom (custom)")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator renderNotification preserves onRead and menu behavior", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const onRead = vi.fn();
+		const notifications = [
+			{ id: "1", title: "Test", read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				onRead={onRead}
+				renderNotification={(n) => <span>{n.title}</span>}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+		await user.click(await screen.findByText("Test"));
+
+		// Assert
+		expect(onRead).toHaveBeenCalledWith("1");
+	});
+
 	it("ColorModePicker toggle variant renders a cycling button", () => {
 		render(<ColorModePicker />, { wrapper: Wrapper });
 		const button = screen.getByRole("button");

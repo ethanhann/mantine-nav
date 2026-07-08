@@ -563,6 +563,9 @@ import {
 **NotificationIndicator** notes:
 
 - The badge count defaults to the number of unread `notifications`. Pass `count` to override it, for example with a server-side total.
+- `formatCount` customizes the badge display (e.g., `(n) => n >= 1000 ? \`${(n/1000).toFixed(1)}k\` : String(n)`). When omitted, counts above `maxCount` (default 99) display as `"99+"`.
+- `formatTimestamp` formats `Date` timestamps (e.g., relative time via `date-fns`). String timestamps are rendered as-is regardless of this prop.
+- `renderNotification` overrides the content of each notification item. The `Menu.Item` wrapper, `onRead`, and close-on-navigate behavior are preserved.
 - Marking a notification read keeps the dropdown open. Notifications with an `href` navigate and close it.
 - `loading` shows skeleton rows while notifications are being fetched.
 

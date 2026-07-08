@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `source` is `'sidebar'`, `'command-palette'`, or `'breadcrumb'`.
   `trigger` is `'mouse'` or `'keyboard'`.
 - `NavigateEvent`, `NavigateSource`, and `NavigateTrigger` types.
+- `formatCount`, `formatTimestamp`, and `renderNotification` props on `NotificationIndicator`.
+  `formatCount` overrides the default "99+" badge display with a custom formatter.
+  `formatTimestamp` formats `Date` timestamps (string timestamps are rendered as-is).
+  `renderNotification` replaces the default notification item content while preserving the `Menu.Item` wrapper,
+  `onRead`, and close behavior.
 - `loading` and `skeletonCount` props on `NavGroup`.
   When `loading` is true, the tree is replaced by skeleton placeholder rows that mimic the shape of nav items
   (icon circle and label bar with varying widths).

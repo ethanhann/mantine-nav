@@ -1,3 +1,4 @@
+import { Badge, Group, Text } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { NotificationIndicator } from "../../src";
@@ -8,6 +9,13 @@ const meta: Meta<typeof NotificationIndicator> = {
 	title: "SaaS/NotificationIndicator",
 	component: NotificationIndicator,
 	tags: ["autodocs"],
+	decorators: [
+		(Story) => (
+			<div style={{ display: "inline-block" }}>
+				<Story />
+			</div>
+		),
+	],
 };
 
 export default meta;
@@ -46,5 +54,64 @@ export const WithoutDropdown: Story = {
 		count: 5,
 		showDropdown: false,
 		onClick: () => console.log("Bell clicked"),
+	},
+};
+
+/** Custom badge formatter that shows the raw count. */
+export const CustomFormatCount: Story = {
+	args: {
+		count: 1234,
+		notifications: sampleNotifications,
+		formatCount: (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n),
+	},
+};
+
+/** Custom timestamp formatter showing relative time. */
+export const CustomTimestamps: Story = {
+	args: {
+		count: 2,
+		notifications: [
+			{
+				id: "1",
+				title: "Deployment succeeded",
+				description: "Production deploy completed",
+				read: false,
+				timestamp: new Date(Date.now() - 3600 * 1000),
+			},
+			{
+				id: "2",
+				title: "New team member",
+				description: "Alice joined the project",
+				read: true,
+				timestamp: new Date(Date.now() - 86400 * 1000),
+			},
+		],
+		formatTimestamp: (d: Date) => {
+			const mins = Math.round((Date.now() - d.getTime()) / 60000);
+			if (mins < 60) return `${mins}m ago`;
+			const hrs = Math.round(mins / 60);
+			if (hrs < 24) return `${hrs}h ago`;
+			return `${Math.round(hrs / 24)}d ago`;
+		},
+	},
+};
+
+/** Fully custom notification renderer with badges and layout. */
+export const CustomRenderNotification: Story = {
+	args: {
+		count: 2,
+		notifications: [
+			{ id: "1", title: "Build failed", description: "CI pipeline #4821", read: false },
+			{ id: "2", title: "PR approved", description: "feat: add breadcrumbs", read: true },
+		],
+		renderNotification: (n) => (
+			<Group gap="xs" wrap="nowrap">
+				<Badge size="xs" color={n.read ? "gray" : "red"} variant="dot" />
+				<div>
+					<Text size="sm" fw={n.read ? 400 : 600}>{n.title}</Text>
+					{n.description && <Text size="xs" c="dimmed">{n.description}</Text>}
+				</div>
+			</Group>
+		),
 	},
 };
