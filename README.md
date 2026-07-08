@@ -264,6 +264,50 @@ Subscribe to active-link changes with `onActiveChange`:
 
 The callback fires with the resolved active link whenever it changes, and with `null` when nothing matches.
 
+## NavBreadcrumbs
+
+`NavBreadcrumbs` derives a breadcrumb trail from the nav item tree and renders it with Mantine's `Breadcrumbs`.
+It walks the tree to find the active item and builds the ancestor chain automatically.
+
+```tsx
+import { NavBreadcrumbs } from '@ethanhann/mantine-nav';
+
+<NavBreadcrumbs items={items} currentPath={location.pathname} />
+```
+
+Prepend a root entry (e.g. "Home") with the `rootEntry` prop:
+
+```tsx
+<NavBreadcrumbs
+    items={items}
+    currentPath={location.pathname}
+    rootEntry={{ label: 'Home', href: '/', icon: <IconHome size={14} /> }}
+    showIcons
+/>
+```
+
+The component renders a `<nav aria-label="Breadcrumb">` with ancestor items as links and the current page as a
+`<span aria-current="page">`, following the WAI-ARIA Breadcrumb pattern.
+Ancestor groups without an `href` render as plain text.
+It uses `linkComponent`/`hrefProp` from `NavShell` context, so router integration works the same as `NavGroup`.
+
+Additional props: `separator` (passes through to Mantine's `Breadcrumbs`), `showIcons` (renders item icons inline),
+`renderItem` (full control over each entry), `matcher` (same active matching strategies as `NavGroup`), and `labels`
+for localization (`labels.nav` overrides the `aria-label`).
+
+For headless use, the `useNavBreadcrumbs` hook returns the raw breadcrumb entries:
+
+```tsx
+import { useNavBreadcrumbs } from '@ethanhann/mantine-nav';
+
+const { breadcrumbs, activeItem } = useNavBreadcrumbs({
+    items,
+    currentPath: location.pathname,
+    rootEntry: { label: 'Home', href: '/' },
+});
+// breadcrumbs: Array<{ id, label, href?, icon?, item, isCurrentPage }>
+```
+
 ## NavHeader
 
 ```tsx
@@ -338,15 +382,16 @@ In uncontrolled mode the change callbacks still fire with the intended value, so
 
 ## Styling
 
-`NavShell`, `NavGroup`, `NavSidebar`, and `NavHeader` accept slot-based `classNames` and `styles` props, so visuals can
-be themed with plain CSS instead of overriding inline styles.
+`NavShell`, `NavGroup`, `NavSidebar`, `NavHeader`, and `NavBreadcrumbs` accept slot-based `classNames` and `styles`
+props, so visuals can be themed with plain CSS instead of overriding inline styles.
 
-| Component    | Slots                                         |
-|--------------|-----------------------------------------------|
-| `NavShell`   | `header`, `navbar`, `aside`, `footer`, `main` |
-| `NavGroup`   | `root`, `item`, `section`, `divider`          |
-| `NavSidebar` | `header`, `body`, `footer`                    |
-| `NavHeader`  | `root`, `logo`, `center`, `right`             |
+| Component         | Slots                                         |
+|-------------------|-----------------------------------------------|
+| `NavShell`        | `header`, `navbar`, `aside`, `footer`, `main` |
+| `NavGroup`        | `root`, `item`, `section`, `divider`          |
+| `NavSidebar`      | `header`, `body`, `footer`                    |
+| `NavHeader`       | `root`, `logo`, `center`, `right`             |
+| `NavBreadcrumbs`  | `root`, `item`, `separator`, `currentPage`    |
 
 ```tsx
 <NavGroup
@@ -702,6 +747,7 @@ const sidebar = useHeadlessSidebar({
 
 | Hook                       | Purpose                                                  |
 |----------------------------|----------------------------------------------------------|
+| `useNavBreadcrumbs`        | Derive breadcrumb entries from a nav tree and current path |
 | `useCommandSearch`         | Backend-search state machine used by `CommandPalette`    |
 | `useCurrentPath`           | Reactive pathname for active matching                    |
 | `useNavItems`              | Flatten, expand/collapse, and traverse item trees        |
@@ -731,6 +777,7 @@ const sidebar = useHeadlessSidebar({
 | `sortItemsByWeight(items)`  | Stable sort by `weight` (lower first); recurses into group children              |
 | `walkNavTree(items, visit)` | Depth-first traversal; return `false` from `visit` to skip a group's children    |
 | `flattenNavTree(items)`     | Flatten a nav tree depth-first into a single list                                |
+| `matchItem(path, href, m)` | Test whether a path matches an href using any `ActiveMatcher` strategy           |
 | `flattenNavCommands(items)` | Flatten link items into `NavCommand[]` for command palettes                      |
 | `fuzzyMatch(query, text)`   | Lightweight fuzzy matcher returning a score and matched indices                  |
 | `rankCommands(query, cmds)` | Rank commands with `fuzzyMatch`, best first                                      |
@@ -750,6 +797,7 @@ Stories are organized by area:
 | Category            | What's covered                                                                      |
 |---------------------|-------------------------------------------------------------------------------------|
 | **Shell**           | `NavShell` variants, `NavHeader`, `NavSidebar`, mobile drawer viewports, router `linkComponent` integration |
+| **NavBreadcrumbs**  | Breadcrumb trails from flat items, deep nesting, root entry, icons, custom rendering  |
 | **NavGroup**        | Core tree, external links / onClick items, custom `renderItem`, weight-based ordering |
 | **Customization**   | Controlled state, localization, slot styling, loading skeletons, collapsed rail    |
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |

@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `NavBreadcrumbs` component that derives a breadcrumb trail from the nav item tree and renders it with Mantine's
+  `Breadcrumbs`.
+  Walks the tree to find the active item and builds the ancestor chain automatically.
+  Follows the WAI-ARIA Breadcrumb pattern (`<nav aria-label="Breadcrumb">`, `aria-current="page"` on the current item).
+  Supports `showIcons`, `renderItem`, `separator`, `rootEntry` (e.g. a "Home" link prepended to the trail), slot-based
+  `classNames`/`styles`, and `labels` for localization.
+  Uses `linkComponent`/`hrefProp` from `NavShell` context for router integration.
+- `useNavBreadcrumbs` hook that returns the ordered breadcrumb entries from root to the active item.
+  Accepts the same `currentPath` and `matcher` options as `useActiveNavItem`.
+- `matchItem` utility function extracted from `useActiveNavItem` and now exported for direct use.
+  Both `useActiveNavItem` and `useNavBreadcrumbs` share this function, so active matching behavior is always
+  consistent between the two.
+
 ## [0.7.0] - 2026-07-03
 
 ### Added
