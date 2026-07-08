@@ -349,6 +349,49 @@ const { breadcrumbs, activeItem } = useNavBreadcrumbs({
 </NavHeader>
 ```
 
+### Horizontal Navigation
+
+`NavGroup` is a vertical tree component. For horizontal top-nav or tab-bar layouts, compose `NavHeader`'s center
+content slot with Mantine's own `Tabs` or `Menubar`:
+
+```tsx
+import {Tabs} from '@mantine/core';
+import {NavHeader, NavShell, useActiveNavItem} from '@ethanhann/mantine-nav';
+
+const topNav: NavItemType[] = [
+    {id: 'home', type: 'link', label: 'Home', href: '/', activeExact: true},
+    {id: 'products', type: 'link', label: 'Products', href: '/products'},
+    {id: 'settings', type: 'link', label: 'Settings', href: '/settings'},
+];
+
+function App() {
+    const {activeItem} = useActiveNavItem(topNav, {currentPath: pathname, matcher: 'prefix'});
+
+    return (
+        <NavShell
+            header={
+                <NavHeader logo={<Logo/>}>
+                    <Tabs value={activeItem?.href ?? '/'} onChange={(v) => router.push(v!)}>
+                        <Tabs.List>
+                            {topNav.map((item) => item.type === 'link' && (
+                                <Tabs.Tab key={item.id} value={item.href}>{item.label}</Tabs.Tab>
+                            ))}
+                        </Tabs.List>
+                    </Tabs>
+                </NavHeader>
+            }
+        >
+            {children}
+        </NavShell>
+    );
+}
+```
+
+This gives you Mantine's built-in ARIA `tablist` with keyboard navigation, and `useActiveNavItem` provides active state
+matching using the same item data and matcher strategies as the sidebar.
+See the **Recipes/HorizontalNav** Storybook story for a full example with a contextual sidebar that changes per
+section.
+
 ## NavSidebar
 
 `NavSidebar` provides header/body/footer slots. Header and footer hide automatically when the sidebar is collapsed on
@@ -897,7 +940,7 @@ Stories are organized by area:
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |
 | **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
 | **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `useReorderableNav`, `usePinnedItems` |
-| **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site              |
+| **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site, horizontal nav |
 
 A color scheme toggle in the Storybook toolbar renders every story in light or dark mode.
 
