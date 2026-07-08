@@ -71,6 +71,17 @@ Layout is configured with `headerHeight`, `sidebarWidth`, `sidebarCollapsedWidth
 For layouts without a header, render the exported `NavBurger` anywhere inside the shell to toggle the mobile drawer.
 It renders nothing outside a `NavShell`.
 
+Pass `collapsePersistKey` to persist the sidebar collapse state across page reloads:
+
+```tsx
+<NavShell collapsePersistKey="app-sidebar-collapsed" sidebar={sidebar}>
+    {children}
+</NavShell>
+```
+
+The stored value is read on mount and written on every toggle.
+In controlled mode (`desktopCollapsed` prop), `collapsePersistKey` is ignored since the consumer owns persistence.
+
 ## Nav Items
 
 `NavItemType` is a discriminated union with four variants:

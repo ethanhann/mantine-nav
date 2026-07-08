@@ -19,6 +19,7 @@ import {
 	useEffect,
 	useMemo,
 	useRef,
+	useState,
 } from "react";
 import type { NavSlotStyles } from "../../types";
 
@@ -85,6 +86,8 @@ export interface NavShellProps extends NavSlotStyles<NavShellSlot> {
 	desktopCollapsed?: boolean;
 	/** Called with the intended collapse state on toggle/collapse/expand. */
 	onDesktopCollapsedChange?: (collapsed: boolean) => void;
+	/** localStorage key for persisting collapse state. Ignored in controlled mode. */
+	collapsePersistKey?: string;
 	/** Aside panel width. @default 300 */
 	asideWidth?: number;
 	/** Breakpoint below which the aside is hidden. @default "md" */
@@ -137,6 +140,7 @@ export function NavShell({
 	defaultDesktopCollapsed = false,
 	desktopCollapsed: desktopCollapsedProp,
 	onDesktopCollapsedChange,
+	collapsePersistKey,
 	asideWidth = 300,
 	asideBreakpoint = "md",
 	footerHeight = 60,
@@ -155,15 +159,28 @@ export function NavShell({
 		mobileOpened,
 		{ toggle: toggleMobile, open: openMobile, close: closeMobile },
 	] = useDisclosure(false);
-	const [
-		desktopExpanded,
-		{ open: expandDesktopInner, close: collapseDesktopInner },
-	] = useDisclosure(!defaultDesktopCollapsed);
+	const [desktopExpanded, setDesktopExpanded] = useState(() => {
+		if (collapsePersistKey && typeof window !== "undefined") {
+			try {
+				const stored = localStorage.getItem(collapsePersistKey);
+				if (stored === "true") return false;
+				if (stored === "false") return true;
+			} catch {}
+		}
+		return !defaultDesktopCollapsed;
+	});
 
 	const isCollapseControlled = desktopCollapsedProp !== undefined;
 	const desktopCollapsed = sidebarCollapsible
 		? (desktopCollapsedProp ?? !desktopExpanded)
 		: false;
+
+	useEffect(() => {
+		if (!collapsePersistKey || isCollapseControlled) return;
+		try {
+			localStorage.setItem(collapsePersistKey, String(!desktopExpanded));
+		} catch {}
+	}, [collapsePersistKey, isCollapseControlled, desktopExpanded]);
 	// Resolve the breakpoint from the active theme so a custom theme keeps
 	// isMobile in sync with AppShell's own collapse point.
 	const theme = useMantineTheme();
@@ -174,17 +191,11 @@ export function NavShell({
 	const setDesktopCollapsed = useCallback(
 		(collapsed: boolean) => {
 			if (!isCollapseControlled) {
-				if (collapsed) collapseDesktopInner();
-				else expandDesktopInner();
+				setDesktopExpanded(!collapsed);
 			}
 			onDesktopCollapsedChange?.(collapsed);
 		},
-		[
-			isCollapseControlled,
-			collapseDesktopInner,
-			expandDesktopInner,
-			onDesktopCollapsedChange,
-		],
+		[isCollapseControlled, onDesktopCollapsedChange],
 	);
 
 	const toggleDesktop = useCallback(

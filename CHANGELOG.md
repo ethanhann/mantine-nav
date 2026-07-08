@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `matchItem` utility function extracted from `useActiveNavItem` and now exported for direct use.
   Both `useActiveNavItem` and `useNavBreadcrumbs` share this function, so active matching behavior is always
   consistent between the two.
+- `collapsePersistKey` prop on `NavShell`.
+  When set in uncontrolled mode, the sidebar collapse state is persisted to `localStorage` under the given key and
+  restored on mount.
+  Invalid or missing stored values fall back to `defaultDesktopCollapsed`.
+  Ignored when `desktopCollapsed` (controlled mode) is set.
 
 ## [0.7.0] - 2026-07-03
 
