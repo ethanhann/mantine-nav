@@ -1,7 +1,16 @@
 "use client";
 
 import type { MantineColor } from "@mantine/core";
-import { Divider, Menu, NavLink, Text, Tooltip } from "@mantine/core";
+import {
+	Box,
+	Divider,
+	Group,
+	Menu,
+	NavLink,
+	Skeleton,
+	Text,
+	Tooltip,
+} from "@mantine/core";
 import {
 	type ReactElement,
 	type ReactNode,
@@ -54,6 +63,10 @@ export interface NavGroupProps<TData = unknown>
 	typeAhead?: boolean;
 	typeAheadTimeout?: number;
 	loopNavigation?: boolean;
+	/** Show skeleton placeholder rows instead of items. @default false */
+	loading?: boolean;
+	/** Number of skeleton rows to display when loading. @default 5 */
+	skeletonCount?: number;
 }
 
 interface InternalNavItemProps<TData = unknown> {
@@ -686,6 +699,8 @@ export function NavGroup<TData = unknown>({
 	typeAhead = true,
 	typeAheadTimeout = 500,
 	loopNavigation = true,
+	loading = false,
+	skeletonCount = 5,
 }: NavGroupProps<TData>): ReactElement {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const shell = useOptionalNavShell();
@@ -884,6 +899,39 @@ export function NavGroup<TData = unknown>({
 			: (flatItems.find((item) => item.type === "link" && isActive(item))?.id ??
 				flatItems[0]?.id ??
 				null);
+
+	if (loading) {
+		const widths = ["60%", "75%", "45%", "80%", "55%", "70%", "50%", "65%"];
+		return (
+			<Box
+				data-testid="nav-group-loading"
+				className={classNames?.root}
+				style={styles?.root}
+			>
+				{Array.from({ length: skeletonCount }, (_, i) => (
+					<Group
+						key={i}
+						data-skeleton-row
+						gap="sm"
+						wrap="nowrap"
+						py={4}
+						px="sm"
+						style={{
+							borderRadius: "var(--mantine-radius-sm)",
+							marginBottom: 2,
+						}}
+					>
+						<Skeleton circle height={18} width={18} />
+						<Skeleton
+							height={12}
+							width={widths[i % widths.length]}
+							radius="sm"
+						/>
+					</Group>
+				))}
+			</Box>
+		);
+	}
 
 	return (
 		<div

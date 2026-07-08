@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `source` is `'sidebar'`, `'command-palette'`, or `'breadcrumb'`.
   `trigger` is `'mouse'` or `'keyboard'`.
 - `NavigateEvent`, `NavigateSource`, and `NavigateTrigger` types.
+- `loading` and `skeletonCount` props on `NavGroup`.
+  When `loading` is true, the tree is replaced by skeleton placeholder rows that mimic the shape of nav items
+  (icon circle and label bar with varying widths).
+  `skeletonCount` controls the number of rows (default 5).
 - `collapsePersistKey` prop on `NavShell` to persist the sidebar collapse state to `localStorage`.
   The stored value is restored on mount and updated on every toggle.
   Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.

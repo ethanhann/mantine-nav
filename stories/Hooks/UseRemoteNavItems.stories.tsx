@@ -1,5 +1,5 @@
 import { CodeHighlight } from "@mantine/code-highlight";
-import { Badge, Center, Loader, Text } from "@mantine/core";
+import { Badge, Text } from "@mantine/core";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
 	IconChartBar,
@@ -192,13 +192,7 @@ resolvers: {
 			}
 			sidebar={
 				<NavSidebar>
-					{isLoading ? (
-						<Center py="xl">
-							<Loader size="sm" />
-						</Center>
-					) : (
-						<NavGroup items={items} currentPath="/" />
-					)}
+					<NavGroup items={items} currentPath="/" loading={isLoading} />
 				</NavSidebar>
 			}
 		>

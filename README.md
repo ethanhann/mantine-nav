@@ -275,6 +275,18 @@ Subscribe to active-link changes with `onActiveChange`:
 
 The callback fires with the resolved active link whenever it changes, and with `null` when nothing matches.
 
+### Loading State
+
+Pass `loading` to show skeleton placeholder rows while nav items are being fetched:
+
+```tsx
+const { items, isLoading } = useRemoteNavItems({ items: apiResponse });
+
+<NavGroup items={items} loading={isLoading} currentPath={pathname} />
+```
+
+`skeletonCount` controls how many rows appear (default 5).
+
 ## NavBreadcrumbs
 
 `NavBreadcrumbs` derives a breadcrumb trail from the nav item tree and renders it with Mantine's `Breadcrumbs`.

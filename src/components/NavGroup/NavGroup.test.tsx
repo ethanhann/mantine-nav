@@ -1373,4 +1373,66 @@ describe("NavGroup (Mantine NavLink)", () => {
 			expect(onNavigate).toHaveBeenCalledTimes(1);
 		});
 	});
+
+	describe("loading skeleton", () => {
+		it("renders skeleton rows when loading is true", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading />, { wrapper: Wrapper });
+
+			// Assert
+			expect(screen.getByTestId("nav-group-loading")).toBeInTheDocument();
+			expect(screen.queryByRole("tree")).not.toBeInTheDocument();
+		});
+
+		it("renders the specified number of skeleton rows", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading skeletonCount={3} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			const container = screen.getByTestId("nav-group-loading");
+			const rows = container.querySelectorAll("[data-skeleton-row]");
+			expect(rows).toHaveLength(3);
+		});
+
+		it("defaults to 5 skeleton rows", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading />, { wrapper: Wrapper });
+
+			// Assert
+			const container = screen.getByTestId("nav-group-loading");
+			const rows = container.querySelectorAll("[data-skeleton-row]");
+			expect(rows).toHaveLength(5);
+		});
+
+		it("renders the tree when loading is false", () => {
+			// Arrange / Act
+			render(<NavGroup items={flatItems} loading={false} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.queryByTestId("nav-group-loading")).not.toBeInTheDocument();
+			expect(screen.getByRole("tree")).toBeInTheDocument();
+		});
+
+		it("applies root classNames and styles to the skeleton container", () => {
+			// Arrange / Act
+			const { container } = render(
+				<NavGroup
+					items={[]}
+					loading
+					classNames={{ root: "custom-root" }}
+					styles={{ root: { padding: 8 } }}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const el = container.querySelector(".custom-root");
+			expect(el).not.toBeNull();
+			expect(el).toHaveStyle({ padding: "8px" });
+		});
+	});
 });
