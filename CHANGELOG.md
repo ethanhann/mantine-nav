@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `useNavBreadcrumbs` hook that returns the ordered breadcrumb entries from root to the active item.
   Accepts the same `currentPath` and `matcher` options as `useActiveNavItem`.
 - `matchItem` utility function for testing whether a path matches an href using any `ActiveMatcher` strategy.
+- `onNavigate` callback on `NavShell` for unified navigation telemetry.
+  Fires with a `NavigateEvent` containing `id`, `label`, `href`, `data`, `source`, and `trigger` whenever a user
+  activates a link from the sidebar, command palette, or breadcrumbs.
+  `source` is `'sidebar'`, `'command-palette'`, or `'breadcrumb'`.
+  `trigger` is `'mouse'` or `'keyboard'`.
+- `NavigateEvent`, `NavigateSource`, and `NavigateTrigger` types.
 - `collapsePersistKey` prop on `NavShell` to persist the sidebar collapse state to `localStorage`.
   The stored value is restored on mount and updated on every toggle.
   Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.

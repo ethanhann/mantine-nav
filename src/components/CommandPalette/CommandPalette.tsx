@@ -143,6 +143,16 @@ export function CommandPalette({
 			}
 		}
 
+		shell?.onNavigate?.({
+			id: command.id,
+			label: command.label,
+			href: command.href,
+			external: command.external,
+			data: command.data,
+			source: "command-palette",
+			trigger: "mouse",
+		});
+
 		if (recordRecent && !command.external) {
 			recent.addItem({
 				id: command.id,

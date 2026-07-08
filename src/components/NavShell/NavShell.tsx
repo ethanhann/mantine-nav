@@ -21,7 +21,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import type { NavSlotStyles } from "../../types";
+import type { NavigateEvent, NavSlotStyles } from "../../types";
 
 export type NavShellSlot = "header" | "navbar" | "aside" | "footer" | "main";
 
@@ -39,6 +39,7 @@ export interface NavShellContextValue {
 	linkComponent?: React.ElementType;
 	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
 	hrefProp?: string;
+	onNavigate?: (event: NavigateEvent) => void;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -103,6 +104,8 @@ export interface NavShellProps extends NavSlotStyles<NavShellSlot> {
 	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
 	hrefProp?: string;
 	mainProps?: AppShellMainProps;
+	/** Called when a user activates a navigation link from any surface (sidebar, command palette, breadcrumbs). */
+	onNavigate?: (event: NavigateEvent) => void;
 	/** Overrides for user-facing strings. */
 	labels?: {
 		/** Burger aria-label. @default "Toggle navigation" */
@@ -151,6 +154,7 @@ export function NavShell({
 	linkComponent,
 	hrefProp,
 	mainProps = {},
+	onNavigate,
 	labels,
 	classNames,
 	styles,
@@ -277,6 +281,7 @@ export function NavShell({
 			isMobile,
 			linkComponent,
 			hrefProp,
+			onNavigate,
 		}),
 		[
 			mobileOpened,
@@ -290,6 +295,7 @@ export function NavShell({
 			isMobile,
 			linkComponent,
 			hrefProp,
+			onNavigate,
 		],
 	);
 

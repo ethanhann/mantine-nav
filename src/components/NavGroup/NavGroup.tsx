@@ -704,10 +704,24 @@ export function NavGroup<TData = unknown>({
 		| undefined;
 	const resolvedHrefProp = shell?.hrefProp ?? "href";
 
-	// Auto-close mobile drawer on link click
+	// Auto-close mobile drawer on link click and fire shell-level onNavigate.
+	// The `keyboardActivationRef` flag is set by the keyboard `onSelect` path
+	// before it calls `el?.click()`, allowing this handler to tag the trigger.
+	const keyboardActivationRef = useRef(false);
 	const wrappedOnItemClick: NavCallbacks<TData>["onItemClick"] = useCallback(
 		(item: NavLinkItem<TData>, event: React.MouseEvent) => {
 			onItemClick?.(item, event);
+			const trigger = keyboardActivationRef.current ? "keyboard" : "mouse";
+			keyboardActivationRef.current = false;
+			shell?.onNavigate?.({
+				id: item.id,
+				label: item.label,
+				href: item.href,
+				external: item.external,
+				data: item.data,
+				source: "sidebar",
+				trigger,
+			});
 			if (shell?.isMobile) {
 				shell.closeMobile();
 			}
@@ -847,9 +861,7 @@ export function NavGroup<TData = unknown>({
 		onToggle: handleToggleGroup,
 		onSelect: (item) => {
 			if (item.type === "link") {
-				// Click the real DOM node so keyboard activation follows the
-				// href natively and runs the same path as a mouse click
-				// (item.onClick, onItemClick, mobile drawer close).
+				keyboardActivationRef.current = true;
 				const el = containerRef.current?.querySelector<HTMLElement>(
 					`[data-item-id="${CSS.escape(item.id)}"]`,
 				);

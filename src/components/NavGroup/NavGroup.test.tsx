@@ -1230,4 +1230,147 @@ describe("NavGroup (Mantine NavLink)", () => {
 			).toBe("false");
 		});
 	});
+
+	describe("onNavigate telemetry", () => {
+		it("fires onNavigate with source 'sidebar' and trigger 'mouse' on click", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "home",
+					type: "link",
+					label: "Home",
+					href: "/home",
+					data: { key: "val" },
+				},
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Home"));
+
+			// Assert
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					id: "home",
+					label: "Home",
+					href: "/home",
+					source: "sidebar",
+					trigger: "mouse",
+					data: { key: "val" },
+				}),
+			);
+		});
+
+		it("fires onNavigate with trigger 'keyboard' on Enter", () => {
+			// Arrange
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{ id: "home", type: "link", label: "Home", href: "/home" },
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					id: "home",
+					source: "sidebar",
+					trigger: "keyboard",
+				}),
+			);
+		});
+
+		it("does not fire onNavigate for disabled items", () => {
+			// Arrange
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "off",
+					type: "link",
+					label: "Off",
+					href: "/off",
+					disabled: true,
+				},
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(onNavigate).not.toHaveBeenCalled();
+		});
+
+		it("does not fire onNavigate for group toggles", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			render(
+				<NavShell
+					onNavigate={onNavigate}
+					sidebar={<NavGroup items={nestedItems} />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Products"));
+
+			// Assert
+			expect(onNavigate).not.toHaveBeenCalled();
+		});
+
+		it("fires onItemClick alongside onNavigate", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{ id: "home", type: "link", label: "Home", href: "/home" },
+			];
+			render(
+				<NavShell
+					onNavigate={onNavigate}
+					sidebar={<NavGroup items={items} onItemClick={onItemClick} />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Home"));
+
+			// Assert
+			expect(onItemClick).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+		});
+	});
 });

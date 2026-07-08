@@ -391,6 +391,31 @@ Layout state is uncontrolled by default, and every stateful surface also accepts
 
 In uncontrolled mode the change callbacks still fire with the intended value, so they double as event hooks.
 
+## Navigation Telemetry
+
+Pass `onNavigate` to `NavShell` to receive a single callback whenever a user activates a link from any navigation
+surface:
+
+```tsx
+<NavShell
+    onNavigate={(event) => {
+        analytics.track('navigation', {
+            to: event.href,
+            from: event.source,   // 'sidebar' | 'command-palette' | 'breadcrumb'
+            trigger: event.trigger, // 'mouse' | 'keyboard'
+        });
+    }}
+    sidebar={sidebar}
+>
+    {children}
+</NavShell>
+```
+
+The `NavigateEvent` carries `id`, `label`, `href`, `external`, `data` (the item's generic payload), `source`, and
+`trigger`.
+It fires alongside existing per-component callbacks (`onItemClick` on `NavGroup`, `onNavigate` on `CommandPalette`),
+not instead of them.
+
 ## Styling
 
 `NavShell`, `NavGroup`, `NavSidebar`, `NavHeader`, and `NavBreadcrumbs` accept slot-based `classNames` and `styles`

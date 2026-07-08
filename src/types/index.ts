@@ -6,6 +6,10 @@ export type {
 	NavAnimationConfig,
 	// Callbacks
 	NavCallbacks,
+	// Navigation telemetry
+	NavigateEvent,
+	NavigateSource,
+	NavigateTrigger,
 	// CSS variables
 	NavCSSVariable,
 	NavDividerItem,

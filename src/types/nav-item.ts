@@ -81,6 +81,20 @@ export interface NavCallbacks<TData = unknown> {
 	onActiveChange?: (item: NavLinkItem<TData> | null) => void;
 }
 
+// --- Navigation telemetry ---
+export type NavigateSource = "sidebar" | "command-palette" | "breadcrumb";
+export type NavigateTrigger = "mouse" | "keyboard";
+
+export interface NavigateEvent<TData = unknown> {
+	id: string;
+	label: string;
+	href: string;
+	external?: boolean;
+	data?: TData;
+	source: NavigateSource;
+	trigger: NavigateTrigger;
+}
+
 // --- Sidebar variants ---
 export type SidebarVariant = "full" | "rail" | "mini";
 
