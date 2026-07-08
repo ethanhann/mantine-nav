@@ -734,24 +734,68 @@ render.
 The published build preserves `"use client"` directives, so components and hooks work in the Next.js App Router without
 a manual client boundary.
 
-The persistence hooks (`usePinnedItems`, `useRecentlyViewed`, `useStarredPages`, `usePersistedList`,
-`useSidebarResize`) read localStorage in a lazy initializer.
-On the server they return their defaults, and the stored value appears after hydration on the client.
-Gate markup that depends on persisted state with `useHydrated()` to avoid hydration mismatches:
+### Server return values
+
+Several hooks depend on browser APIs (`localStorage`, `window.innerWidth`, `window.location`) that are unavailable
+during server rendering.
+Each returns a deterministic fallback on the server and resolves to the real value after hydration on the client:
+
+| Hook / feature | Server return | Client return | Mismatch risk |
+|---|---|---|---|
+| `usePinnedItems` | `pinnedItems: []` | Persisted pin IDs | Yes, if localStorage has data |
+| `useRecentlyViewed` | `items: []` | Persisted recent items | Yes, if localStorage has data |
+| `useStarredPages` | `items: []` | Persisted starred pages | Yes, if localStorage has data |
+| `usePersistedList` | `items: []` | Persisted array | Yes, if localStorage has data |
+| `useSidebarResize` | `width: defaultWidth` (260) | Persisted width | Yes, if user previously resized |
+| `NavShell` with `collapsePersistKey` | `!defaultDesktopCollapsed` (expanded) | Persisted collapse state | Yes, if stored state differs |
+| `NavShell` `isMobile` | `false` | `useMediaQuery` result | Yes, on mobile viewports |
+| `useResponsiveNav` | `viewportWidth: 1024`, `isDesktop: true` | Real viewport values | Yes, on any viewport below 1024px |
+| `useCurrentPath` (without `currentPath` prop) | `"/"` | `window.location.pathname` | Yes, on any page other than `/` |
+| `useIsSSR` | `true` | `false` | No (handled by `useSyncExternalStore`) |
+| `useHydrated` | `false` | `true` | No |
+
+### Avoiding hydration mismatches
+
+Gate markup that depends on any of the above state with `useHydrated()`.
+This applies to all persistence hooks, not just `usePinnedItems`:
 
 ```tsx
-import {useHydrated, usePinnedItems} from '@ethanhann/mantine-nav';
+import {useHydrated, usePinnedItems, useStarredPages} from '@ethanhann/mantine-nav';
 
 const hydrated = useHydrated();
 const {pinnedItems} = usePinnedItems(items, {storageKey: 'nav-pins'});
+const {items: starred} = useStarredPages({storageKey: 'nav-starred'});
+
 if (!hydrated) return <NavGroup items={items}/>;
+// Now safe to render UI that depends on pinnedItems or starred
 ```
+
+The trade-off is a "flash of default content": the user sees the default (empty) state until JavaScript hydrates, which
+can cause a visible layout shift.
+For persistence hooks this is usually acceptable because the localStorage read is fast and the shift is a single frame.
+
+For `useCurrentPath`, avoid the `"/"` server fallback by passing `currentPath` from your router:
+
+```tsx
+// Next.js App Router
+import {usePathname} from 'next/navigation';
+
+<NavGroup items={items} currentPath={usePathname()} />
+```
+
+For `useResponsiveNav`, the 1024px server fallback means the hook always reports `isDesktop: true` and
+`sidebarMode: "persistent"` during SSR.
+On viewports narrower than 1024px this produces a hydration mismatch.
+Prefer `NavShell` for responsive layouts (it uses Mantine's `useMediaQuery`, which suppresses the mismatch by
+returning `undefined` until the client renders) or gate responsive UI with `useHydrated()`.
+
+`useIsSSR()` returns `true` during server rendering and the first client render.
+
+### Cross-tab sync
 
 All persistence hooks sync across browser tabs via `StorageEvent` listeners.
 A change in one tab (pinning an item, resizing the sidebar, toggling collapse) is reflected in all other same-origin
 tabs automatically.
-
-`useIsSSR()` returns `true` during server rendering and the first client render.
 
 ## Hooks
 

@@ -37,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The stored value is restored on mount and updated on every toggle.
   Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.
   Ignored when `desktopCollapsed` (controlled mode) is set.
+- Expanded the SSR documentation with a table of server return values and hydration mismatch risks for every hook
+  that depends on browser APIs, guidance for `useResponsiveNav` and `useCurrentPath`, and the "flash of default
+  content" trade-off when using `useHydrated()`.
 
 ## [0.7.0] - 2026-07-03
 
