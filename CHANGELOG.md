@@ -18,13 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Uses `linkComponent`/`hrefProp` from `NavShell` context for router integration.
 - `useNavBreadcrumbs` hook that returns the ordered breadcrumb entries from root to the active item.
   Accepts the same `currentPath` and `matcher` options as `useActiveNavItem`.
-- `matchItem` utility function extracted from `useActiveNavItem` and now exported for direct use.
-  Both `useActiveNavItem` and `useNavBreadcrumbs` share this function, so active matching behavior is always
-  consistent between the two.
-- `collapsePersistKey` prop on `NavShell`.
-  When set in uncontrolled mode, the sidebar collapse state is persisted to `localStorage` under the given key and
-  restored on mount.
-  Invalid or missing stored values fall back to `defaultDesktopCollapsed`.
+- `matchItem` utility function for testing whether a path matches an href using any `ActiveMatcher` strategy.
+- `collapsePersistKey` prop on `NavShell` to persist the sidebar collapse state to `localStorage`.
+  The stored value is restored on mount and updated on every toggle.
+  Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.
   Ignored when `desktopCollapsed` (controlled mode) is set.
 
 ## [0.7.0] - 2026-07-03
