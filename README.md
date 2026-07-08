@@ -574,11 +574,6 @@ import {
 The toggle variant cycles through `modes` in order.
 An empty `modes` array renders nothing.
 
-> **Note:** `ColorSchemeToggle` was removed in v0.4.0, replaced by `ColorModePicker`. The migration is a drop-in swap (
-`<ColorSchemeToggle />` → `<ColorModePicker />`); the default `toggle` variant cycles System → Light → Dark instead of
-> flipping light/dark, preserving the user's system preference. To restore the old binary behavior, pass only light and
-> dark `modes`.
-
 ### ContextSwitcher
 
 `ContextSwitcher` is a generic dropdown for switching the user's acting context — personas, tenants, environments, or
