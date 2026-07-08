@@ -179,12 +179,38 @@ export function NavShell({
 		? (desktopCollapsedProp ?? !desktopExpanded)
 		: false;
 
+	const collapseFirstRun = useRef(true);
+	const collapseFromStorage = useRef(false);
 	useEffect(() => {
+		if (collapseFirstRun.current) {
+			collapseFirstRun.current = false;
+			return;
+		}
+		if (collapseFromStorage.current) {
+			collapseFromStorage.current = false;
+			return;
+		}
 		if (!collapsePersistKey || isCollapseControlled) return;
 		try {
 			localStorage.setItem(collapsePersistKey, String(!desktopExpanded));
 		} catch {}
 	}, [collapsePersistKey, isCollapseControlled, desktopExpanded]);
+
+	useEffect(() => {
+		if (!collapsePersistKey || isCollapseControlled || typeof window === "undefined") return;
+		const handler = (event: StorageEvent) => {
+			if (event.key !== collapsePersistKey) return;
+			if (event.newValue === "true") {
+				collapseFromStorage.current = true;
+				setDesktopExpanded(false);
+			} else if (event.newValue === "false") {
+				collapseFromStorage.current = true;
+				setDesktopExpanded(true);
+			}
+		};
+		window.addEventListener("storage", handler);
+		return () => window.removeEventListener("storage", handler);
+	}, [collapsePersistKey, isCollapseControlled]);
 	// Resolve the breakpoint from the active theme so a custom theme keeps
 	// isMobile in sync with AppShell's own collapse point.
 	const theme = useMantineTheme();

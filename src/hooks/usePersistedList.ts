@@ -67,26 +67,51 @@ export function usePersistedList<T>({
 	maxItems = Number.POSITIVE_INFINITY,
 	parse = (raw) => (Array.isArray(raw) ? (raw as T[]) : []),
 }: UsePersistedListOptions<T>): UsePersistedListReturn<T> {
-	// Capture initial config in refs so the public callbacks never need to list
-	// them as dependencies (keeping callback identity stable).
 	const getIdRef = useRef(getId);
 	getIdRef.current = getId;
 	const maxItemsRef = useRef(maxItems);
 	maxItemsRef.current = maxItems;
+	const parseRef = useRef(parse);
+	parseRef.current = parse;
 
 	const [items, setItems] = useState<T[]>(() =>
 		storageKey ? loadFromStorage(storageKey, parse) : [],
 	);
 
-	// Persist on change, skipping the initial load to avoid an immediate echo.
 	const isFirstRun = useRef(true);
+	const fromStorageRef = useRef(false);
 	useEffect(() => {
 		if (isFirstRun.current) {
 			isFirstRun.current = false;
 			return;
 		}
+		if (fromStorageRef.current) {
+			fromStorageRef.current = false;
+			return;
+		}
 		if (storageKey) saveToStorage(storageKey, items);
 	}, [items, storageKey]);
+
+	useEffect(() => {
+		if (!storageKey || typeof window === "undefined") return;
+		const handler = (event: StorageEvent) => {
+			if (event.key !== storageKey) return;
+			if (event.newValue === null) {
+				fromStorageRef.current = true;
+				setItems([]);
+				return;
+			}
+			try {
+				const parsed = parseRef.current(JSON.parse(event.newValue));
+				fromStorageRef.current = true;
+				setItems(parsed);
+			} catch {
+				// ignore malformed JSON
+			}
+		};
+		window.addEventListener("storage", handler);
+		return () => window.removeEventListener("storage", handler);
+	}, [storageKey]);
 
 	const ids = useMemo(
 		() => new Set(items.map((i) => getIdRef.current(i))),

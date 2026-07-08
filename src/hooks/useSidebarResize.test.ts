@@ -302,4 +302,78 @@ describe("Spec 009: useSidebarResize", () => {
 			expect(result.current.width).toBe(320);
 		});
 	});
+
+	describe("cross-tab sync", () => {
+		const PERSIST_KEY = "test-resize-sync";
+
+		afterEach(() => {
+			localStorage.removeItem(PERSIST_KEY);
+		});
+
+		function fireStorageEvent(key: string, newValue: string | null) {
+			window.dispatchEvent(
+				new StorageEvent("storage", { key, newValue }),
+			);
+		}
+
+		it("updates width when another tab writes a valid value", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({ persistKey: PERSIST_KEY, defaultWidth: 260 }),
+			);
+			expect(result.current.width).toBe(260);
+
+			// Act
+			act(() => {
+				localStorage.setItem(PERSIST_KEY, "320");
+				fireStorageEvent(PERSIST_KEY, "320");
+			});
+
+			// Assert
+			expect(result.current.width).toBe(320);
+		});
+
+		it("clamps out-of-range values from another tab", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({
+					persistKey: PERSIST_KEY,
+					minWidth: 180,
+					maxWidth: 480,
+				}),
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "9999"));
+
+			// Assert
+			expect(result.current.width).toBe(480);
+		});
+
+		it("ignores non-numeric values from another tab", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({ persistKey: PERSIST_KEY, defaultWidth: 260 }),
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "garbage"));
+
+			// Assert
+			expect(result.current.width).toBe(260);
+		});
+
+		it("does not attach a listener when persistKey is omitted", () => {
+			// Arrange
+			const spy = vi.spyOn(window, "addEventListener");
+
+			// Act
+			renderHook(() => useSidebarResize());
+
+			// Assert
+			const storageCalls = spy.mock.calls.filter((c) => c[0] === "storage");
+			expect(storageCalls).toHaveLength(0);
+			spy.mockRestore();
+		});
+	});
 });

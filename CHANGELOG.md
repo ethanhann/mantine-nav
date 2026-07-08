@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Uses `linkComponent`/`hrefProp` from `NavShell` context for router integration.
 - `useNavBreadcrumbs` hook that returns the ordered breadcrumb entries from root to the active item.
   Accepts the same `currentPath` and `matcher` options as `useActiveNavItem`.
+- Cross-tab sync for all persisted state.
+  `usePersistedList` (and its consumers `usePinnedItems`, `useRecentlyViewed`, `useStarredPages`), `useSidebarResize`,
+  and `NavShell` collapse persistence now listen for `storage` events, so changes made in one tab are reflected in all
+  other same-origin tabs automatically.
 - `matchItem` utility function for testing whether a path matches an href using any `ActiveMatcher` strategy.
 - `onNavigate` callback on `NavShell` for unified navigation telemetry.
   Fires with a `NavigateEvent` containing `id`, `label`, `href`, `data`, `source`, and `trigger` whenever a user

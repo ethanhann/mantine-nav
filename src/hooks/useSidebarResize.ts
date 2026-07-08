@@ -208,5 +208,21 @@ export function useSidebarResize({
 		[handlePointerDown, resetWidth, handleKeyDown, width, minWidth, maxWidth],
 	);
 
+	useEffect(() => {
+		if (!persistKey || typeof window === "undefined") return;
+		const handler = (event: StorageEvent) => {
+			if (event.key !== persistKey) return;
+			if (event.newValue === null) {
+				setWidth(defaultWidth);
+				return;
+			}
+			const parsed = Number(event.newValue);
+			if (!Number.isFinite(parsed)) return;
+			setWidth(Math.max(minWidth, Math.min(maxWidth, parsed)));
+		};
+		window.addEventListener("storage", handler);
+		return () => window.removeEventListener("storage", handler);
+	}, [persistKey, defaultWidth, minWidth, maxWidth]);
+
 	return { width, isResizing, handleRef, getHandleProps, resetWidth };
 }

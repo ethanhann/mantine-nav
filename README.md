@@ -747,6 +747,10 @@ const {pinnedItems} = usePinnedItems(items, {storageKey: 'nav-pins'});
 if (!hydrated) return <NavGroup items={items}/>;
 ```
 
+All persistence hooks sync across browser tabs via `StorageEvent` listeners.
+A change in one tab (pinning an item, resizing the sidebar, toggling collapse) is reflected in all other same-origin
+tabs automatically.
+
 `useIsSSR()` returns `true` during server rendering and the first client render.
 
 ## Hooks

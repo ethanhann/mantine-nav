@@ -1,5 +1,5 @@
 import { type AppShellMainProps, MantineProvider } from "@mantine/core";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockViewport, resetViewport } from "../../__integration__/helpers";
@@ -401,6 +401,106 @@ describe("NavShell", () => {
 				</NavShell>,
 				{ wrapper: Wrapper },
 			);
+
+			// Assert
+			expect(
+				screen.getByRole("button", { name: "false" }),
+			).toBeInTheDocument();
+		});
+	});
+
+	describe("collapse cross-tab sync", () => {
+		const PERSIST_KEY = "test-collapse-sync";
+
+		function CollapseProbe() {
+			const ctx = useNavShell();
+			return (
+				<button type="button" onClick={ctx.toggleDesktop}>
+					{String(ctx.desktopCollapsed)}
+				</button>
+			);
+		}
+
+		function fireStorageEvent(key: string, newValue: string | null) {
+			window.dispatchEvent(
+				new StorageEvent("storage", { key, newValue }),
+			);
+		}
+
+		beforeEach(() => {
+			localStorage.removeItem(PERSIST_KEY);
+		});
+
+		it("updates collapse state when another tab writes 'true'", () => {
+			// Arrange
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "true"));
+
+			// Assert
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+
+		it("updates collapse state when another tab writes 'false'", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "true");
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "false"));
+
+			// Assert
+			expect(
+				screen.getByRole("button", { name: "false" }),
+			).toBeInTheDocument();
+		});
+
+		it("ignores invalid values from another tab", () => {
+			// Arrange
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "garbage"));
+
+			// Assert
+			expect(
+				screen.getByRole("button", { name: "false" }),
+			).toBeInTheDocument();
+		});
+
+		it("does not sync when controlled mode is active", () => {
+			// Arrange
+			render(
+				<NavShell
+					desktopCollapsed={false}
+					collapsePersistKey={PERSIST_KEY}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "true"));
 
 			// Assert
 			expect(
