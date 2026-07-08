@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { ActiveMatcher, NavItemType, NavLinkItem } from "../types";
+import { matchItem } from "../utils/matchItem";
 import { walkNavTree } from "../utils/traverse";
 import { useCurrentPath } from "./useCurrentPath";
 
@@ -14,38 +15,6 @@ export interface UseActiveNavItemReturn<TData = unknown> {
 	activeItem: NavLinkItem<TData> | null;
 	activeHref: string | null;
 	isActive: (item: NavItemType<TData>) => boolean;
-}
-
-function matchItem(
-	currentPath: string,
-	href: string,
-	matcher: ActiveMatcher,
-): boolean {
-	if (typeof matcher === "function" && !(matcher instanceof RegExp)) {
-		return matcher(currentPath, href);
-	}
-	if (matcher instanceof RegExp) {
-		return matcher.test(currentPath);
-	}
-	switch (matcher) {
-		case "exact":
-			return currentPath === href;
-		case "prefix": {
-			if (currentPath === href) return true;
-			// /settings matches /settings/team but not /settings-old
-			return currentPath.startsWith(`${href}/`);
-		}
-		case "regex":
-			try {
-				return new RegExp(href).test(currentPath);
-			} catch {
-				// Malformed regex (e.g. unescaped chars in href) — don't crash
-				// the whole nav; fall back to exact match for this item.
-				return currentPath === href;
-			}
-		default:
-			return currentPath === href;
-	}
 }
 
 function collectLinks<TData>(

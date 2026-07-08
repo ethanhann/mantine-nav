@@ -22,6 +22,12 @@ export type {
 	ContextSwitcherTargetState,
 } from "./components/ContextSwitcher";
 export { ContextSwitcher } from "./components/ContextSwitcher";
+export type {
+	NavBreadcrumbsLabels,
+	NavBreadcrumbsProps,
+	NavBreadcrumbsSlot,
+} from "./components/NavBreadcrumbs";
+export { NavBreadcrumbs } from "./components/NavBreadcrumbs";
 export type { NavGroupProps, NavGroupSlot } from "./components/NavGroup";
 // Navigation
 export { NavGroup } from "./components/NavGroup";
@@ -64,6 +70,7 @@ export {
 } from "./components/SaaS";
 // Hooks
 export type {
+	BreadcrumbEntry,
 	CommandSearchFn,
 	CommandSearchResult,
 	NavItemResolvers,
@@ -74,6 +81,8 @@ export type {
 	StarredPage,
 	UseActiveNavItemOptions,
 	UseActiveNavItemReturn,
+	UseNavBreadcrumbsOptions,
+	UseNavBreadcrumbsReturn,
 	UseCommandPaletteReturn,
 	UseCommandSearchOptions,
 	UseCommandSearchReturn,
@@ -111,6 +120,7 @@ export {
 	commandPaletteControls,
 	commandPaletteStore,
 	useActiveNavItem,
+	useNavBreadcrumbs,
 	useCommandPalette,
 	useCommandSearch,
 	useCurrentPath,
@@ -152,6 +162,7 @@ export type {
 	Workspace,
 } from "./types";
 // Utilities
+export { matchItem } from "./utils/matchItem";
 export type { NavCommand } from "./utils/flatten";
 export { flattenNavCommands } from "./utils/flatten";
 export type { FuzzyResult, RankedItem } from "./utils/fuzzy";

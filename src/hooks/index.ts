@@ -3,6 +3,12 @@ export type {
 	UseActiveNavItemReturn,
 } from "./useActiveNavItem";
 export { useActiveNavItem } from "./useActiveNavItem";
+export type {
+	BreadcrumbEntry,
+	UseNavBreadcrumbsOptions,
+	UseNavBreadcrumbsReturn,
+} from "./useNavBreadcrumbs";
+export { useNavBreadcrumbs } from "./useNavBreadcrumbs";
 export type { UseCommandPaletteReturn } from "./useCommandPalette";
 export {
 	commandPaletteControls,
