@@ -1502,4 +1502,153 @@ describe("NavGroup (Mantine NavLink)", () => {
 			).toBe("false");
 		});
 	});
+
+	describe("maxDepth", () => {
+		it("does not render groups beyond maxDepth", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "l1",
+					type: "group",
+					label: "Level 1",
+					defaultOpened: true,
+					children: [
+						{
+							id: "l2",
+							type: "group",
+							label: "Level 2",
+							defaultOpened: true,
+							children: [
+								{
+									id: "l3",
+									type: "group",
+									label: "Level 3",
+									children: [
+										{
+											id: "deep",
+											type: "link",
+											label: "Deep Link",
+											href: "/deep",
+										},
+									],
+								},
+							],
+						},
+					],
+				},
+			];
+
+			// Act
+			render(<NavGroup items={items} maxDepth={2} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("Level 1")).toBeInTheDocument();
+			expect(screen.getByText("Level 2")).toBeInTheDocument();
+			expect(screen.queryByText("Level 3")).not.toBeInTheDocument();
+			expect(screen.queryByText("Deep Link")).not.toBeInTheDocument();
+		});
+
+		it("renders all levels when maxDepth is sufficient", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "l1",
+					type: "group",
+					label: "Level 1",
+					defaultOpened: true,
+					children: [
+						{
+							id: "l2",
+							type: "group",
+							label: "Level 2",
+							defaultOpened: true,
+							children: [
+								{ id: "leaf", type: "link", label: "Leaf", href: "/leaf" },
+							],
+						},
+					],
+				},
+			];
+
+			// Act
+			render(<NavGroup items={items} maxDepth={5} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("Level 1")).toBeInTheDocument();
+			expect(screen.getByText("Level 2")).toBeInTheDocument();
+			expect(screen.getByText("Leaf")).toBeInTheDocument();
+		});
+	});
+
+	describe("activeMatcher variants", () => {
+		const items: NavItemType[] = [
+			{ id: "home", type: "link", label: "Home", href: "/" },
+			{
+				id: "settings",
+				type: "link",
+				label: "Settings",
+				href: "/settings",
+			},
+		];
+
+		it("exact matcher only highlights exact path matches", () => {
+			// Arrange / Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings"
+					activeMatcher="exact"
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+			const homeEl = screen.getByText("Home").closest("a");
+			expect(homeEl).not.toHaveAttribute("aria-current");
+		});
+
+		it("prefix matcher highlights parent paths", () => {
+			// Arrange / Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings/team"
+					activeMatcher="prefix"
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+		});
+
+		it("custom function matcher is applied", () => {
+			// Arrange
+			const customMatcher = (current: string, href: string) =>
+				current === href;
+
+			// Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings"
+					activeMatcher={customMatcher}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+			const homeEl = screen.getByText("Home").closest("a");
+			expect(homeEl).not.toHaveAttribute("aria-current");
+		});
+	});
 });
