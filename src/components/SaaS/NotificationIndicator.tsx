@@ -192,7 +192,8 @@ export function NotificationIndicator({
 												{n.timestamp && (
 													<Text size="xs" c="dimmed">
 														{n.timestamp instanceof Date
-															? (formatTimestamp?.(n.timestamp) ?? n.timestamp.toLocaleString())
+															? (formatTimestamp?.(n.timestamp) ??
+																n.timestamp.toLocaleString())
 															: n.timestamp}
 													</Text>
 												)}

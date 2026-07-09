@@ -3,12 +3,6 @@ export type {
 	UseActiveNavItemReturn,
 } from "./useActiveNavItem";
 export { useActiveNavItem } from "./useActiveNavItem";
-export type {
-	BreadcrumbEntry,
-	UseNavBreadcrumbsOptions,
-	UseNavBreadcrumbsReturn,
-} from "./useNavBreadcrumbs";
-export { useNavBreadcrumbs } from "./useNavBreadcrumbs";
 export type { UseCommandPaletteReturn } from "./useCommandPalette";
 export {
 	commandPaletteControls,
@@ -33,6 +27,12 @@ export { useHeadlessSidebar } from "./useHeadlessSidebar";
 export { useHydrated, useIsSSR } from "./useIsSSR";
 export type { UseNavAnimationReturn } from "./useNavAnimation";
 export { useNavAnimation } from "./useNavAnimation";
+export type {
+	BreadcrumbEntry,
+	UseNavBreadcrumbsOptions,
+	UseNavBreadcrumbsReturn,
+} from "./useNavBreadcrumbs";
+export { useNavBreadcrumbs } from "./useNavBreadcrumbs";
 export type { UseNavColorSchemeReturn } from "./useNavColorScheme";
 export { useNavColorScheme } from "./useNavColorScheme";
 export type { UseNavItemsReturn } from "./useNavItems";

@@ -81,8 +81,6 @@ export type {
 	StarredPage,
 	UseActiveNavItemOptions,
 	UseActiveNavItemReturn,
-	UseNavBreadcrumbsOptions,
-	UseNavBreadcrumbsReturn,
 	UseCommandPaletteReturn,
 	UseCommandSearchOptions,
 	UseCommandSearchReturn,
@@ -90,6 +88,8 @@ export type {
 	UseHeadlessSidebarOptions,
 	UseHeadlessSidebarReturn,
 	UseNavAnimationReturn,
+	UseNavBreadcrumbsOptions,
+	UseNavBreadcrumbsReturn,
 	UseNavColorSchemeReturn,
 	UseNavItemsReturn,
 	UseNavKeyboardOptions,
@@ -118,7 +118,6 @@ export {
 	commandPaletteControls,
 	commandPaletteStore,
 	useActiveNavItem,
-	useNavBreadcrumbs,
 	useCommandPalette,
 	useCommandSearch,
 	useCurrentPath,
@@ -127,6 +126,7 @@ export {
 	useHydrated,
 	useIsSSR,
 	useNavAnimation,
+	useNavBreadcrumbs,
 	useNavColorScheme,
 	useNavItems,
 	useNavKeyboard,
@@ -161,12 +161,12 @@ export type {
 	UserInfo,
 	Workspace,
 } from "./types";
-// Utilities
-export { matchItem } from "./utils/matchItem";
 export type { NavCommand } from "./utils/flatten";
 export { flattenNavCommands } from "./utils/flatten";
 export type { FuzzyResult, RankedItem } from "./utils/fuzzy";
 export { fuzzyMatch, rankCommands } from "./utils/fuzzy";
+// Utilities
+export { matchItem } from "./utils/matchItem";
 export { sortItemsByWeight } from "./utils/sorting";
 export { flattenNavTree, walkNavTree } from "./utils/traverse";
 export { filterVisibleItems, isItemVisible } from "./utils/visibility";

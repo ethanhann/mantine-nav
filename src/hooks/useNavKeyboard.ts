@@ -237,6 +237,7 @@ export function useNavKeyboard<TData = unknown>({
 			typeAhead,
 			typeAheadTimeout,
 			loop,
+			dir,
 		],
 	);
 

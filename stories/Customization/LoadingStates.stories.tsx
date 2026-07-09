@@ -26,7 +26,9 @@ type Story = StoryObj;
 export const Skeletons: Story = {
 	render: () => (
 		<Stack maw={320} gap="lg">
-			<Text size="sm" fw={600}>NavGroup</Text>
+			<Text size="sm" fw={600}>
+				NavGroup
+			</Text>
 			<NavGroup items={[]} loading />
 			<NavGroup items={[]} loading skeletonCount={3} />
 			<WorkspaceSwitcher
@@ -93,7 +95,11 @@ function SimulatedNavFetchDemo() {
 			<Text size="sm" c="dimmed">
 				Nav items arrive after 2 seconds.
 			</Text>
-			<NavGroup items={loading ? [] : sampleItems} loading={loading} currentPath="/" />
+			<NavGroup
+				items={loading ? [] : sampleItems}
+				loading={loading}
+				currentPath="/"
+			/>
 		</Stack>
 	);
 }

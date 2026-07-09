@@ -231,10 +231,7 @@ describe("SaaS Components", () => {
 	it("NotificationIndicator uses formatCount for badge display", () => {
 		// Arrange / Act
 		render(
-			<NotificationIndicator
-				count={150}
-				formatCount={(n) => `${n} new`}
-			/>,
+			<NotificationIndicator count={150} formatCount={(n) => `${n} new`} />,
 			{ wrapper: Wrapper },
 		);
 
@@ -331,9 +328,7 @@ describe("SaaS Components", () => {
 		// Arrange
 		const user = userEvent.setup();
 		const onRead = vi.fn();
-		const notifications = [
-			{ id: "1", title: "Test", read: false },
-		];
+		const notifications = [{ id: "1", title: "Test", read: false }];
 
 		// Act
 		render(
@@ -705,15 +700,12 @@ describe("SaaS Components", () => {
 		it("opens the dropdown and shows menu items on click", async () => {
 			// Arrange
 			const user = userEvent.setup();
-			render(
-				<UserMenu user={testUser} menuItems={testMenuItems} />,
-				{ wrapper: Wrapper },
-			);
+			render(<UserMenu user={testUser} menuItems={testMenuItems} />, {
+				wrapper: Wrapper,
+			});
 
 			// Act
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Assert
 			expect(await screen.findByText("Profile")).toBeInTheDocument();
@@ -731,9 +723,7 @@ describe("SaaS Components", () => {
 				/>,
 				{ wrapper: Wrapper },
 			);
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Act
 			await user.click(await screen.findByText("Profile"));
@@ -754,9 +744,7 @@ describe("SaaS Components", () => {
 			);
 
 			// Act
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Assert
 			const link = await screen.findByText("Docs");
@@ -778,25 +766,20 @@ describe("SaaS Components", () => {
 			);
 
 			// Act
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Assert
 			await screen.findByText("A");
 			expect(screen.getByText("B")).toBeInTheDocument();
-			const dividers = document.querySelectorAll(
-				".mantine-Menu-divider",
-			);
+			const dividers = document.querySelectorAll(".mantine-Menu-divider");
 			expect(dividers.length).toBeGreaterThanOrEqual(2);
 		});
 
 		it("compact variant shows only the avatar button", () => {
 			// Arrange / Act
-			render(
-				<UserMenu user={testUser} variant="compact" />,
-				{ wrapper: Wrapper },
-			);
+			render(<UserMenu user={testUser} variant="compact" />, {
+				wrapper: Wrapper,
+			});
 
 			// Assert
 			expect(
@@ -807,10 +790,7 @@ describe("SaaS Components", () => {
 
 		it("full variant shows user name and role", () => {
 			// Arrange / Act
-			render(
-				<UserMenu user={testUser} showRole />,
-				{ wrapper: Wrapper },
-			);
+			render(<UserMenu user={testUser} showRole />, { wrapper: Wrapper });
 
 			// Assert
 			expect(screen.getByText("Jane Doe")).toBeInTheDocument();
@@ -819,10 +799,7 @@ describe("SaaS Components", () => {
 
 		it("shows email when showEmail is true", () => {
 			// Arrange / Act
-			render(
-				<UserMenu user={testUser} showEmail />,
-				{ wrapper: Wrapper },
-			);
+			render(<UserMenu user={testUser} showEmail />, { wrapper: Wrapper });
 
 			// Assert
 			expect(screen.getByText("jane@example.com")).toBeInTheDocument();
@@ -831,15 +808,12 @@ describe("SaaS Components", () => {
 		it("displays email in the dropdown header", async () => {
 			// Arrange
 			const user = userEvent.setup();
-			render(
-				<UserMenu user={testUser} menuItems={testMenuItems} />,
-				{ wrapper: Wrapper },
-			);
+			render(<UserMenu user={testUser} menuItems={testMenuItems} />, {
+				wrapper: Wrapper,
+			});
 
 			// Act
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Assert
 			const dropdownEmails = await screen.findAllByText("jane@example.com");
@@ -860,9 +834,7 @@ describe("SaaS Components", () => {
 			);
 
 			// Act
-			await user.click(
-				screen.getByLabelText("User menu for Jane Doe"),
-			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
 
 			// Assert
 			expect(onOpenChange).toHaveBeenCalledWith(true);

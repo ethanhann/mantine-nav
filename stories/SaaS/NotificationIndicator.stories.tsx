@@ -62,7 +62,8 @@ export const CustomFormatCount: Story = {
 	args: {
 		count: 1234,
 		notifications: sampleNotifications,
-		formatCount: (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n),
+		formatCount: (n: number) =>
+			n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n),
 	},
 };
 
@@ -101,15 +102,31 @@ export const CustomRenderNotification: Story = {
 	args: {
 		count: 2,
 		notifications: [
-			{ id: "1", title: "Build failed", description: "CI pipeline #4821", read: false },
-			{ id: "2", title: "PR approved", description: "feat: add breadcrumbs", read: true },
+			{
+				id: "1",
+				title: "Build failed",
+				description: "CI pipeline #4821",
+				read: false,
+			},
+			{
+				id: "2",
+				title: "PR approved",
+				description: "feat: add breadcrumbs",
+				read: true,
+			},
 		],
 		renderNotification: (n) => (
 			<Group gap="xs" wrap="nowrap">
 				<Badge size="xs" color={n.read ? "gray" : "red"} variant="dot" />
 				<div>
-					<Text size="sm" fw={n.read ? 400 : 600}>{n.title}</Text>
-					{n.description && <Text size="xs" c="dimmed">{n.description}</Text>}
+					<Text size="sm" fw={n.read ? 400 : 600}>
+						{n.title}
+					</Text>
+					{n.description && (
+						<Text size="xs" c="dimmed">
+							{n.description}
+						</Text>
+					)}
 				</div>
 			</Group>
 		),

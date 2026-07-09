@@ -307,9 +307,7 @@ describe("NavShell", () => {
 			);
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 
 		it("falls back to defaultDesktopCollapsed when no stored value exists", () => {
@@ -344,9 +342,7 @@ describe("NavShell", () => {
 			);
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 
 		it("writes state changes to localStorage on toggle", async () => {
@@ -403,9 +399,7 @@ describe("NavShell", () => {
 			);
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 	});
 
@@ -422,9 +416,7 @@ describe("NavShell", () => {
 		}
 
 		function fireStorageEvent(key: string, newValue: string | null) {
-			window.dispatchEvent(
-				new StorageEvent("storage", { key, newValue }),
-			);
+			window.dispatchEvent(new StorageEvent("storage", { key, newValue }));
 		}
 
 		beforeEach(() => {
@@ -463,9 +455,7 @@ describe("NavShell", () => {
 			act(() => fireStorageEvent(PERSIST_KEY, "false"));
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 
 		it("ignores invalid values from another tab", () => {
@@ -481,9 +471,7 @@ describe("NavShell", () => {
 			act(() => fireStorageEvent(PERSIST_KEY, "garbage"));
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 
 		it("does not sync when controlled mode is active", () => {
@@ -503,9 +491,7 @@ describe("NavShell", () => {
 			act(() => fireStorageEvent(PERSIST_KEY, "true"));
 
 			// Assert
-			expect(
-				screen.getByRole("button", { name: "false" }),
-			).toBeInTheDocument();
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 	});
 

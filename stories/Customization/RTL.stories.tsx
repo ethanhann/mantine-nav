@@ -29,7 +29,9 @@ type Story = StoryObj;
 export const Default: Story = {
 	render: () => (
 		<NavShell
-			header={<NavHeader logo={<span style={{ fontWeight: 700 }}>RTL App</span>} />}
+			header={
+				<NavHeader logo={<span style={{ fontWeight: 700 }}>RTL App</span>} />
+			}
 			sidebar={
 				<NavSidebar>
 					<NavGroup items={sampleItems} currentPath="/products/inventory" />
@@ -38,8 +40,14 @@ export const Default: Story = {
 		>
 			<div style={{ padding: 16 }}>
 				<p>The sidebar renders on the right in RTL mode.</p>
-				<p>Collapse the sidebar to verify tooltips appear on the left and the chevron icon flips.</p>
-				<p>Use ArrowLeft to expand groups and ArrowRight to collapse them (swapped from LTR).</p>
+				<p>
+					Collapse the sidebar to verify tooltips appear on the left and the
+					chevron icon flips.
+				</p>
+				<p>
+					Use ArrowLeft to expand groups and ArrowRight to collapse them
+					(swapped from LTR).
+				</p>
 			</div>
 		</NavShell>
 	),

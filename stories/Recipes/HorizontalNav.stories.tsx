@@ -19,10 +19,35 @@ import {
 } from "../../src";
 
 const topNavItems: NavItemType[] = [
-	{ id: "home", type: "link", label: "Home", href: "/", activeExact: true, icon: <IconHome size={16} /> },
-	{ id: "products", type: "link", label: "Products", href: "/products", icon: <IconPackage size={16} /> },
-	{ id: "analytics", type: "link", label: "Analytics", href: "/analytics", icon: <IconChartBar size={16} /> },
-	{ id: "settings", type: "link", label: "Settings", href: "/settings", icon: <IconSettings size={16} /> },
+	{
+		id: "home",
+		type: "link",
+		label: "Home",
+		href: "/",
+		activeExact: true,
+		icon: <IconHome size={16} />,
+	},
+	{
+		id: "products",
+		type: "link",
+		label: "Products",
+		href: "/products",
+		icon: <IconPackage size={16} />,
+	},
+	{
+		id: "analytics",
+		type: "link",
+		label: "Analytics",
+		href: "/analytics",
+		icon: <IconChartBar size={16} />,
+	},
+	{
+		id: "settings",
+		type: "link",
+		label: "Settings",
+		href: "/settings",
+		icon: <IconSettings size={16} />,
+	},
 ];
 
 const sidebarItems: Record<string, NavItemType[]> = {
@@ -34,21 +59,51 @@ const sidebarItems: Record<string, NavItemType[]> = {
 			defaultOpened: true,
 			children: [
 				{ id: "all", type: "link", label: "All Products", href: "/products" },
-				{ id: "categories", type: "link", label: "Categories", href: "/products/categories" },
+				{
+					id: "categories",
+					type: "link",
+					label: "Categories",
+					href: "/products/categories",
+				},
 			],
 		},
-		{ id: "inventory", type: "link", label: "Inventory", href: "/products/inventory" },
-		{ id: "pricing", type: "link", label: "Pricing", href: "/products/pricing" },
+		{
+			id: "inventory",
+			type: "link",
+			label: "Inventory",
+			href: "/products/inventory",
+		},
+		{
+			id: "pricing",
+			type: "link",
+			label: "Pricing",
+			href: "/products/pricing",
+		},
 	],
 	"/analytics": [
 		{ id: "overview", type: "link", label: "Overview", href: "/analytics" },
-		{ id: "reports", type: "link", label: "Reports", href: "/analytics/reports" },
-		{ id: "exports", type: "link", label: "Exports", href: "/analytics/exports" },
+		{
+			id: "reports",
+			type: "link",
+			label: "Reports",
+			href: "/analytics/reports",
+		},
+		{
+			id: "exports",
+			type: "link",
+			label: "Exports",
+			href: "/analytics/exports",
+		},
 	],
 	"/settings": [
 		{ id: "general", type: "link", label: "General", href: "/settings" },
 		{ id: "team", type: "link", label: "Team", href: "/settings/team" },
-		{ id: "billing", type: "link", label: "Billing", href: "/settings/billing" },
+		{
+			id: "billing",
+			type: "link",
+			label: "Billing",
+			href: "/settings/billing",
+		},
 	],
 };
 
@@ -134,13 +189,11 @@ function HorizontalNavDemo() {
 			<Text size="xl" fw={700} mb="md">
 				{activeItem?.label ?? "Home"}
 			</Text>
-			<Text c="dimmed">
-				Current path: {currentPath}
-			</Text>
+			<Text c="dimmed">Current path: {currentPath}</Text>
 			<Text c="dimmed" mt="xs">
-				The horizontal tabs in the header select the top-level section.
-				The sidebar shows contextual navigation for the active section.
-				Both use the same NavItemType data and useActiveNavItem hook.
+				The horizontal tabs in the header select the top-level section. The
+				sidebar shows contextual navigation for the active section. Both use the
+				same NavItemType data and useActiveNavItem hook.
 			</Text>
 		</NavShell>
 	);

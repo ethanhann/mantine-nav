@@ -5,9 +5,7 @@ import { usePersistedList } from "./usePersistedList";
 const KEY = "test-persisted-list";
 
 function fireStorageEvent(key: string, newValue: string | null) {
-	window.dispatchEvent(
-		new StorageEvent("storage", { key, newValue }),
-	);
+	window.dispatchEvent(new StorageEvent("storage", { key, newValue }));
 }
 
 describe("usePersistedList cross-tab sync", () => {
@@ -103,9 +101,7 @@ describe("usePersistedList cross-tab sync", () => {
 		const spy = vi.spyOn(window, "addEventListener");
 
 		// Act
-		renderHook(() =>
-			usePersistedList<string>({ getId: (s) => s }),
-		);
+		renderHook(() => usePersistedList<string>({ getId: (s) => s }));
 
 		// Assert
 		const storageCalls = spy.mock.calls.filter((c) => c[0] === "storage");

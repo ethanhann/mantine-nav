@@ -290,7 +290,11 @@ function NavItemRenderer<TData>({
 			return (
 				<div style={{ position: "relative" }}>
 					{active && <CollapsedActiveIndicator />}
-					<Tooltip label={item.label} position={dir === "rtl" ? "left" : "right"} withArrow>
+					<Tooltip
+						label={item.label}
+						position={dir === "rtl" ? "left" : "right"}
+						withArrow
+					>
 						{navLinkEl}
 					</Tooltip>
 				</div>
@@ -433,9 +437,18 @@ function NavItemRenderer<TData>({
 		return (
 			<div style={{ position: "relative" }}>
 				{groupActive && <CollapsedActiveIndicator />}
-				<Menu position={dir === "rtl" ? "left-start" : "right-start"} withArrow offset={8} withinPortal>
+				<Menu
+					position={dir === "rtl" ? "left-start" : "right-start"}
+					withArrow
+					offset={8}
+					withinPortal
+				>
 					<Menu.Target>
-						<Tooltip label={groupItem.label} position={dir === "rtl" ? "left" : "right"} withArrow>
+						<Tooltip
+							label={groupItem.label}
+							position={dir === "rtl" ? "left" : "right"}
+							withArrow
+						>
 							<NavLink
 								label=""
 								leftSection={groupItem.icon}
@@ -881,11 +894,16 @@ export function NavGroup<TData = unknown>({
 		onToggle: handleToggleGroup,
 		onSelect: (item) => {
 			if (item.type === "link") {
-				keyboardActivationRef.current = true;
 				const el = containerRef.current?.querySelector<HTMLElement>(
 					`[data-item-id="${CSS.escape(item.id)}"]`,
 				);
-				el?.click();
+				// Only arm the keyboard-trigger flag when the click will actually
+				// fire. Otherwise a missing element (e.g. inside a collapsed group)
+				// would leave the flag set and mistag the next mouse click.
+				if (el) {
+					keyboardActivationRef.current = true;
+					el.click();
+				}
 			}
 		},
 		containerRef: containerRef as React.RefObject<HTMLElement>,
@@ -916,6 +934,7 @@ export function NavGroup<TData = unknown>({
 			>
 				{Array.from({ length: skeletonCount }, (_, i) => (
 					<Group
+						// biome-ignore lint/suspicious/noArrayIndexKey: static decorative placeholders with no identity and no reordering
 						key={i}
 						data-skeleton-row
 						gap="sm"

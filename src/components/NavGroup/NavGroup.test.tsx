@@ -1,4 +1,8 @@
-import { DirectionProvider, MantineProvider } from "@mantine/core";
+import {
+	DirectionProvider,
+	MantineProvider,
+	useDirection,
+} from "@mantine/core";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
@@ -1501,6 +1505,46 @@ describe("NavGroup (Mantine NavLink)", () => {
 					?.getAttribute("aria-expanded"),
 			).toBe("false");
 		});
+
+		it("adopts the new arrow-key mapping after direction changes at runtime", () => {
+			// Arrange
+			function ToggleDirection() {
+				const { toggleDirection } = useDirection();
+				return (
+					<button type="button" onClick={toggleDirection}>
+						toggle-dir
+					</button>
+				);
+			}
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(
+				<MantineProvider>
+					<DirectionProvider initialDirection="ltr" detectDirection={false}>
+						<ToggleDirection />
+						<NavGroup items={items} />
+					</DirectionProvider>
+				</MantineProvider>,
+			);
+			const tree = screen.getByRole("tree");
+			const group = tree.querySelector('[data-item-id="grp"]');
+			fireEvent.keyDown(tree, { key: "Home" });
+			fireEvent.click(screen.getByText("toggle-dir"));
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowLeft" });
+
+			// Assert
+			expect(group?.getAttribute("aria-expanded")).toBe("true");
+		});
 	});
 
 	describe("maxDepth", () => {
@@ -1631,8 +1675,7 @@ describe("NavGroup (Mantine NavLink)", () => {
 
 		it("custom function matcher is applied", () => {
 			// Arrange
-			const customMatcher = (current: string, href: string) =>
-				current === href;
+			const customMatcher = (current: string, href: string) => current === href;
 
 			// Act
 			render(

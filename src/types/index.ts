@@ -6,10 +6,6 @@ export type {
 	NavAnimationConfig,
 	// Callbacks
 	NavCallbacks,
-	// Navigation telemetry
-	NavigateEvent,
-	NavigateSource,
-	NavigateTrigger,
 	// CSS variables
 	NavCSSVariable,
 	NavDividerItem,
@@ -17,6 +13,10 @@ export type {
 	NavItemBase,
 	// Core item types
 	NavItemType,
+	// Navigation telemetry
+	NavigateEvent,
+	NavigateSource,
+	NavigateTrigger,
 	NavLinkItem,
 	NavSectionHeader,
 	// Styles API

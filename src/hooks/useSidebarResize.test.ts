@@ -352,9 +352,7 @@ describe("Spec 009: useSidebarResize", () => {
 				} as unknown as React.PointerEvent);
 			});
 			act(() => {
-				document.dispatchEvent(
-					new MouseEvent("pointermove", { clientX: 260 }),
-				);
+				document.dispatchEvent(new MouseEvent("pointermove", { clientX: 260 }));
 			});
 
 			// Assert
@@ -371,9 +369,7 @@ describe("Spec 009: useSidebarResize", () => {
 		});
 
 		function fireStorageEvent(key: string, newValue: string | null) {
-			window.dispatchEvent(
-				new StorageEvent("storage", { key, newValue }),
-			);
+			window.dispatchEvent(new StorageEvent("storage", { key, newValue }));
 		}
 
 		it("updates width when another tab writes a valid value", () => {

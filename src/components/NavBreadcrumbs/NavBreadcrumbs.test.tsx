@@ -177,10 +177,7 @@ describe("NavBreadcrumbs", () => {
 		// Arrange / Act
 		render(
 			<Wrapper>
-				<NavBreadcrumbs
-					items={items}
-					currentPath="/settings/advanced/danger"
-				/>
+				<NavBreadcrumbs items={items} currentPath="/settings/advanced/danger" />
 			</Wrapper>,
 		);
 
@@ -195,10 +192,7 @@ describe("NavBreadcrumbs", () => {
 		// Arrange / Act
 		render(
 			<Wrapper>
-				<NavBreadcrumbs
-					items={items}
-					currentPath="/settings/advanced/danger"
-				/>
+				<NavBreadcrumbs items={items} currentPath="/settings/advanced/danger" />
 			</Wrapper>,
 		);
 

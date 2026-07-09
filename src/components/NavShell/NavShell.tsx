@@ -197,7 +197,12 @@ export function NavShell({
 	}, [collapsePersistKey, isCollapseControlled, desktopExpanded]);
 
 	useEffect(() => {
-		if (!collapsePersistKey || isCollapseControlled || typeof window === "undefined") return;
+		if (
+			!collapsePersistKey ||
+			isCollapseControlled ||
+			typeof window === "undefined"
+		)
+			return;
 		const handler = (event: StorageEvent) => {
 			if (event.key !== collapsePersistKey) return;
 			if (event.newValue === "true") {
