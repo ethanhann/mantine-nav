@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The stored value is restored on mount and updated on every toggle.
   Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.
   Ignored when `desktopCollapsed` (controlled mode) is set.
+- RTL layout support.
+  Components read direction from Mantine's `DirectionProvider` and adapt automatically: tooltip and menu positions
+  flip, the collapse toggle icon mirrors, nested group indentation uses CSS logical properties, drag-to-resize
+  direction inverts, and keyboard tree navigation swaps ArrowLeft/ArrowRight per WAI-ARIA.
+  `useSidebarResize` and `useNavKeyboard` accept a `dir` option for standalone use outside Mantine's direction context.
 - Horizontal navigation documentation and a `Recipes/HorizontalNav` Storybook story showing how to compose
   `NavHeader`'s center slot with Mantine's `Tabs` and `useActiveNavItem` for a top-nav layout with a contextual
   sidebar.

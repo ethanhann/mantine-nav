@@ -15,6 +15,7 @@ export interface UseNavKeyboardOptions<TData = unknown> {
 	typeAheadTimeout?: number;
 	loop?: boolean;
 	enabled?: boolean;
+	dir?: "ltr" | "rtl";
 }
 
 export interface UseNavKeyboardReturn {
@@ -51,6 +52,7 @@ export function useNavKeyboard<TData = unknown>({
 	typeAheadTimeout = 500,
 	loop = true,
 	enabled = true,
+	dir = "ltr",
 }: UseNavKeyboardOptions<TData>): UseNavKeyboardReturn {
 	const tree = treeItems ?? items;
 	const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -106,6 +108,9 @@ export function useNavKeyboard<TData = unknown>({
 				? items.find((i) => i.id === currentItemId)
 				: items[currentIdx];
 
+			const expandKey = dir === "rtl" ? "ArrowLeft" : "ArrowRight";
+			const collapseKey = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
+
 			switch (event.key) {
 				case "ArrowDown": {
 					event.preventDefault();
@@ -121,7 +126,7 @@ export function useNavKeyboard<TData = unknown>({
 					focusItem(prevIdx);
 					break;
 				}
-				case "ArrowRight": {
+				case expandKey: {
 					event.preventDefault();
 					if (
 						currentItem?.type === "group" &&
@@ -132,13 +137,12 @@ export function useNavKeyboard<TData = unknown>({
 						currentItem?.type === "group" &&
 						expandedKeys.has(currentItem.id)
 					) {
-						// Move to first child
 						const nextIdx = currentIdx + 1;
 						if (nextIdx < count) focusItem(nextIdx);
 					}
 					break;
 				}
-				case "ArrowLeft": {
+				case collapseKey: {
 					event.preventDefault();
 					if (
 						currentItem?.type === "group" &&
@@ -146,8 +150,6 @@ export function useNavKeyboard<TData = unknown>({
 					) {
 						onToggle(currentItem.id);
 					} else if (currentItem) {
-						// Move to parent group — find parent ID in the tree, then locate
-						// it in the DOM focusables (not the flat items array)
 						const parentId = findParentGroupId(tree, currentItem.id);
 						if (parentId) {
 							let parentIdx = -1;

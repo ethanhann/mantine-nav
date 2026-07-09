@@ -1,4 +1,4 @@
-import { MantineProvider } from "@mantine/core";
+import { DirectionProvider, MantineProvider } from "@mantine/core";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
@@ -1433,6 +1433,73 @@ describe("NavGroup (Mantine NavLink)", () => {
 			const el = container.querySelector(".custom-root");
 			expect(el).not.toBeNull();
 			expect(el).toHaveStyle({ padding: "8px" });
+		});
+	});
+
+	describe("RTL support", () => {
+		function RTLWrapper({ children }: { children: React.ReactNode }) {
+			return (
+				<MantineProvider>
+					<DirectionProvider initialDirection="rtl" detectDirection={false}>
+						{children}
+					</DirectionProvider>
+				</MantineProvider>
+			);
+		}
+
+		it("ArrowLeft expands a collapsed group in RTL", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(<NavGroup items={items} />, { wrapper: RTLWrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowLeft" });
+
+			// Assert
+			expect(
+				tree
+					.querySelector('[data-item-id="grp"]')
+					?.getAttribute("aria-expanded"),
+			).toBe("true");
+		});
+
+		it("ArrowRight collapses an expanded group in RTL", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					defaultOpened: true,
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(<NavGroup items={items} />, { wrapper: RTLWrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowRight" });
+
+			// Assert
+			expect(
+				tree
+					.querySelector('[data-item-id="grp"]')
+					?.getAttribute("aria-expanded"),
+			).toBe("false");
 		});
 	});
 });

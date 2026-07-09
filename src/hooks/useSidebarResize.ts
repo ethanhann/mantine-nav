@@ -10,6 +10,7 @@ export interface UseSidebarResizeOptions {
 	onResizeEnd?: (width: number) => void;
 	persistKey?: string;
 	onCollapse?: () => void;
+	dir?: "ltr" | "rtl";
 }
 
 export interface UseSidebarResizeReturn {
@@ -62,6 +63,7 @@ export function useSidebarResize({
 	onResizeEnd,
 	persistKey,
 	onCollapse,
+	dir = "ltr",
 }: UseSidebarResizeOptions = {}): UseSidebarResizeReturn {
 	const [width, setWidth] = useState(() =>
 		persistKey
@@ -95,7 +97,8 @@ export function useSidebarResize({
 
 	const handlePointerMove = useCallback(
 		(e: PointerEvent) => {
-			const delta = e.clientX - startXRef.current;
+			const rawDelta = e.clientX - startXRef.current;
+			const delta = dir === "rtl" ? -rawDelta : rawDelta;
 			let newWidth = startWidthRef.current + delta;
 
 			// Snap to collapse if below threshold
@@ -112,7 +115,7 @@ export function useSidebarResize({
 			setWidth(newWidth);
 			onResize?.(newWidth);
 		},
-		[minWidth, maxWidth, onResize, onCollapse],
+		[minWidth, maxWidth, onResize, onCollapse, dir],
 	);
 
 	const handlePointerUp = useCallback(() => {
@@ -156,10 +159,12 @@ export function useSidebarResize({
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			const step = e.shiftKey ? 20 : 4;
+			const shrinkKey = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
+			const growKey = dir === "rtl" ? "ArrowLeft" : "ArrowRight";
 			let next: number | null = null;
-			if (e.key === "ArrowLeft") {
+			if (e.key === shrinkKey) {
 				next = Math.max(minWidth, width - step);
-			} else if (e.key === "ArrowRight") {
+			} else if (e.key === growKey) {
 				next = Math.min(maxWidth, width + step);
 			} else if (e.key === "Home") {
 				next = minWidth;
@@ -170,11 +175,10 @@ export function useSidebarResize({
 			e.preventDefault();
 			setWidth(next);
 			onResize?.(next);
-			// Each keypress is a complete resize action, so it also commits.
 			onResizeEnd?.(next);
 			persistWidth(next);
 		},
-		[width, minWidth, maxWidth, onResize, onResizeEnd, persistWidth],
+		[width, minWidth, maxWidth, onResize, onResizeEnd, persistWidth, dir],
 	);
 
 	const getHandleProps = useCallback(

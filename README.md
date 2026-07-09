@@ -528,6 +528,30 @@ Components with several strings take a `labels` object, and single-string surfac
 `ContextSwitcher`'s older per-string props (`placeholder`, `searchPlaceholder`, `searchAriaLabel`, `emptyMessage`) still
 work but are deprecated in favor of `labels`.
 
+## RTL
+
+Wrap your app in Mantine's `DirectionProvider` and set `dir="rtl"` on the root element.
+All components adapt automatically:
+
+- Sidebar renders on the right (`AppShell` handles this via CSS logical properties).
+- Tooltip and menu popups for collapsed rail items flip to the left.
+- The sidebar collapse toggle icon mirrors.
+- Nested group indentation uses `borderInlineStart`/`marginInlineStart`/`paddingInlineStart`.
+- Keyboard tree navigation swaps ArrowLeft (expand) and ArrowRight (collapse) per WAI-ARIA.
+- `useSidebarResize` drag direction and arrow keys invert.
+
+```tsx
+import {DirectionProvider} from '@mantine/core';
+
+<DirectionProvider initialDirection="rtl">
+    <div dir="rtl">
+        <NavShell sidebar={sidebar}>{children}</NavShell>
+    </div>
+</DirectionProvider>
+```
+
+For `useSidebarResize` or `useNavKeyboard` used outside Mantine's direction context, pass `dir: "rtl"` in the options.
+
 ## Keyboard Navigation and Accessibility
 
 `NavGroup` renders an ARIA tree with a roving tabindex.

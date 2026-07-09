@@ -303,6 +303,66 @@ describe("Spec 009: useSidebarResize", () => {
 		});
 	});
 
+	describe("RTL support", () => {
+		it("ArrowLeft grows and ArrowRight shrinks in RTL", () => {
+			// Arrange
+			const { result } = renderHook(() =>
+				useSidebarResize({ defaultWidth: 260, dir: "rtl" }),
+			);
+
+			// Act
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "ArrowLeft",
+					shiftKey: false,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(264);
+
+			// Act
+			act(() => {
+				result.current.getHandleProps().onKeyDown({
+					key: "ArrowRight",
+					shiftKey: false,
+					preventDefault() {},
+				} as unknown as React.KeyboardEvent);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(260);
+		});
+
+		it("negates drag delta in RTL", () => {
+			// Arrange
+			const onResize = vi.fn();
+			const { result } = renderHook(() =>
+				useSidebarResize({ defaultWidth: 260, dir: "rtl", onResize }),
+			);
+
+			// Act — drag left (decreasing clientX) should grow
+			act(() => {
+				result.current.getHandleProps().onPointerDown({
+					preventDefault() {},
+					clientX: 300,
+					pointerId: 1,
+					target: { setPointerCapture() {} },
+				} as unknown as React.PointerEvent);
+			});
+			act(() => {
+				document.dispatchEvent(
+					new MouseEvent("pointermove", { clientX: 260 }),
+				);
+			});
+
+			// Assert
+			expect(result.current.width).toBe(300);
+			expect(onResize).toHaveBeenCalledWith(300);
+		});
+	});
+
 	describe("cross-tab sync", () => {
 		const PERSIST_KEY = "test-resize-sync";
 
