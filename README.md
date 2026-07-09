@@ -921,7 +921,6 @@ const sidebar = useHeadlessSidebar({
 | `useSidebarResize`         | Drag-to-resize sidebar with localStorage persistence     |
 | `useSidebarVariant`        | Cycle sidebar between `full`, `rail`, `mini`             |
 | `useResponsiveNav`         | Mobile/tablet/desktop breakpoint state and helpers       |
-| `useReorderableNav`        | Drag-and-drop reordering of nav items                    |
 | `useRemoteNavItems`        | Hydrate items from an async source, re-hydrating when resolvers change |
 | `usePinnedItems`           | Pin/unpin favorites (localStorage-backed)                |
 | `useRecentlyViewed`        | Track recently visited pages (localStorage-backed)       |
@@ -963,7 +962,7 @@ Stories are organized by area:
 | **Customization**   | Controlled state, localization, slot styling, loading skeletons, collapsed rail    |
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |
 | **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
-| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `useReorderableNav`, `usePinnedItems` |
+| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `usePinnedItems` |
 | **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site, horizontal nav |
 
 A color scheme toggle in the Storybook toolbar renders every story in light or dark mode.

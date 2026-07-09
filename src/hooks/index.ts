@@ -70,11 +70,6 @@ export type {
 } from "./useRemoteNavItems";
 export { useRemoteNavItems } from "./useRemoteNavItems";
 export type {
-	UseReorderableNavOptions,
-	UseReorderableNavReturn,
-} from "./useReorderableNav";
-export { useReorderableNav } from "./useReorderableNav";
-export type {
 	SidebarMode,
 	UseResponsiveNavOptions,
 	UseResponsiveNavReturn,

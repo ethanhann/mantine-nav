@@ -54,6 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that depends on browser APIs, guidance for `useResponsiveNav` and `useCurrentPath`, and the "flash of default
   content" trade-off when using `useHydrated()`.
 
+### Removed
+
+- `useReorderableNav` hook and its associated types (`UseReorderableNavOptions`, `UseReorderableNavReturn`).
+  The hook was HTML5 drag-only with no keyboard or touch accessibility.
+  Consumers who need drag-and-drop reordering should use a dedicated library like `@dnd-kit`.
+
 ## [0.7.0] - 2026-07-03
 
 ### Added
