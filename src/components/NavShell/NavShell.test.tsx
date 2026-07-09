@@ -1,5 +1,5 @@
 import { type AppShellMainProps, MantineProvider } from "@mantine/core";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockViewport, resetViewport } from "../../__integration__/helpers";
@@ -255,6 +255,243 @@ describe("NavShell", () => {
 			// Assert
 			expect(onDesktopCollapsedChange).toHaveBeenCalledWith(true);
 			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+	});
+
+	describe("collapse persistence", () => {
+		const PERSIST_KEY = "test-nav-collapse";
+
+		function CollapseProbe() {
+			const ctx = useNavShell();
+			return (
+				<button type="button" onClick={ctx.toggleDesktop}>
+					{String(ctx.desktopCollapsed)}
+				</button>
+			);
+		}
+
+		beforeEach(() => {
+			localStorage.removeItem(PERSIST_KEY);
+		});
+
+		it("reads initial collapsed state from localStorage", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "true");
+
+			// Act
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+
+		it("reads initial expanded state from localStorage", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "false");
+
+			// Act
+			render(
+				<NavShell
+					collapsePersistKey={PERSIST_KEY}
+					defaultDesktopCollapsed
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("falls back to defaultDesktopCollapsed when no stored value exists", () => {
+			// Arrange (no localStorage entry)
+
+			// Act
+			render(
+				<NavShell
+					collapsePersistKey={PERSIST_KEY}
+					defaultDesktopCollapsed
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+
+		it("falls back to defaultDesktopCollapsed when stored value is invalid", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "garbage");
+
+			// Act
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("writes state changes to localStorage on toggle", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "false" }));
+
+			// Assert
+			expect(localStorage.getItem(PERSIST_KEY)).toBe("true");
+		});
+
+		it("does not touch localStorage when collapsePersistKey is not set", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const spy = vi.spyOn(Storage.prototype, "setItem");
+			render(
+				<NavShell sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByRole("button", { name: "false" }));
+
+			// Assert
+			const callKeys = spy.mock.calls.map((c) => c[0]);
+			expect(callKeys).not.toContain(PERSIST_KEY);
+			spy.mockRestore();
+		});
+
+		it("ignores collapsePersistKey when desktopCollapsed (controlled) is set", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "true");
+
+			// Act
+			render(
+				<NavShell
+					desktopCollapsed={false}
+					collapsePersistKey={PERSIST_KEY}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+	});
+
+	describe("collapse cross-tab sync", () => {
+		const PERSIST_KEY = "test-collapse-sync";
+
+		function CollapseProbe() {
+			const ctx = useNavShell();
+			return (
+				<button type="button" onClick={ctx.toggleDesktop}>
+					{String(ctx.desktopCollapsed)}
+				</button>
+			);
+		}
+
+		function fireStorageEvent(key: string, newValue: string | null) {
+			window.dispatchEvent(new StorageEvent("storage", { key, newValue }));
+		}
+
+		beforeEach(() => {
+			localStorage.removeItem(PERSIST_KEY);
+		});
+
+		it("updates collapse state when another tab writes 'true'", () => {
+			// Arrange
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "true"));
+
+			// Assert
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+		});
+
+		it("updates collapse state when another tab writes 'false'", () => {
+			// Arrange
+			localStorage.setItem(PERSIST_KEY, "true");
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			expect(screen.getByRole("button", { name: "true" })).toBeInTheDocument();
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "false"));
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("ignores invalid values from another tab", () => {
+			// Arrange
+			render(
+				<NavShell collapsePersistKey={PERSIST_KEY} sidebar={<CollapseProbe />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "garbage"));
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
+		});
+
+		it("does not sync when controlled mode is active", () => {
+			// Arrange
+			render(
+				<NavShell
+					desktopCollapsed={false}
+					collapsePersistKey={PERSIST_KEY}
+					sidebar={<CollapseProbe />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			act(() => fireStorageEvent(PERSIST_KEY, "true"));
+
+			// Assert
+			expect(screen.getByRole("button", { name: "false" })).toBeInTheDocument();
 		});
 	});
 

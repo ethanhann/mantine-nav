@@ -54,6 +54,12 @@ export interface NotificationIndicatorProps {
 		/** Bell aria-label. @default (unread) => `Notifications (${unread} unread)` */
 		bell?: (unreadCount: number) => string;
 	};
+	/** Custom badge count formatter. Overrides `maxCount` when provided. */
+	formatCount?: (count: number) => string;
+	/** Custom timestamp formatter for Date values. String timestamps are rendered as-is. */
+	formatTimestamp?: (timestamp: Date) => string;
+	/** Custom renderer for each notification item. The Menu.Item wrapper is kept. */
+	renderNotification?: (notification: NotificationItem) => ReactNode;
 	/** Controlled dropdown open state. */
 	opened?: boolean;
 	/** Called when the dropdown open state changes. */
@@ -86,12 +92,18 @@ export function NotificationIndicator({
 	position = "bottom-end",
 	loading = false,
 	labels,
+	formatCount,
+	formatTimestamp,
+	renderNotification,
 	opened,
 	onOpenChange,
 }: NotificationIndicatorProps): ReactElement {
 	const resolvedCount = count ?? notifications.filter((n) => !n.read).length;
-	const displayCount =
-		resolvedCount > maxCount ? `${maxCount}+` : String(resolvedCount);
+	const displayCount = formatCount
+		? formatCount(resolvedCount)
+		: resolvedCount > maxCount
+			? `${maxCount}+`
+			: String(resolvedCount);
 	const hasUnread = notifications.some((n) => !n.read);
 	const ariaLabel =
 		labels?.bell?.(resolvedCount) ??
@@ -157,7 +169,7 @@ export function NotificationIndicator({
 								notifications.map((n) => (
 									<Menu.Item
 										key={n.id}
-										leftSection={n.icon}
+										leftSection={renderNotification ? undefined : n.icon}
 										onClick={() => onRead?.(n.id)}
 										closeMenuOnClick={Boolean(n.href)}
 										opacity={n.read ? 0.6 : 1}
@@ -165,20 +177,27 @@ export function NotificationIndicator({
 										aria-label={`${n.title}${n.read ? "" : " (unread)"}`}
 										{...(n.href ? { href: n.href } : {})}
 									>
-										<Text size="sm" fw={n.read ? 400 : 600}>
-											{n.title}
-										</Text>
-										{n.description && (
-											<Text size="xs" c="dimmed">
-												{n.description}
-											</Text>
-										)}
-										{n.timestamp && (
-											<Text size="xs" c="dimmed">
-												{n.timestamp instanceof Date
-													? n.timestamp.toLocaleString()
-													: n.timestamp}
-											</Text>
+										{renderNotification ? (
+											renderNotification(n)
+										) : (
+											<>
+												<Text size="sm" fw={n.read ? 400 : 600}>
+													{n.title}
+												</Text>
+												{n.description && (
+													<Text size="xs" c="dimmed">
+														{n.description}
+													</Text>
+												)}
+												{n.timestamp && (
+													<Text size="xs" c="dimmed">
+														{n.timestamp instanceof Date
+															? (formatTimestamp?.(n.timestamp) ??
+																n.timestamp.toLocaleString())
+															: n.timestamp}
+													</Text>
+												)}
+											</>
 										)}
 									</Menu.Item>
 								))

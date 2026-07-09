@@ -13,6 +13,10 @@ export type {
 	NavItemBase,
 	// Core item types
 	NavItemType,
+	// Navigation telemetry
+	NavigateEvent,
+	NavigateSource,
+	NavigateTrigger,
 	NavLinkItem,
 	NavSectionHeader,
 	// Styles API

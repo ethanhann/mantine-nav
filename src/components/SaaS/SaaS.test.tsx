@@ -228,6 +228,125 @@ describe("SaaS Components", () => {
 		expect(onClick).toHaveBeenCalled();
 	});
 
+	it("NotificationIndicator uses formatCount for badge display", () => {
+		// Arrange / Act
+		render(
+			<NotificationIndicator count={150} formatCount={(n) => `${n} new`} />,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByText("150 new")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator formatCount overrides maxCount", () => {
+		// Arrange / Act
+		render(
+			<NotificationIndicator
+				count={150}
+				maxCount={99}
+				formatCount={(n) => String(n)}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByText("150")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator uses formatTimestamp for Date timestamps", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const date = new Date("2026-07-01T12:00:00Z");
+		const notifications = [
+			{ id: "1", title: "Test", timestamp: date, read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				formatTimestamp={(d) => `${d.getFullYear()} custom`}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByText("2026 custom")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator formatTimestamp does not affect string timestamps", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const notifications = [
+			{ id: "1", title: "Test", timestamp: "5 min ago", read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				formatTimestamp={() => "should not appear"}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByText("5 min ago")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator uses renderNotification for custom item rendering", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const notifications = [
+			{ id: "1", title: "Custom", description: "desc", read: false },
+		];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				renderNotification={(n) => (
+					<span data-testid={`custom-${n.id}`}>{n.title} (custom)</span>
+				)}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+
+		// Assert
+		expect(await screen.findByTestId("custom-1")).toBeInTheDocument();
+		expect(screen.getByText("Custom (custom)")).toBeInTheDocument();
+	});
+
+	it("NotificationIndicator renderNotification preserves onRead and menu behavior", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const onRead = vi.fn();
+		const notifications = [{ id: "1", title: "Test", read: false }];
+
+		// Act
+		render(
+			<NotificationIndicator
+				count={1}
+				notifications={notifications}
+				onRead={onRead}
+				renderNotification={(n) => <span>{n.title}</span>}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		await user.click(screen.getByLabelText("Notifications (1 unread)"));
+		await user.click(await screen.findByText("Test"));
+
+		// Assert
+		expect(onRead).toHaveBeenCalledWith("1");
+	});
+
 	it("ColorModePicker toggle variant renders a cycling button", () => {
 		render(<ColorModePicker />, { wrapper: Wrapper });
 		const button = screen.getByRole("button");
@@ -265,14 +384,19 @@ describe("SaaS Components", () => {
 		expect(onChange).toHaveBeenCalledWith("dark");
 	});
 
-	it("ColorModePicker uncontrolled toggle calls setColorScheme", async () => {
+	it("ColorModePicker uncontrolled toggle cycles mode on click", async () => {
+		// Arrange
 		const user = userEvent.setup();
 		render(<ColorModePicker />, { wrapper: Wrapper });
-
 		const button = screen.getByRole("button");
+		const labelBefore = button.getAttribute("aria-label");
+
+		// Act
 		await user.click(button);
-		// No error means setColorScheme was called with a builtin value
-		expect(button).toBeInTheDocument();
+
+		// Assert
+		const labelAfter = button.getAttribute("aria-label");
+		expect(labelAfter).not.toBe(labelBefore);
 	});
 
 	it("ColorModePicker segmented without labels renders icons only", () => {
@@ -550,6 +674,170 @@ describe("SaaS Components", () => {
 
 			// Assert
 			expect(screen.queryByRole("button")).not.toBeInTheDocument();
+		});
+	});
+
+	describe("UserMenu interactions", () => {
+		const testUser = {
+			id: "1",
+			name: "Jane Doe",
+			email: "jane@example.com",
+			role: "Admin",
+			avatarUrl: "https://example.com/avatar.jpg",
+		};
+
+		const testMenuItems = [
+			{ id: "profile", label: "Profile", onClick: vi.fn() },
+			{
+				id: "signout",
+				label: "Sign out",
+				onClick: vi.fn(),
+				color: "red" as const,
+				dividerBefore: true,
+			},
+		];
+
+		it("opens the dropdown and shows menu items on click", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(<UserMenu user={testUser} menuItems={testMenuItems} />, {
+				wrapper: Wrapper,
+			});
+
+			// Act
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Assert
+			expect(await screen.findByText("Profile")).toBeInTheDocument();
+			expect(screen.getByText("Sign out")).toBeInTheDocument();
+		});
+
+		it("fires onClick on a menu item", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onClick = vi.fn();
+			render(
+				<UserMenu
+					user={testUser}
+					menuItems={[{ label: "Profile", onClick }]}
+				/>,
+				{ wrapper: Wrapper },
+			);
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Act
+			await user.click(await screen.findByText("Profile"));
+
+			// Assert
+			expect(onClick).toHaveBeenCalledTimes(1);
+		});
+
+		it("renders menu items with href as links", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<UserMenu
+					user={testUser}
+					menuItems={[{ label: "Docs", href: "/docs" }]}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Assert
+			const link = await screen.findByText("Docs");
+			expect(link.closest("a")).toHaveAttribute("href", "/docs");
+		});
+
+		it("renders dividerBefore on a menu item", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(
+				<UserMenu
+					user={testUser}
+					menuItems={[
+						{ label: "A", onClick: () => {} },
+						{ label: "B", onClick: () => {}, dividerBefore: true },
+					]}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Assert
+			await screen.findByText("A");
+			expect(screen.getByText("B")).toBeInTheDocument();
+			const dividers = document.querySelectorAll(".mantine-Menu-divider");
+			expect(dividers.length).toBeGreaterThanOrEqual(2);
+		});
+
+		it("compact variant shows only the avatar button", () => {
+			// Arrange / Act
+			render(<UserMenu user={testUser} variant="compact" />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(
+				screen.getByLabelText("User menu for Jane Doe"),
+			).toBeInTheDocument();
+			expect(screen.queryByText("Jane Doe")).not.toBeInTheDocument();
+		});
+
+		it("full variant shows user name and role", () => {
+			// Arrange / Act
+			render(<UserMenu user={testUser} showRole />, { wrapper: Wrapper });
+
+			// Assert
+			expect(screen.getByText("Jane Doe")).toBeInTheDocument();
+			expect(screen.getByText("Admin")).toBeInTheDocument();
+		});
+
+		it("shows email when showEmail is true", () => {
+			// Arrange / Act
+			render(<UserMenu user={testUser} showEmail />, { wrapper: Wrapper });
+
+			// Assert
+			expect(screen.getByText("jane@example.com")).toBeInTheDocument();
+		});
+
+		it("displays email in the dropdown header", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			render(<UserMenu user={testUser} menuItems={testMenuItems} />, {
+				wrapper: Wrapper,
+			});
+
+			// Act
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Assert
+			const dropdownEmails = await screen.findAllByText("jane@example.com");
+			expect(dropdownEmails.length).toBeGreaterThanOrEqual(1);
+		});
+
+		it("fires onOpenChange when the menu opens and closes", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onOpenChange = vi.fn();
+			render(
+				<UserMenu
+					user={testUser}
+					menuItems={testMenuItems}
+					onOpenChange={onOpenChange}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByLabelText("User menu for Jane Doe"));
+
+			// Assert
+			expect(onOpenChange).toHaveBeenCalledWith(true);
 		});
 	});
 });

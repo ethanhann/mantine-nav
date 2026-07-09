@@ -1,8 +1,10 @@
 import { MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { NavItemType } from "../../types";
+import { NavShell } from "../NavShell";
 import { NavBreadcrumbs } from "./NavBreadcrumbs";
 
 function Wrapper({ children }: { children: ReactNode }) {
@@ -175,10 +177,7 @@ describe("NavBreadcrumbs", () => {
 		// Arrange / Act
 		render(
 			<Wrapper>
-				<NavBreadcrumbs
-					items={items}
-					currentPath="/settings/advanced/danger"
-				/>
+				<NavBreadcrumbs items={items} currentPath="/settings/advanced/danger" />
 			</Wrapper>,
 		);
 
@@ -193,10 +192,7 @@ describe("NavBreadcrumbs", () => {
 		// Arrange / Act
 		render(
 			<Wrapper>
-				<NavBreadcrumbs
-					items={items}
-					currentPath="/settings/advanced/danger"
-				/>
+				<NavBreadcrumbs items={items} currentPath="/settings/advanced/danger" />
 			</Wrapper>,
 		);
 
@@ -205,5 +201,63 @@ describe("NavBreadcrumbs", () => {
 		expect(settingsEl.tagName).not.toBe("A");
 		const advancedEl = screen.getByText("Advanced");
 		expect(advancedEl.tagName).not.toBe("A");
+	});
+
+	it("fires onNavigate with source 'breadcrumb' when an ancestor link is clicked", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const onNavigate = vi.fn();
+		const linkableItems: NavItemType[] = [
+			{
+				type: "group",
+				id: "docs",
+				label: "Docs",
+				href: "/docs",
+				children: [
+					{ type: "link", id: "api", label: "API", href: "/docs/api" },
+				],
+			},
+		];
+		render(
+			<Wrapper>
+				<NavShell onNavigate={onNavigate}>
+					<NavBreadcrumbs items={linkableItems} currentPath="/docs/api" />
+				</NavShell>
+			</Wrapper>,
+		);
+
+		// Act
+		await user.click(screen.getByRole("link", { name: "Docs" }));
+
+		// Assert
+		expect(onNavigate).toHaveBeenCalledTimes(1);
+		expect(onNavigate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: "docs",
+				label: "Docs",
+				href: "/docs",
+				source: "breadcrumb",
+				trigger: "mouse",
+			}),
+		);
+	});
+
+	it("does not fire onNavigate for the current page entry", async () => {
+		// Arrange
+		const user = userEvent.setup();
+		const onNavigate = vi.fn();
+		render(
+			<Wrapper>
+				<NavShell onNavigate={onNavigate}>
+					<NavBreadcrumbs items={items} currentPath="/about" />
+				</NavShell>
+			</Wrapper>,
+		);
+
+		// Act
+		await user.click(screen.getByText("About"));
+
+		// Assert
+		expect(onNavigate).not.toHaveBeenCalled();
 	});
 });

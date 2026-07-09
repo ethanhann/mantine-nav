@@ -1,5 +1,5 @@
-import { IconHome } from "@tabler/icons-react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { IconHome } from "@tabler/icons-react";
 
 import { NavBreadcrumbs } from "../../src";
 import { deepNestedItems, sampleItems, ultraDeepItems } from "../_data";

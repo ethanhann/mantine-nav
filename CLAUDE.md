@@ -32,7 +32,7 @@ A React navigation component library (`@ethanhann/mantine-nav`) built on Mantine
 
 ### Hooks
 
-Hooks in `src/hooks/` cover: active item matching (`useActiveNavItem`), keyboard navigation (`useNavKeyboard`), sidebar state (`useHeadlessSidebar`, `useSidebarVariant`, `useSidebarResize`), persistence (`usePinnedItems`, `useRecentlyViewed`, `useStarredPages`), animation (`useNavAnimation`), color scheme (`useNavColorScheme`), responsive behavior (`useResponsiveNav`), remote data (`useRemoteNavItems`), drag-and-drop (`useReorderableNav`), and SSR safety (`useIsSSR`, `useHydrated`).
+Hooks in `src/hooks/` cover: active item matching (`useActiveNavItem`), keyboard navigation (`useNavKeyboard`), sidebar state (`useHeadlessSidebar`, `useSidebarVariant`, `useSidebarResize`), persistence (`usePinnedItems`, `useRecentlyViewed`, `useStarredPages`), animation (`useNavAnimation`), color scheme (`useNavColorScheme`), responsive behavior (`useResponsiveNav`), remote data (`useRemoteNavItems`), breadcrumbs (`useNavBreadcrumbs`), and SSR safety (`useIsSSR`, `useHydrated`).
 
 ### Key Patterns
 

@@ -18,9 +18,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Uses `linkComponent`/`hrefProp` from `NavShell` context for router integration.
 - `useNavBreadcrumbs` hook that returns the ordered breadcrumb entries from root to the active item.
   Accepts the same `currentPath` and `matcher` options as `useActiveNavItem`.
-- `matchItem` utility function extracted from `useActiveNavItem` and now exported for direct use.
-  Both `useActiveNavItem` and `useNavBreadcrumbs` share this function, so active matching behavior is always
-  consistent between the two.
+- Cross-tab sync for all persisted state.
+  `usePersistedList` (and its consumers `usePinnedItems`, `useRecentlyViewed`, `useStarredPages`), `useSidebarResize`,
+  and `NavShell` collapse persistence now listen for `storage` events, so changes made in one tab are reflected in all
+  other same-origin tabs automatically.
+- `matchItem` utility function for testing whether a path matches an href using any `ActiveMatcher` strategy.
+- `onNavigate` callback on `NavShell` for unified navigation telemetry.
+  Fires with a `NavigateEvent` containing `id`, `label`, `href`, `data`, `source`, and `trigger` whenever a user
+  activates a link from the sidebar, command palette, or breadcrumbs.
+  `source` is `'sidebar'`, `'command-palette'`, or `'breadcrumb'`.
+  `trigger` is `'mouse'` or `'keyboard'`.
+- `NavigateEvent`, `NavigateSource`, and `NavigateTrigger` types.
+- `formatCount`, `formatTimestamp`, and `renderNotification` props on `NotificationIndicator`.
+  `formatCount` overrides the default "99+" badge display with a custom formatter.
+  `formatTimestamp` formats `Date` timestamps (string timestamps are rendered as-is).
+  `renderNotification` replaces the default notification item content while preserving the `Menu.Item` wrapper,
+  `onRead`, and close behavior.
+- `loading` and `skeletonCount` props on `NavGroup`.
+  When `loading` is true, the tree is replaced by skeleton placeholder rows that mimic the shape of nav items
+  (icon circle and label bar with varying widths).
+  `skeletonCount` controls the number of rows (default 5).
+- `collapsePersistKey` prop on `NavShell` to persist the sidebar collapse state to `localStorage`.
+  The stored value is restored on mount and updated on every toggle.
+  Falls back to `defaultDesktopCollapsed` when no stored value exists or the stored value is invalid.
+  Ignored when `desktopCollapsed` (controlled mode) is set.
+- RTL layout support.
+  Components read direction from Mantine's `DirectionProvider` and adapt automatically: tooltip and menu positions
+  flip, the collapse toggle icon mirrors, nested group indentation uses CSS logical properties, drag-to-resize
+  direction inverts, and keyboard tree navigation swaps ArrowLeft/ArrowRight per WAI-ARIA.
+  `useSidebarResize` and `useNavKeyboard` accept a `dir` option for standalone use outside Mantine's direction context.
+- Horizontal navigation documentation and a `Recipes/HorizontalNav` Storybook story showing how to compose
+  `NavHeader`'s center slot with Mantine's `Tabs` and `useActiveNavItem` for a top-nav layout with a contextual
+  sidebar.
+- Expanded the SSR documentation with a table of server return values and hydration mismatch risks for every hook
+  that depends on browser APIs, guidance for `useResponsiveNav` and `useCurrentPath`, and the "flash of default
+  content" trade-off when using `useHydrated()`.
+
+### Removed
+
+- `useReorderableNav` hook and its associated types (`UseReorderableNavOptions`, `UseReorderableNavReturn`).
+  The hook was HTML5 drag-only with no keyboard or touch accessibility.
+  Consumers who need drag-and-drop reordering should use a dedicated library like `@dnd-kit`.
 
 ## [0.7.0] - 2026-07-03
 

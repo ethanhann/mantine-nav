@@ -71,6 +71,17 @@ Layout is configured with `headerHeight`, `sidebarWidth`, `sidebarCollapsedWidth
 For layouts without a header, render the exported `NavBurger` anywhere inside the shell to toggle the mobile drawer.
 It renders nothing outside a `NavShell`.
 
+Pass `collapsePersistKey` to persist the sidebar collapse state across page reloads:
+
+```tsx
+<NavShell collapsePersistKey="app-sidebar-collapsed" sidebar={sidebar}>
+    {children}
+</NavShell>
+```
+
+The stored value is read on mount and written on every toggle.
+In controlled mode (`desktopCollapsed` prop), `collapsePersistKey` is ignored since the consumer owns persistence.
+
 ## Nav Items
 
 `NavItemType` is a discriminated union with four variants:
@@ -264,6 +275,18 @@ Subscribe to active-link changes with `onActiveChange`:
 
 The callback fires with the resolved active link whenever it changes, and with `null` when nothing matches.
 
+### Loading State
+
+Pass `loading` to show skeleton placeholder rows while nav items are being fetched:
+
+```tsx
+const { items, isLoading } = useRemoteNavItems({ items: apiResponse });
+
+<NavGroup items={items} loading={isLoading} currentPath={pathname} />
+```
+
+`skeletonCount` controls how many rows appear (default 5).
+
 ## NavBreadcrumbs
 
 `NavBreadcrumbs` derives a breadcrumb trail from the nav item tree and renders it with Mantine's `Breadcrumbs`.
@@ -326,6 +349,49 @@ const { breadcrumbs, activeItem } = useNavBreadcrumbs({
 </NavHeader>
 ```
 
+### Horizontal Navigation
+
+`NavGroup` is a vertical tree component. For horizontal top-nav or tab-bar layouts, compose `NavHeader`'s center
+content slot with Mantine's own `Tabs` or `Menubar`:
+
+```tsx
+import {Tabs} from '@mantine/core';
+import {NavHeader, NavShell, useActiveNavItem} from '@ethanhann/mantine-nav';
+
+const topNav: NavItemType[] = [
+    {id: 'home', type: 'link', label: 'Home', href: '/', activeExact: true},
+    {id: 'products', type: 'link', label: 'Products', href: '/products'},
+    {id: 'settings', type: 'link', label: 'Settings', href: '/settings'},
+];
+
+function App() {
+    const {activeItem} = useActiveNavItem(topNav, {currentPath: pathname, matcher: 'prefix'});
+
+    return (
+        <NavShell
+            header={
+                <NavHeader logo={<Logo/>}>
+                    <Tabs value={activeItem?.href ?? '/'} onChange={(v) => router.push(v!)}>
+                        <Tabs.List>
+                            {topNav.map((item) => item.type === 'link' && (
+                                <Tabs.Tab key={item.id} value={item.href}>{item.label}</Tabs.Tab>
+                            ))}
+                        </Tabs.List>
+                    </Tabs>
+                </NavHeader>
+            }
+        >
+            {children}
+        </NavShell>
+    );
+}
+```
+
+This gives you Mantine's built-in ARIA `tablist` with keyboard navigation, and `useActiveNavItem` provides active state
+matching using the same item data and matcher strategies as the sidebar.
+See the **Recipes/HorizontalNav** Storybook story for a full example with a contextual sidebar that changes per
+section.
+
 ## NavSidebar
 
 `NavSidebar` provides header/body/footer slots. Header and footer hide automatically when the sidebar is collapsed on
@@ -379,6 +445,31 @@ Layout state is uncontrolled by default, and every stateful surface also accepts
 ```
 
 In uncontrolled mode the change callbacks still fire with the intended value, so they double as event hooks.
+
+## Navigation Telemetry
+
+Pass `onNavigate` to `NavShell` to receive a single callback whenever a user activates a link from any navigation
+surface:
+
+```tsx
+<NavShell
+    onNavigate={(event) => {
+        analytics.track('navigation', {
+            to: event.href,
+            from: event.source,   // 'sidebar' | 'command-palette' | 'breadcrumb'
+            trigger: event.trigger, // 'mouse' | 'keyboard'
+        });
+    }}
+    sidebar={sidebar}
+>
+    {children}
+</NavShell>
+```
+
+The `NavigateEvent` carries `id`, `label`, `href`, `external`, `data` (the item's generic payload), `source`, and
+`trigger`.
+It fires alongside existing per-component callbacks (`onItemClick` on `NavGroup`, `onNavigate` on `CommandPalette`),
+not instead of them.
 
 ## Styling
 
@@ -436,6 +527,30 @@ Components with several strings take a `labels` object, and single-string surfac
 
 `ContextSwitcher`'s older per-string props (`placeholder`, `searchPlaceholder`, `searchAriaLabel`, `emptyMessage`) still
 work but are deprecated in favor of `labels`.
+
+## RTL
+
+Wrap your app in Mantine's `DirectionProvider` and set `dir="rtl"` on the root element.
+All components adapt automatically:
+
+- Sidebar renders on the right (`AppShell` handles this via CSS logical properties).
+- Tooltip and menu popups for collapsed rail items flip to the left.
+- The sidebar collapse toggle icon mirrors.
+- Nested group indentation uses `borderInlineStart`/`marginInlineStart`/`paddingInlineStart`.
+- Keyboard tree navigation swaps ArrowLeft (expand) and ArrowRight (collapse) per WAI-ARIA.
+- `useSidebarResize` drag direction and arrow keys invert.
+
+```tsx
+import {DirectionProvider} from '@mantine/core';
+
+<DirectionProvider initialDirection="rtl">
+    <div dir="rtl">
+        <NavShell sidebar={sidebar}>{children}</NavShell>
+    </div>
+</DirectionProvider>
+```
+
+For `useSidebarResize` or `useNavKeyboard` used outside Mantine's direction context, pass `dir: "rtl"` in the options.
 
 ## Keyboard Navigation and Accessibility
 
@@ -515,6 +630,9 @@ import {
 **NotificationIndicator** notes:
 
 - The badge count defaults to the number of unread `notifications`. Pass `count` to override it, for example with a server-side total.
+- `formatCount` customizes the badge display (e.g., `(n) => n >= 1000 ? \`${(n/1000).toFixed(1)}k\` : String(n)`). When omitted, counts above `maxCount` (default 99) display as `"99+"`.
+- `formatTimestamp` formats `Date` timestamps (e.g., relative time via `date-fns`). String timestamps are rendered as-is regardless of this prop.
+- `renderNotification` overrides the content of each notification item. The `Menu.Item` wrapper, `onRead`, and close-on-navigate behavior are preserved.
 - Marking a notification read keeps the dropdown open. Notifications with an `href` navigate and close it.
 - `loading` shows skeleton rows while notifications are being fetched.
 
@@ -522,11 +640,6 @@ import {
 (`{value, label, icon, onActivate?}`), a controlled `value` with `onChange`, `size`, and `showLabels`.
 The toggle variant cycles through `modes` in order.
 An empty `modes` array renders nothing.
-
-> **Note:** `ColorSchemeToggle` was removed in v0.4.0, replaced by `ColorModePicker`. The migration is a drop-in swap (
-`<ColorSchemeToggle />` → `<ColorModePicker />`); the default `toggle` variant cycles System → Light → Dark instead of
-> flipping light/dark, preserving the user's system preference. To restore the old binary behavior, pass only light and
-> dark `modes`.
 
 ### ContextSwitcher
 
@@ -686,20 +799,68 @@ render.
 The published build preserves `"use client"` directives, so components and hooks work in the Next.js App Router without
 a manual client boundary.
 
-The persistence hooks (`usePinnedItems`, `useRecentlyViewed`, `useStarredPages`, `usePersistedList`,
-`useSidebarResize`) read localStorage in a lazy initializer.
-On the server they return their defaults, and the stored value appears after hydration on the client.
-Gate markup that depends on persisted state with `useHydrated()` to avoid hydration mismatches:
+### Server return values
+
+Several hooks depend on browser APIs (`localStorage`, `window.innerWidth`, `window.location`) that are unavailable
+during server rendering.
+Each returns a deterministic fallback on the server and resolves to the real value after hydration on the client:
+
+| Hook / feature | Server return | Client return | Mismatch risk |
+|---|---|---|---|
+| `usePinnedItems` | `pinnedItems: []` | Persisted pin IDs | Yes, if localStorage has data |
+| `useRecentlyViewed` | `items: []` | Persisted recent items | Yes, if localStorage has data |
+| `useStarredPages` | `items: []` | Persisted starred pages | Yes, if localStorage has data |
+| `usePersistedList` | `items: []` | Persisted array | Yes, if localStorage has data |
+| `useSidebarResize` | `width: defaultWidth` (260) | Persisted width | Yes, if user previously resized |
+| `NavShell` with `collapsePersistKey` | `!defaultDesktopCollapsed` (expanded) | Persisted collapse state | Yes, if stored state differs |
+| `NavShell` `isMobile` | `false` | `useMediaQuery` result | Yes, on mobile viewports |
+| `useResponsiveNav` | `viewportWidth: 1024`, `isDesktop: true` | Real viewport values | Yes, on any viewport below 1024px |
+| `useCurrentPath` (without `currentPath` prop) | `"/"` | `window.location.pathname` | Yes, on any page other than `/` |
+| `useIsSSR` | `true` | `false` | No (handled by `useSyncExternalStore`) |
+| `useHydrated` | `false` | `true` | No |
+
+### Avoiding hydration mismatches
+
+Gate markup that depends on any of the above state with `useHydrated()`.
+This applies to all persistence hooks, not just `usePinnedItems`:
 
 ```tsx
-import {useHydrated, usePinnedItems} from '@ethanhann/mantine-nav';
+import {useHydrated, usePinnedItems, useStarredPages} from '@ethanhann/mantine-nav';
 
 const hydrated = useHydrated();
 const {pinnedItems} = usePinnedItems(items, {storageKey: 'nav-pins'});
+const {items: starred} = useStarredPages({storageKey: 'nav-starred'});
+
 if (!hydrated) return <NavGroup items={items}/>;
+// Now safe to render UI that depends on pinnedItems or starred
 ```
 
+The trade-off is a "flash of default content": the user sees the default (empty) state until JavaScript hydrates, which
+can cause a visible layout shift.
+For persistence hooks this is usually acceptable because the localStorage read is fast and the shift is a single frame.
+
+For `useCurrentPath`, avoid the `"/"` server fallback by passing `currentPath` from your router:
+
+```tsx
+// Next.js App Router
+import {usePathname} from 'next/navigation';
+
+<NavGroup items={items} currentPath={usePathname()} />
+```
+
+For `useResponsiveNav`, the 1024px server fallback means the hook always reports `isDesktop: true` and
+`sidebarMode: "persistent"` during SSR.
+On viewports narrower than 1024px this produces a hydration mismatch.
+Prefer `NavShell` for responsive layouts (it uses Mantine's `useMediaQuery`, which suppresses the mismatch by
+returning `undefined` until the client renders) or gate responsive UI with `useHydrated()`.
+
 `useIsSSR()` returns `true` during server rendering and the first client render.
+
+### Cross-tab sync
+
+All persistence hooks sync across browser tabs via `StorageEvent` listeners.
+A change in one tab (pinning an item, resizing the sidebar, toggling collapse) is reflected in all other same-origin
+tabs automatically.
 
 ## Hooks
 
@@ -760,7 +921,6 @@ const sidebar = useHeadlessSidebar({
 | `useSidebarResize`         | Drag-to-resize sidebar with localStorage persistence     |
 | `useSidebarVariant`        | Cycle sidebar between `full`, `rail`, `mini`             |
 | `useResponsiveNav`         | Mobile/tablet/desktop breakpoint state and helpers       |
-| `useReorderableNav`        | Drag-and-drop reordering of nav items                    |
 | `useRemoteNavItems`        | Hydrate items from an async source, re-hydrating when resolvers change |
 | `usePinnedItems`           | Pin/unpin favorites (localStorage-backed)                |
 | `useRecentlyViewed`        | Track recently visited pages (localStorage-backed)       |
@@ -802,8 +962,8 @@ Stories are organized by area:
 | **Customization**   | Controlled state, localization, slot styling, loading skeletons, collapsed rail    |
 | **SaaS**            | `WorkspaceSwitcher`, `UserMenu`, `PlanBadge`, `NotificationIndicator`               |
 | **ContextSwitcher** | Generic context/persona switching — async pending, sections, badges, custom trigger |
-| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `useReorderableNav`, `usePinnedItems` |
-| **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site              |
+| **Hooks**           | `useNavRegistry`, `useRemoteNavItems`, `useSidebarResize`, `usePinnedItems` |
+| **Recipes**         | Full-page layouts — admin dashboard, SaaS platform, documentation site, horizontal nav |
 
 A color scheme toggle in the Storybook toolbar renders every story in light or dark mode.
 

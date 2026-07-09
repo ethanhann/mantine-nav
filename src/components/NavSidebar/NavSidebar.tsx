@@ -8,6 +8,7 @@ import {
 	Divider,
 	ScrollArea,
 	Tooltip,
+	useDirection,
 } from "@mantine/core";
 import { IconChevronsLeft } from "@tabler/icons-react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
@@ -38,18 +39,23 @@ export interface NavSidebarLabels {
 
 function CollapseToggle({ labels }: { labels?: NavSidebarLabels }) {
 	const shell = useOptionalNavShell();
+	const { dir } = useDirection();
 	if (!shell) return null;
 	const { desktopCollapsed, toggleDesktop, isMobile } = shell;
 
-	// Don't show collapse toggle on mobile — it controls desktop state
 	if (isMobile) return null;
 
 	const toggleLabel = desktopCollapsed
 		? (labels?.expandSidebar ?? "Expand sidebar")
 		: (labels?.collapseSidebar ?? "Collapse sidebar");
 
+	const isRTL = dir === "rtl";
+	const transforms: string[] = [];
+	if (desktopCollapsed) transforms.push("rotate(180deg)");
+	if (isRTL) transforms.push("scaleX(-1)");
+
 	return (
-		<Tooltip label={toggleLabel} position="right">
+		<Tooltip label={toggleLabel} position={isRTL ? "left" : "right"}>
 			<ActionIcon
 				variant="subtle"
 				onClick={toggleDesktop}
@@ -63,7 +69,7 @@ function CollapseToggle({ labels }: { labels?: NavSidebarLabels }) {
 					size={14}
 					stroke={1.5}
 					style={{
-						transform: desktopCollapsed ? "rotate(180deg)" : undefined,
+						transform: transforms.length > 0 ? transforms.join(" ") : undefined,
 						transition: "transform 200ms ease",
 					}}
 				/>

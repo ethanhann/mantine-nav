@@ -4,15 +4,15 @@ import { useEffect, useState } from "react";
 import type { Workspace } from "../../src";
 import {
 	ContextSwitcher,
+	NavGroup,
 	NotificationIndicator,
 	WorkspaceSwitcher,
 } from "../../src";
-import { sampleWorkspaces } from "../_data";
+import { sampleItems, sampleWorkspaces } from "../_data";
 
 /**
- * `ContextSwitcher`, `WorkspaceSwitcher`, and `NotificationIndicator` accept
- * a `loading` prop that renders skeleton rows in their dropdowns while data
- * is being fetched.
+ * `NavGroup`, `ContextSwitcher`, `WorkspaceSwitcher`, and `NotificationIndicator`
+ * accept a `loading` prop that renders skeleton rows while data is being fetched.
  */
 const meta: Meta = {
 	title: "Customization/LoadingStates",
@@ -22,10 +22,15 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-/** Dropdowns stuck in their loading state. Open each to see the skeletons. */
+/** Components stuck in their loading state. NavGroup skeletons are visible inline; open the dropdowns to see theirs. */
 export const Skeletons: Story = {
 	render: () => (
 		<Stack maw={320} gap="lg">
+			<Text size="sm" fw={600}>
+				NavGroup
+			</Text>
+			<NavGroup items={[]} loading />
+			<NavGroup items={[]} loading skeletonCount={3} />
 			<WorkspaceSwitcher
 				workspaces={[]}
 				activeWorkspace={sampleWorkspaces[0]!}
@@ -77,4 +82,29 @@ function SimulatedFetchDemo() {
 /** A simulated fetch resolving into the list after a delay. */
 export const SimulatedFetch: Story = {
 	render: () => <SimulatedFetchDemo />,
+};
+
+function SimulatedNavFetchDemo() {
+	const [loading, setLoading] = useState(true);
+	useEffect(() => {
+		const timer = setTimeout(() => setLoading(false), 2000);
+		return () => clearTimeout(timer);
+	}, []);
+	return (
+		<Stack maw={280}>
+			<Text size="sm" c="dimmed">
+				Nav items arrive after 2 seconds.
+			</Text>
+			<NavGroup
+				items={loading ? [] : sampleItems}
+				loading={loading}
+				currentPath="/"
+			/>
+		</Stack>
+	);
+}
+
+/** NavGroup skeleton that resolves into real items after a delay. */
+export const SimulatedNavFetch: Story = {
+	render: () => <SimulatedNavFetchDemo />,
 };

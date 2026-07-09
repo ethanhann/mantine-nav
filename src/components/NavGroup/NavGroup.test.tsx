@@ -1,4 +1,8 @@
-import { MantineProvider } from "@mantine/core";
+import {
+	DirectionProvider,
+	MantineProvider,
+	useDirection,
+} from "@mantine/core";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
@@ -1228,6 +1232,466 @@ describe("NavGroup (Mantine NavLink)", () => {
 					.querySelector('[data-item-id="grp"]')
 					?.getAttribute("aria-expanded"),
 			).toBe("false");
+		});
+	});
+
+	describe("onNavigate telemetry", () => {
+		it("fires onNavigate with source 'sidebar' and trigger 'mouse' on click", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "home",
+					type: "link",
+					label: "Home",
+					href: "/home",
+					data: { key: "val" },
+				},
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Home"));
+
+			// Assert
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					id: "home",
+					label: "Home",
+					href: "/home",
+					source: "sidebar",
+					trigger: "mouse",
+					data: { key: "val" },
+				}),
+			);
+		});
+
+		it("fires onNavigate with trigger 'keyboard' on Enter", () => {
+			// Arrange
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{ id: "home", type: "link", label: "Home", href: "/home" },
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					id: "home",
+					source: "sidebar",
+					trigger: "keyboard",
+				}),
+			);
+		});
+
+		it("does not fire onNavigate for disabled items", () => {
+			// Arrange
+			const onNavigate = vi.fn();
+			const items: NavItemType[] = [
+				{
+					id: "off",
+					type: "link",
+					label: "Off",
+					href: "/off",
+					disabled: true,
+				},
+			];
+			render(
+				<NavShell onNavigate={onNavigate} sidebar={<NavGroup items={items} />}>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "Enter" });
+
+			// Assert
+			expect(onNavigate).not.toHaveBeenCalled();
+		});
+
+		it("does not fire onNavigate for group toggles", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			render(
+				<NavShell
+					onNavigate={onNavigate}
+					sidebar={<NavGroup items={nestedItems} />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Products"));
+
+			// Assert
+			expect(onNavigate).not.toHaveBeenCalled();
+		});
+
+		it("fires onItemClick alongside onNavigate", async () => {
+			// Arrange
+			const user = userEvent.setup();
+			const onNavigate = vi.fn();
+			const onItemClick = vi.fn();
+			const items: NavItemType[] = [
+				{ id: "home", type: "link", label: "Home", href: "/home" },
+			];
+			render(
+				<NavShell
+					onNavigate={onNavigate}
+					sidebar={<NavGroup items={items} onItemClick={onItemClick} />}
+				>
+					<div>Content</div>
+				</NavShell>,
+				{ wrapper: Wrapper },
+			);
+
+			// Act
+			await user.click(screen.getByText("Home"));
+
+			// Assert
+			expect(onItemClick).toHaveBeenCalledTimes(1);
+			expect(onNavigate).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe("loading skeleton", () => {
+		it("renders skeleton rows when loading is true", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading />, { wrapper: Wrapper });
+
+			// Assert
+			expect(screen.getByTestId("nav-group-loading")).toBeInTheDocument();
+			expect(screen.queryByRole("tree")).not.toBeInTheDocument();
+		});
+
+		it("renders the specified number of skeleton rows", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading skeletonCount={3} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			const container = screen.getByTestId("nav-group-loading");
+			const rows = container.querySelectorAll("[data-skeleton-row]");
+			expect(rows).toHaveLength(3);
+		});
+
+		it("defaults to 5 skeleton rows", () => {
+			// Arrange / Act
+			render(<NavGroup items={[]} loading />, { wrapper: Wrapper });
+
+			// Assert
+			const container = screen.getByTestId("nav-group-loading");
+			const rows = container.querySelectorAll("[data-skeleton-row]");
+			expect(rows).toHaveLength(5);
+		});
+
+		it("renders the tree when loading is false", () => {
+			// Arrange / Act
+			render(<NavGroup items={flatItems} loading={false} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.queryByTestId("nav-group-loading")).not.toBeInTheDocument();
+			expect(screen.getByRole("tree")).toBeInTheDocument();
+		});
+
+		it("applies root classNames and styles to the skeleton container", () => {
+			// Arrange / Act
+			const { container } = render(
+				<NavGroup
+					items={[]}
+					loading
+					classNames={{ root: "custom-root" }}
+					styles={{ root: { padding: 8 } }}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const el = container.querySelector(".custom-root");
+			expect(el).not.toBeNull();
+			expect(el).toHaveStyle({ padding: "8px" });
+		});
+	});
+
+	describe("RTL support", () => {
+		function RTLWrapper({ children }: { children: React.ReactNode }) {
+			return (
+				<MantineProvider>
+					<DirectionProvider initialDirection="rtl" detectDirection={false}>
+						{children}
+					</DirectionProvider>
+				</MantineProvider>
+			);
+		}
+
+		it("ArrowLeft expands a collapsed group in RTL", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(<NavGroup items={items} />, { wrapper: RTLWrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowLeft" });
+
+			// Assert
+			expect(
+				tree
+					.querySelector('[data-item-id="grp"]')
+					?.getAttribute("aria-expanded"),
+			).toBe("true");
+		});
+
+		it("ArrowRight collapses an expanded group in RTL", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					defaultOpened: true,
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(<NavGroup items={items} />, { wrapper: RTLWrapper });
+			const tree = screen.getByRole("tree");
+			fireEvent.keyDown(tree, { key: "Home" });
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowRight" });
+
+			// Assert
+			expect(
+				tree
+					.querySelector('[data-item-id="grp"]')
+					?.getAttribute("aria-expanded"),
+			).toBe("false");
+		});
+
+		it("adopts the new arrow-key mapping after direction changes at runtime", () => {
+			// Arrange
+			function ToggleDirection() {
+				const { toggleDirection } = useDirection();
+				return (
+					<button type="button" onClick={toggleDirection}>
+						toggle-dir
+					</button>
+				);
+			}
+			const items: NavItemType[] = [
+				{
+					id: "grp",
+					type: "group",
+					label: "Group",
+					children: [
+						{ id: "child", type: "link", label: "Child", href: "/child" },
+					],
+				},
+			];
+			render(
+				<MantineProvider>
+					<DirectionProvider initialDirection="ltr" detectDirection={false}>
+						<ToggleDirection />
+						<NavGroup items={items} />
+					</DirectionProvider>
+				</MantineProvider>,
+			);
+			const tree = screen.getByRole("tree");
+			const group = tree.querySelector('[data-item-id="grp"]');
+			fireEvent.keyDown(tree, { key: "Home" });
+			fireEvent.click(screen.getByText("toggle-dir"));
+
+			// Act
+			fireEvent.keyDown(tree, { key: "ArrowLeft" });
+
+			// Assert
+			expect(group?.getAttribute("aria-expanded")).toBe("true");
+		});
+	});
+
+	describe("maxDepth", () => {
+		it("does not render groups beyond maxDepth", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "l1",
+					type: "group",
+					label: "Level 1",
+					defaultOpened: true,
+					children: [
+						{
+							id: "l2",
+							type: "group",
+							label: "Level 2",
+							defaultOpened: true,
+							children: [
+								{
+									id: "l3",
+									type: "group",
+									label: "Level 3",
+									children: [
+										{
+											id: "deep",
+											type: "link",
+											label: "Deep Link",
+											href: "/deep",
+										},
+									],
+								},
+							],
+						},
+					],
+				},
+			];
+
+			// Act
+			render(<NavGroup items={items} maxDepth={2} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("Level 1")).toBeInTheDocument();
+			expect(screen.getByText("Level 2")).toBeInTheDocument();
+			expect(screen.queryByText("Level 3")).not.toBeInTheDocument();
+			expect(screen.queryByText("Deep Link")).not.toBeInTheDocument();
+		});
+
+		it("renders all levels when maxDepth is sufficient", () => {
+			// Arrange
+			const items: NavItemType[] = [
+				{
+					id: "l1",
+					type: "group",
+					label: "Level 1",
+					defaultOpened: true,
+					children: [
+						{
+							id: "l2",
+							type: "group",
+							label: "Level 2",
+							defaultOpened: true,
+							children: [
+								{ id: "leaf", type: "link", label: "Leaf", href: "/leaf" },
+							],
+						},
+					],
+				},
+			];
+
+			// Act
+			render(<NavGroup items={items} maxDepth={5} />, {
+				wrapper: Wrapper,
+			});
+
+			// Assert
+			expect(screen.getByText("Level 1")).toBeInTheDocument();
+			expect(screen.getByText("Level 2")).toBeInTheDocument();
+			expect(screen.getByText("Leaf")).toBeInTheDocument();
+		});
+	});
+
+	describe("activeMatcher variants", () => {
+		const items: NavItemType[] = [
+			{ id: "home", type: "link", label: "Home", href: "/" },
+			{
+				id: "settings",
+				type: "link",
+				label: "Settings",
+				href: "/settings",
+			},
+		];
+
+		it("exact matcher only highlights exact path matches", () => {
+			// Arrange / Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings"
+					activeMatcher="exact"
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+			const homeEl = screen.getByText("Home").closest("a");
+			expect(homeEl).not.toHaveAttribute("aria-current");
+		});
+
+		it("prefix matcher highlights parent paths", () => {
+			// Arrange / Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings/team"
+					activeMatcher="prefix"
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+		});
+
+		it("custom function matcher is applied", () => {
+			// Arrange
+			const customMatcher = (current: string, href: string) => current === href;
+
+			// Act
+			render(
+				<NavGroup
+					items={items}
+					currentPath="/settings"
+					activeMatcher={customMatcher}
+				/>,
+				{ wrapper: Wrapper },
+			);
+
+			// Assert
+			const settingsEl = screen.getByText("Settings").closest("a");
+			expect(settingsEl).toHaveAttribute("aria-current", "page");
+			const homeEl = screen.getByText("Home").closest("a");
+			expect(homeEl).not.toHaveAttribute("aria-current");
 		});
 	});
 });

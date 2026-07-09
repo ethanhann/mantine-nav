@@ -1,7 +1,17 @@
 "use client";
 
 import type { MantineColor } from "@mantine/core";
-import { Divider, Menu, NavLink, Text, Tooltip } from "@mantine/core";
+import {
+	Box,
+	Divider,
+	Group,
+	Menu,
+	NavLink,
+	Skeleton,
+	Text,
+	Tooltip,
+	useDirection,
+} from "@mantine/core";
 import {
 	type ReactElement,
 	type ReactNode,
@@ -54,6 +64,10 @@ export interface NavGroupProps<TData = unknown>
 	typeAhead?: boolean;
 	typeAheadTimeout?: number;
 	loopNavigation?: boolean;
+	/** Show skeleton placeholder rows instead of items. @default false */
+	loading?: boolean;
+	/** Number of skeleton rows to display when loading. @default 5 */
+	skeletonCount?: number;
 }
 
 interface InternalNavItemProps<TData = unknown> {
@@ -75,6 +89,7 @@ interface InternalNavItemProps<TData = unknown> {
 	rovingItemId: string | null;
 	slotClassNames?: NavSlotStyles<NavGroupSlot>["classNames"];
 	slotStyles?: NavSlotStyles<NavGroupSlot>["styles"];
+	dir: "ltr" | "rtl";
 }
 
 function CollapsedActiveIndicator() {
@@ -83,7 +98,7 @@ function CollapsedActiveIndicator() {
 			aria-hidden
 			style={{
 				position: "absolute",
-				left: 0,
+				insetInlineStart: 0,
 				top: "50%",
 				transform: "translateY(-50%)",
 				width: 3,
@@ -113,6 +128,7 @@ function NavItemRenderer<TData>({
 	rovingItemId,
 	slotClassNames,
 	slotStyles,
+	dir,
 }: InternalNavItemProps<TData>) {
 	const itemTabIndex =
 		rovingItemId === null ? undefined : item.id === rovingItemId ? 0 : -1;
@@ -274,7 +290,11 @@ function NavItemRenderer<TData>({
 			return (
 				<div style={{ position: "relative" }}>
 					{active && <CollapsedActiveIndicator />}
-					<Tooltip label={item.label} position="right" withArrow>
+					<Tooltip
+						label={item.label}
+						position={dir === "rtl" ? "left" : "right"}
+						withArrow
+					>
 						{navLinkEl}
 					</Tooltip>
 				</div>
@@ -417,9 +437,18 @@ function NavItemRenderer<TData>({
 		return (
 			<div style={{ position: "relative" }}>
 				{groupActive && <CollapsedActiveIndicator />}
-				<Menu position="right-start" withArrow offset={8} withinPortal>
+				<Menu
+					position={dir === "rtl" ? "left-start" : "right-start"}
+					withArrow
+					offset={8}
+					withinPortal
+				>
 					<Menu.Target>
-						<Tooltip label={groupItem.label} position="right" withArrow>
+						<Tooltip
+							label={groupItem.label}
+							position={dir === "rtl" ? "left" : "right"}
+							withArrow
+						>
 							<NavLink
 								label=""
 								leftSection={groupItem.icon}
@@ -477,9 +506,9 @@ function NavItemRenderer<TData>({
 					marginBottom: 2,
 				},
 				children: {
-					borderLeft: "1px solid var(--mantine-color-default-border)",
-					marginLeft: "var(--mantine-spacing-md)",
-					paddingLeft: "var(--mantine-spacing-xs)",
+					borderInlineStart: "1px solid var(--mantine-color-default-border)",
+					marginInlineStart: "var(--mantine-spacing-md)",
+					paddingInlineStart: "var(--mantine-spacing-xs)",
 				},
 			}}
 			attributes={{
@@ -511,6 +540,7 @@ function NavItemRenderer<TData>({
 					rovingItemId={rovingItemId}
 					slotClassNames={slotClassNames}
 					slotStyles={slotStyles}
+					dir={dir}
 				/>
 			))}
 		</NavLink>
@@ -686,9 +716,12 @@ export function NavGroup<TData = unknown>({
 	typeAhead = true,
 	typeAheadTimeout = 500,
 	loopNavigation = true,
+	loading = false,
+	skeletonCount = 5,
 }: NavGroupProps<TData>): ReactElement {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const shell = useOptionalNavShell();
+	const { dir } = useDirection();
 
 	// Filter out invisible items and sort by weight before any other logic.
 	// Memoized so dependent memos/effects see a stable reference per items change.
@@ -704,10 +737,24 @@ export function NavGroup<TData = unknown>({
 		| undefined;
 	const resolvedHrefProp = shell?.hrefProp ?? "href";
 
-	// Auto-close mobile drawer on link click
+	// Auto-close mobile drawer on link click and fire shell-level onNavigate.
+	// The `keyboardActivationRef` flag is set by the keyboard `onSelect` path
+	// before it calls `el?.click()`, allowing this handler to tag the trigger.
+	const keyboardActivationRef = useRef(false);
 	const wrappedOnItemClick: NavCallbacks<TData>["onItemClick"] = useCallback(
 		(item: NavLinkItem<TData>, event: React.MouseEvent) => {
 			onItemClick?.(item, event);
+			const trigger = keyboardActivationRef.current ? "keyboard" : "mouse";
+			keyboardActivationRef.current = false;
+			shell?.onNavigate?.({
+				id: item.id,
+				label: item.label,
+				href: item.href,
+				external: item.external,
+				data: item.data,
+				source: "sidebar",
+				trigger,
+			});
 			if (shell?.isMobile) {
 				shell.closeMobile();
 			}
@@ -847,13 +894,16 @@ export function NavGroup<TData = unknown>({
 		onToggle: handleToggleGroup,
 		onSelect: (item) => {
 			if (item.type === "link") {
-				// Click the real DOM node so keyboard activation follows the
-				// href natively and runs the same path as a mouse click
-				// (item.onClick, onItemClick, mobile drawer close).
 				const el = containerRef.current?.querySelector<HTMLElement>(
 					`[data-item-id="${CSS.escape(item.id)}"]`,
 				);
-				el?.click();
+				// Only arm the keyboard-trigger flag when the click will actually
+				// fire. Otherwise a missing element (e.g. inside a collapsed group)
+				// would leave the flag set and mistag the next mouse click.
+				if (el) {
+					keyboardActivationRef.current = true;
+					el.click();
+				}
 			}
 		},
 		containerRef: containerRef as React.RefObject<HTMLElement>,
@@ -861,6 +911,7 @@ export function NavGroup<TData = unknown>({
 		typeAheadTimeout,
 		loop: loopNavigation,
 		enabled: enableKeyboardNav,
+		dir,
 	});
 
 	// Roving tabindex: exactly one treeitem is tabbable. The last focused item
@@ -872,6 +923,40 @@ export function NavGroup<TData = unknown>({
 			: (flatItems.find((item) => item.type === "link" && isActive(item))?.id ??
 				flatItems[0]?.id ??
 				null);
+
+	if (loading) {
+		const widths = ["60%", "75%", "45%", "80%", "55%", "70%", "50%", "65%"];
+		return (
+			<Box
+				data-testid="nav-group-loading"
+				className={classNames?.root}
+				style={styles?.root}
+			>
+				{Array.from({ length: skeletonCount }, (_, i) => (
+					<Group
+						// biome-ignore lint/suspicious/noArrayIndexKey: static decorative placeholders with no identity and no reordering
+						key={i}
+						data-skeleton-row
+						gap="sm"
+						wrap="nowrap"
+						py={4}
+						px="sm"
+						style={{
+							borderRadius: "var(--mantine-radius-sm)",
+							marginBottom: 2,
+						}}
+					>
+						<Skeleton circle height={18} width={18} />
+						<Skeleton
+							height={12}
+							width={widths[i % widths.length]}
+							radius="sm"
+						/>
+					</Group>
+				))}
+			</Box>
+		);
+	}
 
 	return (
 		<div
@@ -907,6 +992,7 @@ export function NavGroup<TData = unknown>({
 					rovingItemId={rovingItemId}
 					slotClassNames={classNames}
 					slotStyles={styles}
+					dir={dir}
 				/>
 			))}
 		</div>

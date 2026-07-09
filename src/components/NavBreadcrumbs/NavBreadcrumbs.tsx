@@ -114,6 +114,16 @@ export function NavBreadcrumbs<TData = unknown>(
 								[hrefProp]: entry.href,
 								className: classNames?.item,
 								style: styles?.item,
+								onClick: () => {
+									shell?.onNavigate?.({
+										id: entry.id,
+										label: entry.label,
+										href: entry.href!,
+										data: entry.item.data,
+										source: "breadcrumb",
+										trigger: "mouse",
+									});
+								},
 							},
 							<BreadcrumbContent icon={icon} label={entry.label} />,
 						);
