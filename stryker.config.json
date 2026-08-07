@@ -1,7 +1,6 @@
 {
-  "testRunner": "vitest",
-  "vitest": {
-    "configFile": "vitest.config.ts"
-  }
+	"testRunner": "vitest",
+	"vitest": {
+		"configFile": "vitest.config.ts"
+	}
 }
-
