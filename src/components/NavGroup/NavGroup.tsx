@@ -11,8 +11,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useActiveNavItem } from "../../hooks/useActiveNavItem";
-import { useNavKeyboard } from "../../hooks/useNavKeyboard";
+import { useActiveNavItem, useNavKeyboard } from "../../hooks";
 import type {
 	ActiveMatcher,
 	NavCallbacks,
@@ -22,6 +21,7 @@ import type {
 	NavSlotStyles,
 } from "../../types";
 import { sortItemsByWeight } from "../../utils/sorting";
+import { findInNavTree, walkNavTree } from "../../utils/traverse";
 import { filterVisibleItems } from "../../utils/visibility";
 import { useOptionalNavShell } from "../NavShell";
 import { NavItemRenderer } from "./NavItemRenderer";
@@ -80,47 +80,6 @@ function getSiblingGroupIds<TData>(
 	return [];
 }
 
-// Collect initial defaultOpened, respecting accordion constraints
-function collectDefaultExpanded<TData>(
-	items: NavItemType<TData>[],
-	accordion: boolean,
-	accordionScope: "global" | "sibling",
-): Set<string> {
-	const defaults = new Set<string>();
-
-	if (accordion && accordionScope === "sibling") {
-		collectSiblingLevel(items, defaults);
-	} else if (accordion && accordionScope === "global") {
-		findFirstDefault(items, defaults);
-	} else {
-		collectAll(items, defaults);
-	}
-
-	return defaults;
-}
-
-function collectAllGroupIds<TData>(
-	items: NavItemType<TData>[],
-	out: Set<string> = new Set(),
-): Set<string> {
-	for (const item of items) {
-		if (item.type === "group") {
-			out.add(item.id);
-			collectAllGroupIds(item.children, out);
-		}
-	}
-	return out;
-}
-
-function collectAll<TData>(items: NavItemType<TData>[], out: Set<string>) {
-	for (const item of items) {
-		if (item.type === "group") {
-			if (item.defaultOpened) out.add(item.id);
-			collectAll(item.children, out);
-		}
-	}
-}
-
 function collectSiblingLevel<TData>(
 	items: NavItemType<TData>[],
 	out: Set<string>,
@@ -137,55 +96,44 @@ function collectSiblingLevel<TData>(
 	}
 }
 
-function findFirstDefault<TData>(
+function collectDefaultExpanded<TData>(
 	items: NavItemType<TData>[],
-	out: Set<string>,
-): boolean {
-	for (const item of items) {
-		if (item.type === "group") {
-			if (item.defaultOpened) {
-				out.add(item.id);
-				return true;
+	accordion: boolean,
+	accordionScope: "global" | "sibling",
+): Set<string> {
+	const defaults = new Set<string>();
+
+	if (accordion && accordionScope === "sibling") {
+		collectSiblingLevel(items, defaults);
+	} else if (accordion && accordionScope === "global") {
+		walkNavTree(items, (item) => {
+			if (item.type === "group" && item.defaultOpened) {
+				defaults.add(item.id);
+				return "stop";
 			}
-			if (findFirstDefault(item.children, out)) return true;
-		}
+		});
+	} else {
+		walkNavTree(items, (item) => {
+			if (item.type === "group" && item.defaultOpened) defaults.add(item.id);
+		});
 	}
-	return false;
+
+	return defaults;
 }
 
-function findLinkByIdOrHref<TData>(
-	items: NavItemType<TData>[],
-	target: string,
-): NavLinkItem<TData> | null {
-	for (const item of items) {
-		if (item.type === "link" && (item.id === target || item.href === target)) {
-			return item;
-		}
-		if (item.type === "group") {
-			const found = findLinkByIdOrHref(item.children, target);
-			if (found) return found;
-		}
-	}
-	return null;
-}
-
-// Flatten visible items for keyboard navigation
 function flattenVisibleItems<TData>(
 	items: NavItemType<TData>[],
 	expanded: Set<string>,
 	maxDepth: number,
-	depth: number = 0,
 ): NavItemType<TData>[] {
 	const result: NavItemType<TData>[] = [];
-	for (const item of items) {
-		if (item.type === "divider" || item.type === "section") continue;
+	walkNavTree(items, (item, depth) => {
+		if (item.type === "divider" || item.type === "section") return false;
 		result.push(item);
-		if (item.type === "group" && expanded.has(item.id) && depth < maxDepth) {
-			result.push(
-				...flattenVisibleItems(item.children, expanded, maxDepth, depth + 1),
-			);
+		if (item.type === "group") {
+			return expanded.has(item.id) && depth < maxDepth;
 		}
-	}
+	});
 	return result;
 }
 
@@ -297,7 +245,10 @@ export function NavGroup<TData = unknown>({
 	const knownGroupIds = useRef<Set<string> | null>(null);
 	useEffect(() => {
 		if (isExpandedControlled) return;
-		const allIds = collectAllGroupIds(visibleItemTree);
+		const allIds = new Set<string>();
+		walkNavTree(visibleItemTree, (item) => {
+			if (item.type === "group") allIds.add(item.id);
+		});
 		if (knownGroupIds.current === null) {
 			// First effect run: defaults already applied by the initializer.
 			knownGroupIds.current = allIds;
@@ -368,7 +319,12 @@ export function NavGroup<TData = unknown>({
 	// The activeItem prop (matched by id or href) overrides route matching.
 	const resolvedActiveLink = useMemo(() => {
 		if (activeItem !== undefined && activeItem !== null) {
-			return findLinkByIdOrHref(visibleItemTree, activeItem);
+			return findInNavTree(
+				visibleItemTree,
+				(item) =>
+					item.type === "link" &&
+					(item.id === activeItem || item.href === activeItem),
+			) as NavLinkItem<TData> | null;
 		}
 		return routeActiveItem;
 	}, [activeItem, visibleItemTree, routeActiveItem]);
