@@ -1,4 +1,4 @@
-import { MantineProvider } from "@mantine/core";
+import { DirectionProvider, MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
@@ -152,5 +152,241 @@ describe("NavSidebar", () => {
 		// Assert
 		expect(screen.getByText("Body")).toBeInTheDocument();
 		expect(screen.queryByLabelText("Collapse sidebar")).not.toBeInTheDocument();
+	});
+});
+
+function Rtl({ children }: { children: React.ReactNode }) {
+	return (
+		<DirectionProvider initialDirection="rtl" detectDirection={false}>
+			<MantineProvider>{children}</MantineProvider>
+		</DirectionProvider>
+	);
+}
+
+function chevronStyle() {
+	return document.querySelector("svg")?.getAttribute("style") ?? "";
+}
+
+function sections() {
+	return document.querySelectorAll(".mantine-AppShell-section");
+}
+
+function toggles() {
+	return screen.queryAllByRole("button", {
+		name: /sidebar|fold/i,
+		hidden: true,
+	});
+}
+
+function inShell(ui: React.ReactNode, collapsed = false) {
+	return render(
+		<NavShell desktopCollapsed={collapsed} sidebar={ui}>
+			<div />
+		</NavShell>,
+		{ wrapper: Wrapper },
+	);
+}
+
+describe("NavSidebar collapse toggle", () => {
+	it("offers to collapse while the sidebar is expanded", () => {
+		// Arrange, Act
+		inShell(<NavSidebar>body</NavSidebar>);
+
+		// Assert
+		expect(toggles()[0]).toHaveAttribute("aria-label", "Collapse sidebar");
+	});
+
+	it("offers to expand while the sidebar is collapsed", () => {
+		// Arrange, Act
+		inShell(<NavSidebar>body</NavSidebar>, true);
+
+		// Assert
+		expect(toggles()[0]).toHaveAttribute("aria-label", "Expand sidebar");
+	});
+
+	it("honors custom toggle labels", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar labels={{ collapseSidebar: "Fold", expandSidebar: "Unfold" }}>
+				body
+			</NavSidebar>,
+		);
+
+		// Assert
+		expect(toggles()[0]).toHaveAttribute("aria-label", "Fold");
+	});
+
+	it("leaves the chevron untransformed when expanded in LTR", () => {
+		// Arrange, Act
+		inShell(<NavSidebar>body</NavSidebar>);
+
+		// Assert
+		expect(chevronStyle()).toBe("transition: transform 200ms ease;");
+	});
+
+	it("rotates the chevron when collapsed", () => {
+		// Arrange, Act
+		inShell(<NavSidebar>body</NavSidebar>, true);
+
+		// Assert
+		expect(chevronStyle()).toBe(
+			"transform: rotate(180deg); transition: transform 200ms ease;",
+		);
+	});
+
+	it("mirrors the chevron in RTL", () => {
+		// Arrange, Act
+		render(
+			<NavShell sidebar={<NavSidebar>body</NavSidebar>}>
+				<div />
+			</NavShell>,
+			{ wrapper: Rtl },
+		);
+
+		// Assert
+		expect(chevronStyle()).toBe(
+			"transform: scaleX(-1); transition: transform 200ms ease;",
+		);
+	});
+
+	it("both rotates and mirrors when collapsed in RTL", () => {
+		// Arrange, Act
+		render(
+			<NavShell desktopCollapsed sidebar={<NavSidebar>body</NavSidebar>}>
+				<div />
+			</NavShell>,
+			{ wrapper: Rtl },
+		);
+
+		// Assert
+		expect(chevronStyle()).toBe(
+			"transform: rotate(180deg) scaleX(-1); transition: transform 200ms ease;",
+		);
+	});
+
+	it("hides the toggle on mobile", () => {
+		// Arrange
+		const original = window.matchMedia;
+		window.matchMedia = ((query: string) => ({
+			matches: true,
+			media: query,
+			onchange: null,
+			addListener: () => {},
+			removeListener: () => {},
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			dispatchEvent: () => false,
+		})) as unknown as typeof window.matchMedia;
+
+		// Act
+		inShell(<NavSidebar>body</NavSidebar>);
+
+		// Assert
+		expect(toggles()).toHaveLength(0);
+		window.matchMedia = original;
+	});
+
+	it("omits the toggle entirely when disabled", () => {
+		// Arrange, Act
+		inShell(<NavSidebar showCollapseToggle={false}>body</NavSidebar>);
+
+		// Assert
+		expect(toggles()).toHaveLength(0);
+	});
+
+	it("renders no toggle outside a shell", () => {
+		// Arrange, Act
+		render(<NavSidebar>body</NavSidebar>, { wrapper: Wrapper });
+
+		// Assert
+		expect(toggles()).toHaveLength(0);
+	});
+});
+
+describe("NavSidebar sections", () => {
+	it("uses AppShell sections inside a shell", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar header={<span>H</span>} footer={<span>F</span>}>
+				<span>B</span>
+			</NavSidebar>,
+		);
+
+		// Assert
+		expect(sections()).toHaveLength(3);
+	});
+
+	it("adds a trailing toggle section when collapsed", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar header={<span>H</span>} footer={<span>F</span>}>
+				<span>B</span>
+			</NavSidebar>,
+			true,
+		);
+
+		// Assert
+		expect(sections()).toHaveLength(4);
+	});
+
+	it("uses plain elements outside a shell", () => {
+		// Arrange, Act
+		render(
+			<NavSidebar header={<span>H</span>} footer={<span>F</span>}>
+				<span>B</span>
+			</NavSidebar>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(sections()).toHaveLength(0);
+		expect(screen.getByText("H")).toBeInTheDocument();
+		expect(screen.getByText("F")).toBeInTheDocument();
+	});
+
+	it("wraps the standalone body in a growing scroll area", () => {
+		// Arrange, Act
+		render(<NavSidebar>body</NavSidebar>, { wrapper: Wrapper });
+
+		// Assert
+		const area = document.querySelector(".mantine-ScrollArea-root");
+		expect(area).toHaveStyle({ flex: 1 });
+	});
+
+	it("renders only header and body when nothing needs a footer", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar header={<span>H</span>} showCollapseToggle={false}>
+				<span>B</span>
+			</NavSidebar>,
+		);
+
+		// Assert
+		expect(sections()).toHaveLength(2);
+	});
+
+	it("places the toggle in the header when configured", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar header={<span>H</span>} collapseTogglePosition="header">
+				<span>B</span>
+			</NavSidebar>,
+		);
+
+		// Assert
+		expect(sections()[0]).toContainElement(toggles()[0]!);
+		expect(sections()).toHaveLength(2);
+	});
+
+	it("places the toggle in the footer by default", () => {
+		// Arrange, Act
+		inShell(
+			<NavSidebar header={<span>H</span>}>
+				<span>B</span>
+			</NavSidebar>,
+		);
+
+		// Assert
+		expect(sections()[2]).toContainElement(toggles()[0]!);
 	});
 });
