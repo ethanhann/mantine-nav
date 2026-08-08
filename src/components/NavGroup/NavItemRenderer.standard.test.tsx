@@ -128,7 +128,7 @@ describe("NavItemRenderer standard links", () => {
 	it("suppresses navigation for an action link with no href", async () => {
 		// Arrange
 		const onClick = vi.fn();
-		setup({ type: "link", id: "alpha", label: "Alpha", href: "", onClick });
+		setup({ type: "link", id: "alpha", label: "Alpha", onClick });
 
 		// Act
 		await userEvent.setup().click(screen.getByRole("treeitem"));

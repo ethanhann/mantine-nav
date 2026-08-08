@@ -344,3 +344,88 @@ describe("onNavigate telemetry", () => {
 		expect(onNavigate).toHaveBeenCalledTimes(1);
 	});
 });
+
+describe("NavGroup action items", () => {
+	const action: NavItemType[] = [
+		{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+	];
+
+	it("renders an action item with no destination", () => {
+		// Arrange, Act
+		render(<NavGroup items={action} />, { wrapper: Wrapper });
+
+		// Assert
+		const el = screen.getByRole("treeitem");
+		expect(el).not.toHaveAttribute("href");
+		expect(el).toHaveTextContent("Sign out");
+	});
+
+	it("keeps an action item reachable by the roving tabindex", () => {
+		// Arrange, Act
+		render(<NavGroup items={action} />, { wrapper: Wrapper });
+
+		// Assert
+		expect(screen.getByRole("treeitem")).toHaveAttribute("tabindex", "0");
+	});
+
+	it("runs the action and suppresses navigation on click", async () => {
+		// Arrange
+		const onClick = vi.fn((e: React.MouseEvent) => {
+			expect(e.defaultPrevented).toBe(true);
+		});
+		render(
+			<NavGroup
+				items={[{ type: "link", id: "signout", label: "Sign out", onClick }]}
+			/>,
+			{ wrapper: Wrapper },
+		);
+
+		// Act
+		await userEvent.setup().click(screen.getByRole("treeitem"));
+
+		// Assert
+		expect(onClick).toHaveBeenCalledTimes(1);
+	});
+
+	it("runs the action when Enter is pressed", () => {
+		// Arrange
+		const onClick = vi.fn();
+		render(
+			<NavGroup
+				items={[{ type: "link", id: "signout", label: "Sign out", onClick }]}
+			/>,
+			{ wrapper: Wrapper },
+		);
+		const tree = screen.getByRole("tree");
+		fireEvent.keyDown(tree, { key: "Home" });
+
+		// Act
+		fireEvent.keyDown(tree, { key: "Enter" });
+
+		// Assert
+		expect(onClick).toHaveBeenCalledTimes(1);
+	});
+
+	it("reports the action through onItemClick with no href", async () => {
+		// Arrange
+		const onItemClick = vi.fn();
+		render(<NavGroup items={action} onItemClick={onItemClick} />, {
+			wrapper: Wrapper,
+		});
+
+		// Act
+		await userEvent.setup().click(screen.getByRole("treeitem"));
+
+		// Assert
+		expect(onItemClick.mock.calls[0]?.[0]).toMatchObject({ id: "signout" });
+		expect(onItemClick.mock.calls[0]?.[0].href).toBeUndefined();
+	});
+
+	it("never marks an action item active from the route", () => {
+		// Arrange, Act
+		render(<NavGroup items={action} currentPath="/" />, { wrapper: Wrapper });
+
+		// Assert
+		expect(screen.getByRole("treeitem")).not.toHaveAttribute("aria-current");
+	});
+});

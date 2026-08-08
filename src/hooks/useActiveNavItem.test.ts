@@ -186,3 +186,21 @@ describe("Spec 005: useActiveNavItem", () => {
 		expect(result.current.isActive(homeItem)).toBe(false);
 	});
 });
+
+describe("useActiveNavItem action items", () => {
+	it("never resolves an action item as active", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem).toBeNull();
+		expect(result.current.isActive(items[0]!)).toBe(false);
+	});
+});

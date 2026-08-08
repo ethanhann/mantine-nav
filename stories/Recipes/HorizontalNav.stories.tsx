@@ -160,7 +160,7 @@ function HorizontalNavDemo() {
 					>
 						<Tabs.List>
 							{topNavItems.map((item) =>
-								item.type === "link" ? (
+								item.type === "link" && item.href ? (
 									<Tabs.Tab
 										key={item.id}
 										value={item.href}
@@ -180,7 +180,9 @@ function HorizontalNavDemo() {
 						<NavGroup
 							items={currentSidebarItems}
 							currentPath={currentPath}
-							onItemClick={(item) => setCurrentPath(item.href)}
+							onItemClick={(item) => {
+								if (item.href) setCurrentPath(item.href);
+							}}
 						/>
 					</NavSidebar>
 				) : undefined

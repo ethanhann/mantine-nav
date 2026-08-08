@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Action items in the nav tree.
+  `href` on a `link` item is now optional, so an item can run only its `onClick` without navigating anywhere.
+  Use this for entries like "Sign out" or "Open command palette" that belong in the nav but are not destinations.
+  Action items participate fully in keyboard navigation and are activated by Enter like any other item.
+
+  ```tsx
+  const items: NavItemType[] = [
+    { type: "link", id: "dashboard", label: "Dashboard", href: "/" },
+    { type: "link", id: "signout", label: "Sign out", onClick: signOut },
+  ];
+  ```
+
+  Because an action item has no destination, it is never matched against the current route, never appears in a
+  breadcrumb trail, and is never recorded in recently viewed. Clicking one always suppresses default navigation.
+
+  `href` is likewise optional on `NavigateEvent` and on the `NavCommand` entries produced by `flattenNavCommands`.
+  Consumers that read `href` from either type now need to handle it being absent.
+
 ## [0.8.0] - 2026-07-09
 
 ### Added

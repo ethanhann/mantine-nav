@@ -292,7 +292,7 @@ describe("NavItemRenderer collapsed rail groups", () => {
 		await openRail({
 			item: {
 				...group,
-				children: [{ type: "link", id: "act", label: "Act", href: "" }],
+				children: [{ type: "link", id: "act", label: "Act" }],
 			},
 		});
 
@@ -319,7 +319,7 @@ describe("NavItemRenderer collapsed rail groups", () => {
 			item: {
 				...group,
 				children: [
-					{ type: "link", id: "act", label: "Act", href: "", onClick },
+					{ type: "link", id: "act", label: "Act", onClick },
 				],
 			},
 		});

@@ -136,7 +136,7 @@ describe("NavItemRenderer custom renderItem", () => {
 		const onClick = vi.fn();
 		const onItemClick = vi.fn();
 		setup(
-			{ type: "link", id: "alpha", label: "Alpha", href: "", onClick },
+			{ type: "link", id: "alpha", label: "Alpha", onClick },
 			{ renderItem, onItemClick },
 		);
 

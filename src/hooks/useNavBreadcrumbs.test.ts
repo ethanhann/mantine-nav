@@ -313,3 +313,24 @@ describe("useNavBreadcrumbs", () => {
 		});
 	});
 });
+
+describe("useNavBreadcrumbs action items", () => {
+	it("never puts an action item in the trail", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+			{ type: "link", id: "home", label: "Home", href: "/" },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useNavBreadcrumbs({ items, currentPath: "/" }),
+		);
+
+		// Assert
+		expect(result.current.breadcrumbs.map((c) => c.id)).not.toContain(
+			"signout",
+		);
+		expect(result.current.activeItem?.id).toBe("home");
+	});
+});
