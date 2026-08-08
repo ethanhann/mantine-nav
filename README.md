@@ -86,41 +86,65 @@ In controlled mode (`desktopCollapsed` prop), `collapsePersistKey` is ignored si
 
 `NavItemType` is a discriminated union with four variants:
 
-```tsx
-// Clickable link
-{
-    id, type
-:
-    'link', label, href, icon ?, badge ?, disabled ?, external ?, onClick ?, activeMatch ?
+```ts
+type NavItemType = NavLinkItem | NavGroupItem | NavSectionHeader | NavDividerItem;
+
+// Shared by every variant.
+interface NavItemBase {
+    id: string;
+    disabled?: boolean;
+    visible?: boolean | (() => boolean);
+    weight?: number;
 }
 
-// Collapsible group containing children
-{
-    id, type
-:
-    'group', label, icon ?, badge ?, children
-:
-    NavItemType[], defaultOpened ?, disabled ?
+// A destination, or an action item when href is omitted.
+interface NavLinkItem<TData = unknown> extends NavItemBase {
+    type: 'link';
+    label: string;
+    href?: string;
+    icon?: ReactNode;
+    badge?: ReactNode;
+    external?: boolean;
+    onClick?: (event: React.MouseEvent) => void;
+    activeMatch?: ActiveMatcher;
+    activeExact?: boolean;
+    'aria-label'?: string;
+    data?: TData;
 }
 
-// Non-interactive section header
-{
-    id, type
-:
-    'section', label
+// A collapsible group. Give it an href to make the group row navigable too.
+interface NavGroupItem<TData = unknown> extends NavItemBase {
+    type: 'group';
+    label: string;
+    children: NavItemType<TData>[];
+    defaultOpened?: boolean;
+    href?: string;
+    icon?: ReactNode;
+    badge?: ReactNode;
+    activeMatch?: ActiveMatcher;
+    activeExact?: boolean;
+    'aria-label'?: string;
+    data?: TData;
 }
 
-// Horizontal divider with an optional inline label
-{
-    id, type
-:
-    'divider', label ?
+// A non-interactive heading above a run of items.
+interface NavSectionHeader extends NavItemBase {
+    type: 'section';
+    label: string;
+}
+
+// A horizontal rule, optionally labelled inline.
+interface NavDividerItem extends NavItemBase {
+    type: 'divider';
+    label?: string;
 }
 ```
 
-All items support `visible?: boolean | (() => boolean)` to hide per role/flag, and `weight?: number` to control sort
-order.
-Links and groups also accept an `"aria-label"` used as the accessible name of the rendered tree item.
+`visible` accepts a function so it can be evaluated per render against a role or feature flag, and hidden items are
+removed from the tree entirely rather than styled out.
+`weight` sorts siblings, lowest first.
+`data` is your own payload, carried untouched onto `onItemClick` and `onNavigate` so callbacks do not need a lookup.
+`aria-label` overrides the accessible name of the rendered tree item, which otherwise comes from `label`.
 
 ### `onClick` and navigation
 
@@ -132,11 +156,19 @@ yourself if you need to stop it:
 // Track, then navigate normally:
 { id: 'pricing', type: 'link', label: 'Pricing', href: '/pricing',
   onClick: () => track('nav_click', { to: '/pricing' }) }
-
-// Action-only item — prevent navigation and open a modal:
-{ id: 'feedback', type: 'link', label: 'Send Feedback', href: '#',
-  onClick: (e) => { e.preventDefault(); openFeedbackModal(); } }
 ```
+
+Omit `href` for an action item that only runs its handler. Navigation is suppressed for you, so there is no `href: '#'`
+placeholder and no `e.preventDefault()` to remember:
+
+```tsx
+{ id: 'feedback', type: 'link', label: 'Send Feedback',
+  onClick: () => openFeedbackModal() }
+```
+
+Action items are ordinary tree items for keyboard purposes: they take roving focus and activate on Enter. Because they
+have no destination, they are never matched against the current route, never appear in a breadcrumb trail, and are never
+recorded in recently viewed.
 
 ### Custom item rendering
 
@@ -148,7 +180,7 @@ visuals:
 ```tsx
 <NavGroup
     items={items}
-    onItemClick={(item) => router.push(item.href)}
+    onItemClick={(item) => item.href && router.push(item.href)}
     renderItem={(item) =>
         item.type === 'link' ? (
             <Group justify="space-between" px="sm" py={6}>
@@ -374,7 +406,7 @@ function App() {
                     <Tabs value={activeItem?.href ?? '/'} onChange={(v) => router.push(v!)}>
                         <Tabs.List>
                             {topNav.map((item) => item.type === 'link' && (
-                                <Tabs.Tab key={item.id} value={item.href}>{item.label}</Tabs.Tab>
+                                <Tabs.Tab key={item.id} value={item.href ?? item.id}>{item.label}</Tabs.Tab>
                             ))}
                         </Tabs.List>
                     </Tabs>
