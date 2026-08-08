@@ -385,6 +385,9 @@ export function NavShell({
 					<AppShell.Navbar
 						p="sm"
 						ref={navbarRef}
+						// Focus target of last resort when the drawer opens with no
+						// focusable content of its own.
+						tabIndex={-1}
 						onKeyDown={drawerActive ? handleDrawerKeyDown : undefined}
 						className={classNames?.navbar}
 						style={styles?.navbar}
