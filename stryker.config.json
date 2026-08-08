@@ -15,6 +15,7 @@
 		"!src/types/**"
 	],
 	"reporters": ["html", "json", "progress", "clear-text"],
+	"timeoutMS": 20000,
 	"thresholds": {
 		"high": 80,
 		"low": 60,

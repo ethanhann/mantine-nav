@@ -153,17 +153,27 @@ real `href` — the handler fires first, then the browser (or your `linkComponen
 yourself if you need to stop it:
 
 ```tsx
-// Track, then navigate normally:
-{ id: 'pricing', type: 'link', label: 'Pricing', href: '/pricing',
-  onClick: () => track('nav_click', { to: '/pricing' }) }
+// Track, then navigate normally.
+const pricing: NavLinkItem = {
+    id: 'pricing',
+    type: 'link',
+    label: 'Pricing',
+    href: '/pricing',
+    onClick: () => track('nav_click', {to: '/pricing'}),
+};
 ```
 
 Omit `href` for an action item that only runs its handler. Navigation is suppressed for you, so there is no `href: '#'`
 placeholder and no `e.preventDefault()` to remember:
 
 ```tsx
-{ id: 'feedback', type: 'link', label: 'Send Feedback',
-  onClick: () => openFeedbackModal() }
+// An action item. No href, so nothing navigates.
+const feedback: NavLinkItem = {
+    id: 'feedback',
+    type: 'link',
+    label: 'Send Feedback',
+    onClick: () => openFeedbackModal(),
+};
 ```
 
 Action items are ordinary tree items for keyboard purposes: they take roving focus and activate on Enter. Because they

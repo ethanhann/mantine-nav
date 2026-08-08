@@ -318,9 +318,7 @@ describe("NavItemRenderer collapsed rail groups", () => {
 		await openRail({
 			item: {
 				...group,
-				children: [
-					{ type: "link", id: "act", label: "Act", onClick },
-				],
+				children: [{ type: "link", id: "act", label: "Act", onClick }],
 			},
 		});
 
