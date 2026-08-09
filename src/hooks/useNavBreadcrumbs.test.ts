@@ -334,3 +334,98 @@ describe("useNavBreadcrumbs action items", () => {
 		expect(result.current.activeItem?.id).toBe("home");
 	});
 });
+
+describe("useNavBreadcrumbs href guards", () => {
+	it("never offers an action item to a custom matcher", () => {
+		// Arrange
+		const matcher = vi.fn(() => true);
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useNavBreadcrumbs({ items, currentPath: "/", matcher }),
+		);
+
+		// Assert
+		expect(result.current.breadcrumbs).toHaveLength(0);
+		expect(matcher).not.toHaveBeenCalled();
+	});
+
+	it("never offers a group without an href to a custom matcher", () => {
+		// Arrange
+		const matcher = vi.fn(() => false);
+		const items: NavItemType[] = [
+			{
+				type: "group",
+				id: "products",
+				label: "Products",
+				children: [
+					{ type: "link", id: "catalog", label: "Catalog", href: "/catalog" },
+				],
+			},
+		];
+
+		// Act
+		renderHook(() => useNavBreadcrumbs({ items, currentPath: "/x", matcher }));
+
+		// Assert
+		expect(matcher).toHaveBeenCalledTimes(1);
+		expect(matcher).toHaveBeenCalledWith("/x", "/catalog");
+	});
+
+	it("keeps the first of two equally specific link matches", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "first", label: "First", href: "/shared" },
+			{ type: "link", id: "second", label: "Second", href: "/shared" },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useNavBreadcrumbs({ items, currentPath: "/shared" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem?.id).toBe("first");
+	});
+
+	it("keeps the first of two equally specific group matches", () => {
+		// Arrange
+		const group = (id: string): NavItemType => ({
+			type: "group",
+			id,
+			label: id,
+			href: "/shared",
+			children: [
+				{ type: "link", id: `${id}-child`, label: "Child", href: "/deep" },
+			],
+		});
+		const items: NavItemType[] = [group("first"), group("second")];
+
+		// Act
+		const { result } = renderHook(() =>
+			useNavBreadcrumbs({ items, currentPath: "/shared" }),
+		);
+
+		// Assert
+		expect(result.current.breadcrumbs[0]?.id).toBe("first");
+	});
+
+	it("prefers the longest matching href", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "short", label: "Short", href: "/a" },
+			{ type: "link", id: "long", label: "Long", href: "/a/b" },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useNavBreadcrumbs({ items, currentPath: "/a/b" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem?.id).toBe("long");
+	});
+});

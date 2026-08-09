@@ -339,3 +339,88 @@ describe("NavBurger", () => {
 		expect(screen.getByLabelText("Toggle navigation")).toBeInTheDocument();
 	});
 });
+
+describe("NavShell burger accessibility", () => {
+	function renderShell(sidebar: React.ReactNode = <span>Nav</span>) {
+		return render(
+			<NavShell header={<span>Logo</span>} sidebar={sidebar}>
+				<span>Content</span>
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+	}
+
+	it("reports the drawer as closed on mount", () => {
+		// Arrange, Act
+		renderShell();
+
+		// Assert
+		expect(screen.getByLabelText("Toggle navigation")).toHaveAttribute(
+			"aria-expanded",
+			"false",
+		);
+	});
+
+	it("reports the drawer as open once toggled", async () => {
+		// Arrange
+		renderShell();
+
+		// Act
+		await userEvent.setup().click(screen.getByLabelText("Toggle navigation"));
+
+		// Assert
+		expect(screen.getByLabelText("Toggle navigation")).toHaveAttribute(
+			"aria-expanded",
+			"true",
+		);
+	});
+
+	it("points the burger at the navbar it controls", () => {
+		// Arrange, Act
+		renderShell();
+
+		// Assert
+		const controls = screen
+			.getByLabelText("Toggle navigation")
+			.getAttribute("aria-controls");
+		expect(controls).toBeTruthy();
+		expect(document.getElementById(controls as string)).toHaveClass(
+			"mantine-AppShell-navbar",
+		);
+	});
+
+	it("gives a standalone NavBurger the same wiring", async () => {
+		// Arrange
+		render(
+			<NavShell sidebar={<span>Nav</span>}>
+				<NavBurger />
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+		const burger = screen.getByLabelText("Toggle navigation");
+
+		// Act
+		await userEvent.setup().click(burger);
+
+		// Assert
+		expect(burger).toHaveAttribute("aria-expanded", "true");
+		expect(
+			document.getElementById(burger.getAttribute("aria-controls") as string),
+		).toHaveClass("mantine-AppShell-navbar");
+	});
+
+	it("omits aria-controls when there is no navbar to control", () => {
+		// Arrange, Act
+		render(
+			<NavShell>
+				<NavBurger />
+			</NavShell>,
+			{ wrapper: Wrapper },
+		);
+
+		// Assert
+		expect(screen.getByLabelText("Toggle navigation")).not.toHaveAttribute(
+			"aria-controls",
+		);
+	});
+});

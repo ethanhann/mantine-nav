@@ -27,6 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `href` is likewise optional on `NavigateEvent` and on the `NavCommand` entries produced by `flattenNavCommands`.
   Consumers that read `href` from either type now need to handle it being absent.
 
+- `navbarId` on the `NavShell` context, holding the id of the rendered navbar so a custom drawer toggle can point
+  `aria-controls` at it. Undefined when the shell has no sidebar.
+
+### Fixed
+
+- The mobile drawer toggle now reports its state. Both the built-in burger and `NavBurger` set `aria-expanded` and
+  `aria-controls`, so assistive technology announces whether the drawer is open and what it controls. Previously
+  neither attribute was set and the control was announced as an unlabelled button with no state.
+- Opening the mobile drawer no longer leaves focus outside it when the drawer contains nothing focusable. The
+  fallback that focuses the drawer itself could never fire, because the navbar element was not focusable; it now
+  carries `tabIndex={-1}`.
+
 ## [0.8.0] - 2026-07-09
 
 ### Added
