@@ -186,3 +186,120 @@ describe("Spec 005: useActiveNavItem", () => {
 		expect(result.current.isActive(homeItem)).toBe(false);
 	});
 });
+
+describe("useActiveNavItem action items", () => {
+	it("never resolves an action item as active", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem).toBeNull();
+		expect(result.current.isActive(items[0]!)).toBe(false);
+	});
+});
+
+describe("useActiveNavItem href guards", () => {
+	it("never offers an action item to a custom matcher", () => {
+		// Arrange
+		const matcher = vi.fn(() => true);
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/", matcher }),
+		);
+
+		// Assert
+		expect(result.current.activeItem).toBeNull();
+		expect(result.current.isActive(items[0]!)).toBe(false);
+		expect(matcher).not.toHaveBeenCalled();
+	});
+
+	it("treats a group with its own href as matchable", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{
+				type: "group",
+				id: "products",
+				label: "Products",
+				href: "/products",
+				children: [
+					{ type: "link", id: "catalog", label: "Catalog", href: "/catalog" },
+				],
+			},
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/products" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem?.id).toBe("products");
+		expect(result.current.isActive(items[0]!)).toBe(true);
+	});
+
+	it("leaves a group inactive when neither it nor its children match", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{
+				type: "group",
+				id: "products",
+				label: "Products",
+				href: "/products",
+				children: [
+					{ type: "link", id: "catalog", label: "Catalog", href: "/catalog" },
+				],
+			},
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/elsewhere" }),
+		);
+
+		// Assert
+		expect(result.current.isActive(items[0]!)).toBe(false);
+	});
+
+	it("keeps the first of two equally specific matches", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "first", label: "First", href: "/shared" },
+			{ type: "link", id: "second", label: "Second", href: "/shared" },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/shared" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem?.id).toBe("first");
+	});
+
+	it("prefers the longest matching href", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "short", label: "Short", href: "/a" },
+			{ type: "link", id: "long", label: "Long", href: "/a/b" },
+		];
+
+		// Act
+		const { result } = renderHook(() =>
+			useActiveNavItem(items, { currentPath: "/a/b" }),
+		);
+
+		// Assert
+		expect(result.current.activeItem?.id).toBe("long");
+	});
+});

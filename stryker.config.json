@@ -1,0 +1,26 @@
+{
+	"$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+	"testRunner": "vitest",
+	"vitest": {
+		"configFile": "vitest.mutation.config.ts"
+	},
+	"mutate": [
+		"src/**/*.{ts,tsx}",
+		"!src/**/*.test.{ts,tsx}",
+		"!src/**/index.ts",
+		"!src/__integration__/helpers.tsx",
+		"!src/test-setup.ts",
+		"!src/env.d.ts",
+		"!src/**/*.d.ts",
+		"!src/types/**"
+	],
+	"reporters": ["html", "json", "progress", "clear-text"],
+	"timeoutMS": 20000,
+	"concurrency": 8,
+	"thresholds": {
+		"high": 80,
+		"low": 60,
+		"break": 78
+	},
+	"incrementalFile": "reports/stryker-incremental.json"
+}

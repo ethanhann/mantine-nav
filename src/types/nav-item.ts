@@ -33,7 +33,8 @@ export interface NavItemBase {
 export interface NavLinkItem<TData = unknown> extends NavItemBase {
 	type: "link";
 	label: string;
-	href: string;
+	/** Destination. Omit for an action item that only runs `onClick`. */
+	href?: string;
 	icon?: ReactNode;
 	badge?: ReactNode;
 	data?: TData;
@@ -88,7 +89,8 @@ export type NavigateTrigger = "mouse" | "keyboard";
 export interface NavigateEvent<TData = unknown> {
 	id: string;
 	label: string;
-	href: string;
+	/** Absent for action items that only run `onClick`. */
+	href?: string;
 	external?: boolean;
 	data?: TData;
 	source: NavigateSource;

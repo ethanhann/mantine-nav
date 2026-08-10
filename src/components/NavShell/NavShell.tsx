@@ -17,6 +17,7 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useId,
 	useMemo,
 	useRef,
 	useState,
@@ -36,6 +37,8 @@ export interface NavShellContextValue {
 	collapseDesktop: () => void;
 	expandDesktop: () => void;
 	isMobile: boolean;
+	/** Id of the rendered navbar, for `aria-controls` on a custom toggle. Undefined when there is no sidebar. */
+	navbarId?: string;
 	linkComponent?: React.ElementType;
 	/** Prop name used to pass the destination URL to linkComponent (default: "href"). Set to "to" for React Router. */
 	hrefProp?: string;
@@ -159,6 +162,8 @@ export function NavShell({
 	classNames,
 	styles,
 }: NavShellProps): ReactElement {
+	const generatedNavbarId = useId();
+	const navbarId = sidebar ? generatedNavbarId : undefined;
 	const [
 		mobileOpened,
 		{ toggle: toggleMobile, open: openMobile, close: closeMobile },
@@ -310,6 +315,7 @@ export function NavShell({
 			collapseDesktop,
 			expandDesktop,
 			isMobile,
+			navbarId,
 			linkComponent,
 			hrefProp,
 			onNavigate,
@@ -324,6 +330,7 @@ export function NavShell({
 			collapseDesktop,
 			expandDesktop,
 			isMobile,
+			navbarId,
 			linkComponent,
 			hrefProp,
 			onNavigate,
@@ -374,6 +381,8 @@ export function NavShell({
 									hiddenFrom={sidebarBreakpoint}
 									size="sm"
 									aria-label={labels?.toggleNavigation ?? "Toggle navigation"}
+									aria-expanded={mobileOpened}
+									aria-controls={navbarId}
 								/>
 							)}
 							{header}
@@ -384,7 +393,11 @@ export function NavShell({
 				{sidebar && (
 					<AppShell.Navbar
 						p="sm"
+						id={navbarId}
 						ref={navbarRef}
+						// Focus target of last resort when the drawer opens with no
+						// focusable content of its own.
+						tabIndex={-1}
 						onKeyDown={drawerActive ? handleDrawerKeyDown : undefined}
 						className={classNames?.navbar}
 						style={styles?.navbar}
@@ -465,6 +478,8 @@ export function NavBurger({
 			hiddenFrom={hiddenFrom}
 			size={size}
 			aria-label={ariaLabel}
+			aria-expanded={shell.mobileOpened}
+			aria-controls={shell.navbarId}
 		/>
 	);
 }

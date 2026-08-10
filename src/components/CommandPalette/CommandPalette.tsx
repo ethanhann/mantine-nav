@@ -130,12 +130,19 @@ export function CommandPalette({
 	const navCommands = useMemo(() => flattenNavCommands(items), [items]);
 	const groupLabels = { ...DEFAULT_LABELS, ...labels };
 
+	const shownHrefsOf = (commands: NavCommand[]) =>
+		new Set(
+			commands
+				.map((c) => c.href)
+				.filter((href): href is string => href !== undefined),
+		);
+
 	const handleNavSelect = (command: NavCommand, event?: React.MouseEvent) => {
 		if (onNavigate) {
 			onNavigate(command);
 		} else if (command.onClick && event) {
 			command.onClick(event);
-		} else if (typeof window !== "undefined") {
+		} else if (command.href && typeof window !== "undefined") {
 			if (command.external) {
 				window.open(command.href, "_blank", "noopener,noreferrer");
 			} else {
@@ -153,7 +160,8 @@ export function CommandPalette({
 			trigger: "mouse",
 		});
 
-		if (recordRecent && !command.external) {
+		// Action items are not destinations, so they are never "recently viewed".
+		if (recordRecent && command.href && !command.external) {
 			recent.addItem({
 				id: command.id,
 				label: command.label,
@@ -271,9 +279,7 @@ export function CommandPalette({
 		// With minSearchLength={0} the backend also answers the empty query
 		// (suggestions on open); every nav command is displayed above, so dedup
 		// against all of them.
-		const resultsEl = resultsGroupElement(
-			new Set(navCommands.map((c) => c.href)),
-		);
+		const resultsEl = resultsGroupElement(shownHrefsOf(navCommands));
 		if (resultsEl) groups.push(resultsEl);
 	} else {
 		const rankedNav = rankCommands(
@@ -305,7 +311,7 @@ export function CommandPalette({
 		// Backend results are appended *below* local matches (stable position —
 		// the selection stays anchored on the first local row when they arrive).
 		const resultsEl = resultsGroupElement(
-			new Set(rankedNav.map((r) => r.item.href)),
+			shownHrefsOf(rankedNav.map((r) => r.item)),
 		);
 		if (resultsEl) groups.push(resultsEl);
 	}

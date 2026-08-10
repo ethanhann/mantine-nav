@@ -55,6 +55,8 @@ export function useActiveNavItem<TData = unknown>(
 		let bestLength = -1;
 
 		for (const link of links) {
+			// Action items carry no destination, so no route can match them.
+			if (!link.href) continue;
 			const itemMatcher = link.activeExact
 				? "exact"
 				: (link.activeMatch ?? defaultMatcher);
@@ -69,6 +71,7 @@ export function useActiveNavItem<TData = unknown>(
 
 		const isActive = (item: NavItemType<TData>): boolean => {
 			if (item.type === "link") {
+				if (!item.href) return false;
 				const itemMatcher = item.activeExact
 					? "exact"
 					: (item.activeMatch ?? defaultMatcher);

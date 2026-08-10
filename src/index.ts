@@ -168,5 +168,5 @@ export { fuzzyMatch, rankCommands } from "./utils/fuzzy";
 // Utilities
 export { matchItem } from "./utils/matchItem";
 export { sortItemsByWeight } from "./utils/sorting";
-export { flattenNavTree, walkNavTree } from "./utils/traverse";
+export { findInNavTree, flattenNavTree, walkNavTree } from "./utils/traverse";
 export { filterVisibleItems, isItemVisible } from "./utils/visibility";

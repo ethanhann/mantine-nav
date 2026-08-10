@@ -9,7 +9,8 @@ import { filterVisibleItems } from "./visibility";
 export interface NavCommand<TData = unknown> {
 	id: string;
 	label: string;
-	href: string;
+	/** Absent for action items that only run `onClick`. */
+	href?: string;
 	icon?: ReactNode;
 	external?: boolean;
 	disabled?: boolean;

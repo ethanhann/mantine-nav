@@ -34,35 +34,40 @@ Object.defineProperty(globalThis, "localStorage", {
 	configurable: true,
 	value: localStorageMock,
 });
-Object.defineProperty(window, "localStorage", {
-	configurable: true,
-	value: localStorageMock,
-});
+// The SSR suite runs in the node environment, where none of the DOM shims below
+// apply and referencing `window` would throw.
+if (typeof window !== "undefined") {
+	Object.defineProperty(window, "localStorage", {
+		configurable: true,
+		value: localStorageMock,
+	});
 
-// Mantine requires matchMedia in jsdom
-Object.defineProperty(window, "matchMedia", {
-	writable: true,
-	value: (query: string) => ({
-		matches: false,
-		media: query,
-		onchange: null,
-		addListener: () => {},
-		removeListener: () => {},
-		addEventListener: () => {},
-		removeEventListener: () => {},
-		dispatchEvent: () => false,
-	}),
-});
+	// Mantine requires matchMedia in jsdom
+	Object.defineProperty(window, "matchMedia", {
+		writable: true,
+		value: (query: string) => ({
+			matches: false,
+			media: query,
+			onchange: null,
+			addListener: () => {},
+			removeListener: () => {},
+			addEventListener: () => {},
+			removeEventListener: () => {},
+			dispatchEvent: () => false,
+		}),
+	});
 
-// Mantine may also need ResizeObserver
-class ResizeObserverMock {
-	observe() {}
-	unobserve() {}
-	disconnect() {}
-}
-window.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+	// Mantine may also need ResizeObserver
+	class ResizeObserverMock {
+		observe() {}
+		unobserve() {}
+		disconnect() {}
+	}
+	window.ResizeObserver =
+		ResizeObserverMock as unknown as typeof ResizeObserver;
 
-// jsdom does not implement scrollIntoView; Spotlight scrolls the active action.
-if (!Element.prototype.scrollIntoView) {
-	Element.prototype.scrollIntoView = () => {};
+	// jsdom does not implement scrollIntoView; Spotlight scrolls the active action.
+	if (!Element.prototype.scrollIntoView) {
+		Element.prototype.scrollIntoView = () => {};
+	}
 }

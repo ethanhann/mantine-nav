@@ -142,3 +142,7 @@ storybook-static/
 
 # Local dev artifacts
 /data
+
+# Mutation testing
+.stryker-tmp/
+reports/

@@ -55,13 +55,15 @@ function findBestTrail<TData>(
 
 	for (const item of items) {
 		if (item.type === "link") {
-			const matcher = resolveItemMatcher(item, defaultMatcher);
-			if (matchItem(currentPath, item.href, matcher)) {
-				if (!best || item.href.length > best.hrefLength) {
-					best = {
-						trail: [...ancestors, item],
-						hrefLength: item.href.length,
-					};
+			if (item.href) {
+				const matcher = resolveItemMatcher(item, defaultMatcher);
+				if (matchItem(currentPath, item.href, matcher)) {
+					if (!best || item.href.length > best.hrefLength) {
+						best = {
+							trail: [...ancestors, item],
+							hrefLength: item.href.length,
+						};
+					}
 				}
 			}
 		} else if (item.type === "group") {

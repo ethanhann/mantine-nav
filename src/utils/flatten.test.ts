@@ -86,3 +86,20 @@ describe("flattenNavCommands", () => {
 		expect(commands[0]!.label).toBe("First");
 	});
 });
+
+describe("flattenNavCommands action items", () => {
+	it("includes an action item with no href", () => {
+		// Arrange
+		const items: NavItemType[] = [
+			{ type: "link", id: "signout", label: "Sign out", onClick: () => {} },
+		];
+
+		// Act
+		const commands = flattenNavCommands(items);
+
+		// Assert
+		expect(commands).toHaveLength(1);
+		expect(commands[0]?.href).toBeUndefined();
+		expect(commands[0]?.onClick).toBeTypeOf("function");
+	});
+});

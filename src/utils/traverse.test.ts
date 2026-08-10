@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NavItemType } from "../types";
-import { flattenNavTree, walkNavTree } from "./traverse";
+import { findInNavTree, flattenNavTree, walkNavTree } from "./traverse";
 
 const tree: NavItemType[] = [
 	{ id: "home", type: "link", label: "Home", href: "/" },
@@ -55,6 +55,79 @@ describe("walkNavTree", () => {
 
 		// Assert
 		expect(visited).toEqual(["home", "settings", "sec"]);
+	});
+
+	it("aborts the entire walk when visit returns 'stop'", () => {
+		// Arrange
+		const visited: string[] = [];
+
+		// Act
+		const stopped = walkNavTree(tree, (item) => {
+			visited.push(item.id);
+			if (item.id === "general") return "stop";
+		});
+
+		// Assert
+		expect(stopped).toBe(true);
+		expect(visited).toEqual(["home", "settings", "general"]);
+	});
+
+	it("returns false when the walk completes without stopping", () => {
+		// Arrange
+
+		// Act
+		const stopped = walkNavTree(tree, () => undefined);
+
+		// Assert
+		expect(stopped).toBe(false);
+	});
+});
+
+describe("findInNavTree", () => {
+	it("returns the first item matching the predicate", () => {
+		// Arrange
+
+		// Act
+		const result = findInNavTree(tree, (item) => item.type === "link");
+
+		// Assert
+		expect(result).toEqual(tree[0]);
+		expect(result?.id).toBe("home");
+	});
+
+	it("finds a deeply nested item", () => {
+		// Arrange
+
+		// Act
+		const result = findInNavTree(tree, (item) => item.id === "danger");
+
+		// Assert
+		expect(result).not.toBeNull();
+		expect(result?.id).toBe("danger");
+	});
+
+	it("returns null when no item matches", () => {
+		// Arrange
+
+		// Act
+		const result = findInNavTree(tree, (item) => item.id === "nonexistent");
+
+		// Assert
+		expect(result).toBeNull();
+	});
+
+	it("stops walking after finding the first match", () => {
+		// Arrange
+		const visited: string[] = [];
+
+		// Act
+		findInNavTree(tree, (item) => {
+			visited.push(item.id);
+			return item.id === "general";
+		});
+
+		// Assert
+		expect(visited).toEqual(["home", "settings", "general"]);
 	});
 });
 
