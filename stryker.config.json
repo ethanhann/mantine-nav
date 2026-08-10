@@ -14,12 +14,7 @@
 		"!src/**/*.d.ts",
 		"!src/types/**"
 	],
-	"reporters": [
-		"html",
-		"json",
-		"progress",
-		"clear-text"
-	],
+	"reporters": ["html", "json", "progress", "clear-text"],
 	"timeoutMS": 20000,
 	"concurrency": 8,
 	"thresholds": {
