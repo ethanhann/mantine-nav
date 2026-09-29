@@ -3,7 +3,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { mockViewport, resetViewport } from "../../__integration__/helpers";
-import { NavBurger, NavShell, useNavShell } from "./NavShell";
+import { NavBurger } from "./NavBurger";
+import { NavShell, useNavShell } from "./NavShell";
 
 function Wrapper({ children }: { children: React.ReactNode }) {
 	return <MantineProvider>{children}</MantineProvider>;
