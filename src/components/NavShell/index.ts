@@ -1,11 +1,11 @@
+export type { NavBurgerProps } from "./NavBurger";
+export { NavBurger } from "./NavBurger";
 export type {
-	NavBurgerProps,
 	NavShellContextValue,
 	NavShellProps,
 	NavShellSlot,
 } from "./NavShell";
 export {
-	NavBurger,
 	NavShell,
 	useNavShell,
 	useOptionalNavShell,
